@@ -20,7 +20,7 @@ std::optional<Site> Cache::getSite(const std::string& site) {
 
 void Cache::addSite(std::string address, Site site) {
     std::lock_guard<std::mutex> lock(mutex);
-    assert(address.find("gemini://") != -1);
+    assert(address.find("gemini://") != std::string::npos);
 
     auto it = cache.find(address);
     if (it != cache.end()) {

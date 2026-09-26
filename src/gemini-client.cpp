@@ -144,7 +144,7 @@ Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPat
 
         try {
             fileStr = readFileToString(fsPath);
-        } catch (FileReadError e ) {
+        } catch (FileReadError& e ) {
             return new Site {"51 file not found", ""};
         }
         // TODO: how should I discern file types?

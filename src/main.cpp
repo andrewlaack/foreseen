@@ -42,7 +42,7 @@ void removeNonAscii(std::vector<std::pair<std::string, TextRender>>& strLs) {
 
         std::string out;
         for (int c: s)
-            if (c >= 0x20 && c <= 0x7E || c == '\n') {
+            if ((c >= 0x20 && c <= 0x7E) || (c == '\n')) {
                 out += c;
             } else if (c == '\t') {
                 out += "    "; // \t is a larger character and fucks with breaklines.
@@ -97,7 +97,7 @@ void drawInputBox(std::string text, std::string userInput) {
     int userInputSize = userInput.size();
     int width = COLS/2;
 
-    if(text.size() >= width) {
+    if((int)text.size() >= width) {
         text = text.substr(0,width-6) + "...: ";
     }
 
@@ -159,11 +159,11 @@ void draw(DrawState& ds) {
     ds.y = std::max(0,std::min(ds.y,lowestPos(current)));
 
     erase();
-    move(0,(COLS / 2) - (ds.header.size() / 2) );
+    move(0,(COLS / 2) - ((int)ds.header.size() / 2) );
 
     attron(A_BOLD);
 
-    if(ds.header.size() < COLS) {
+    if((int)ds.header.size() < COLS) {
         addstr(ds.header.c_str());
     }  else {
         addstr((ds.header.substr(0,COLS-3) + "...").c_str());
@@ -173,7 +173,7 @@ void draw(DrawState& ds) {
 
     addstr(std::string(COLS, ' ').c_str());
 
-    for(int i = ds.y; i - ds.y < LINES - 2 && i < current.size(); ++i) {
+    for(int i = ds.y; i - ds.y < LINES - 2 && i < (int)current.size(); ++i) {
         move(i - ds.y + 2, 0);
 
         attron(COLOR_PAIR(current[i].second.color + 1));
@@ -401,8 +401,8 @@ int main(int argc, char** argv) {
                 b.followLinkNumber(std::stoi(locationToGo));
             } catch (...) {
                 if(locationToGo != "") {
-                    if(locationToGo.find(":") == -1) { // TODO: Is this how we which scheme was specified?
-                        if(locationToGo.find('.') != -1 && urlEncode(locationToGo) == locationToGo) { // hmm, this feels weak. Like I can't search something if I add a period?
+                    if(locationToGo.find(":") == std::string::npos) { // TODO: Is this how we which scheme was specified?
+                        if(locationToGo.find('.') != std::string::npos && urlEncode(locationToGo) == locationToGo) { // hmm, this feels weak. Like I can't search something if I add a period?
                             locationToGo = "gemini://" + locationToGo;
                         } else {
                             locationToGo = DEFAULT_SEARCH_ENGINE + urlEncode(locationToGo);

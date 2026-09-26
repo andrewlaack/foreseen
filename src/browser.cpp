@@ -24,7 +24,7 @@ void Browser::downloadPage() {
 
 void dispatch(std::vector<Link>* targets, Browser& b, int threadIdx) {
     std::vector<Link>& refT = *targets;
-    for(int i =  0 ; i < refT.size() && i < SITE_CACHE_LIMIT; ++i) {
+    for(int i =  0 ; i < (int)refT.size() && i < SITE_CACHE_LIMIT; ++i) {
         auto& target = refT[i];
 
         auto id = b.getIdentity(target.getLinkDestination());
@@ -82,7 +82,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     Link* prior = nullptr;
 
-    if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+    if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
         prior = siteHistory[previousIdx];
     }
 
@@ -121,7 +121,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     Identity id = identityManager.getIdentityForURI(destination->getLinkDestination());
 
-    if(urlString.find("gemini://") != -1 && !refresh) {
+    if(urlString.find("gemini://") != std::string::npos && !refresh) {
         if(id.crtPath == "" && id.keyPath == "") {
             site = findInCacheAndPromoteIfRelevant(urlString);
         }
@@ -142,7 +142,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     }
 
     if(addToHistory) {
-        while(siteHistory.size() > previousIdx + 1) {
+        while((int)siteHistory.size() > previousIdx + 1) {
             delete siteHistory[siteHistory.size() -  1];
             siteHistory.pop_back();
         }
@@ -155,7 +155,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     }
     currentSite = site;
 
-    if(urlString.find("gemini://") != -1) {
+    if(urlString.find("gemini://") != std::string::npos) {
         if(id.keyPath == "" && id.crtPath == "") {
             visitedCache->addSite(urlString, *site);
         }
@@ -192,7 +192,7 @@ void Browser::justCacheSite(Link link) {
 
     Site* site = nullptr;
 
-    if(urlString.find("gemini://") != -1) {
+    if(urlString.find("gemini://") != std::string::npos) {
         site = client.fetchSite(link);
     } 
 
@@ -296,7 +296,7 @@ std::vector<std::pair<std::string, TextRender>> Browser::renderSite() {
 
 
 std::optional<uri> Browser::getPriorUri() {
-    if(previousIdx < siteHistory.size() && previousIdx >= 0) {
+    if(previousIdx < (int)siteHistory.size() && previousIdx >= 0) {
         return siteHistory[previousIdx]->getLinkDestination();
     }
     return std::nullopt;
@@ -313,9 +313,9 @@ std::vector<Link>* Browser::getLinkLines() {
 
 
 void Browser::followLinkNumber(int linkToFollow) {
-    if(links.size() > linkToFollow-1 && linkToFollow-1 >= 0) {
+    if((int)links.size() > linkToFollow-1 && linkToFollow-1 >= 0) {
         std::size_t pos = links[linkToFollow-1];
-        if(lines.size() > pos && pos >= 0) {
+        if(lines.size() > pos) {
             Line* ptr = lines[pos];
             Link* ptrLnk = dynamic_cast<Link*>(ptr);
             goToSite(ptrLnk->getLinkDestination().to_string(), true);
@@ -330,12 +330,12 @@ void Browser::goBack() {
 
     previousIdx -= 1;
 
-    if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+    if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
 
         int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
         while(!(prSC >= 20 && prSC <= 29)) {
             previousIdx -= 1;
-            if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+            if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
                 prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
             } else {
                 previousIdx = original;
@@ -356,11 +356,11 @@ void Browser::goForward() {
 
     previousIdx += 1;
 
-    if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+    if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
         int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
         while(!(prSC >= 20 && prSC <= 29)) {
             previousIdx += 1;
-            if(siteHistory.size() > previousIdx && previousIdx >= 0) {
+            if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
                 prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
             } else {
                 previousIdx = original;
@@ -375,7 +375,7 @@ void Browser::goForward() {
 }
 
 Link* Browser::getCurrentLink() {
-    if(previousIdx >= 0 && previousIdx < siteHistory.size()) {
+    if(previousIdx >= 0 && previousIdx < (int)siteHistory.size()) {
         return this->siteHistory[previousIdx];
     }
     return nullptr;

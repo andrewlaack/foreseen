@@ -21,7 +21,7 @@ Link::Link(std::string text, std::optional<uri> prior, int linkNumber) {
 
     int highest = -1;
 
-    for(int i = 0; i < afterPrefix.size(); ++i) {
+    for(int i = 0; i < (int)afterPrefix.size(); ++i) {
         if(!(isWhiteSpace(afterPrefix, i))) {
             break;
         }
@@ -48,7 +48,7 @@ Link::Link(std::string text, std::optional<uri> prior, int linkNumber) {
 uri Link::parseDestination(std::string destination, std::optional<uri> prior) {
 
     // TODO: Not sure if this is right w/ how file paths work.
-    if(destination.find(":") == -1) {
+    if(destination.find(":") == std::string::npos) {
         if(prior != std::nullopt) {
             // query parameter special casing
             if(destination.substr(0,1) == "?") {
