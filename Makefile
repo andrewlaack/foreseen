@@ -1,25 +1,29 @@
-build:
-	g++ -g src/main.cpp src/identity-manager.cpp src/quote.cpp src/list-item.cpp src/preformatted.cpp src/format-switch.cpp src/cache.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp src/heading.cpp -lssl -lcrypto -lncursesw -o browser.out
+include config.mk
 
-install:
-	g++ -Ofast src/main.cpp src/identity-manager.cpp  src/quote.cpp src/list-item.cpp src/preformatted.cpp src/format-switch.cpp src/cache.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp src/heading.cpp -lssl -lcrypto -lncursesw -o browser.out
-	cp browser.out /usr/local/bin/gem-browser
+debug:
+	${DCOMMAND_P} src/main.cpp ${DCOMMAND_S} -o gem-browser.out
+
+build:
+	${COMMAND_P} src/main.cpp ${COMMAND_S} -o gem-browser.out
+
+install: build
+	cp gem-browser.out ${PREFIX}/bin/gem-browser
 
 clean:
 	echo "Not implemented"
 
 browser-test:
-	g++ tests/browser-test.cpp src/quote.cpp src/identity-manager.cpp  src/list-item.cpp  src/preformatted.cpp src/format-switch.cpp src/heading.cpp src/cache.cpp src/plaintext.cpp src/browser.cpp src/link.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp -lCatch2Main -lCatch2 -lssl -lcrypto -o test.out
+	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test.out
 	./test.out
 	rm test.out
 
 fetch-test:
-	g++ tests/fetch-test.cpp src/quote.cpp src/identity-manager.cpp  src/list-item.cpp src/link.cpp src/preformatted.cpp src/format-switch.cpp src/heading.cpp src/cache.cpp src/site.cpp src/plaintext.cpp src/utils.cpp src/gemini-client.cpp -lCatch2Main -lCatch2 -lssl -lcrypto -o test.out
+	${TCOMMAND_P} tests/fetch-test.cpp ${TCOMMAND_S} -o test.out
 	./test.out
 	rm test.out
 
 pure-test:
-	g++ tests/pure-test.cpp src/quote.cpp src/list-item.cpp src/identity-manager.cpp  src/link.cpp src/preformatted.cpp src/format-switch.cpp src/heading.cpp src/cache.cpp src/site.cpp src/plaintext.cpp src/utils.cpp src/gemini-client.cpp -lCatch2Main -lCatch2 -lssl -lcrypto -o test.out
+	${TCOMMAND_P} tests/pure-test.cpp ${TCOMMAND_S} -o test.out
 	./test.out
 	rm test.out
 

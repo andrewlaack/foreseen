@@ -47,3 +47,19 @@
                 - we shouldn't use prefetched when we add a cert where we didn't have one before.
 
 - ability to go left / right in input box.
+- auto-follow redirects based on domain?
+    - A/y/n -- always, no, yes
+- hmm, does this not work with redirects from the cli?
+    - gem-browser gemini://larsthebear.me/
+        - (seems so... perhaps I was on the non-updated version.)
+
+---
+
+- is there a way to get a better name for a page
+    - perhaps heading is most recent h1? h2? h3?
+- downloading and interactions broadly should show more information
+    - reloading should have progress / indication
+    - perhaps I should just re-use the entry box for download (specify a file) / success type stuff?
+        - I'm wary to make it too interactive as that might draw focus away from the text being read. 
+
+- bookmarks
