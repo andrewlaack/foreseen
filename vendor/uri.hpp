@@ -58,7 +58,7 @@ public:
     m_path_is_rooted(false),
     m_separator(separator)
   {
-    setup(std::string(uri_text), category);
+    setup(std::string(uri_text));
   };
 
   uri(std::string const &uri_text, scheme_category category = scheme_category::Hierarchical,
@@ -68,7 +68,7 @@ public:
     m_path_is_rooted(false),
     m_separator(separator)
   {
-    setup(uri_text, category);
+    setup(uri_text);
   };
 
   uri(std::map<component, std::string> const &components,
@@ -357,7 +357,7 @@ public:
 
 private:
 
-  void setup(std::string const &uri_text, scheme_category category)
+  void setup(std::string const &uri_text)
   {
     size_t const uri_length = uri_text.length();
 
@@ -440,9 +440,8 @@ private:
 	if (m_content.find_first_of('@') != std::string::npos)
 	{
 	  std::string::const_iterator userpass_divider = parse_username(uri_text,
-									m_content,
 									authority_cursor);
-	  authority_cursor = parse_password(uri_text, m_content, (userpass_divider + 1));
+	  authority_cursor = parse_password((userpass_divider + 1));
 	  // After this call, *authority_cursor == '@', so we skip over it.
 	  ++authority_cursor;
 	}
@@ -481,7 +480,6 @@ private:
   };
 
   std::string::const_iterator parse_username(std::string const &uri_text,
-					     std::string const &content,
 					     std::string::const_iterator username_start)
   {
     std::string::const_iterator username_end = username_start;
@@ -500,9 +498,7 @@ private:
     return username_end;
   };
 
-  std::string::const_iterator parse_password(std::string const &uri_text,
-					     std::string const &content,
-					     std::string::const_iterator password_start)
+  std::string::const_iterator parse_password(std::string::const_iterator password_start)
   {
     std::string::const_iterator password_end = password_start;
     while (*password_end != '@')
