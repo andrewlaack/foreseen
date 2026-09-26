@@ -10,7 +10,7 @@ install: build
 	cp gem-browser.out ${PREFIX}/bin/gem-browser
 
 clean:
-	echo "Not implemented"
+	rm -rf test.out gem-browser.out
 
 browser-test:
 	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test.out
