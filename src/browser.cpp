@@ -5,6 +5,7 @@
 #include <thread>
 #include <unistd.h>
 #include "../include/site.hpp"
+#include "../include/errors.hpp"
 #include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
 #include "../include/identity-manager.hpp"
@@ -15,13 +16,14 @@
 #include <vector>
 
 
-void Browser::downloadPage() {
+std::string Browser::downloadPage() {
     std::string body = currentSite->getBody();
     Link* current = getCurrentLink();
     assert(current != nullptr); // calling download page should always happen from a page...
-    writeStringToFile(body, encodeAsFilename(current->getLinkDestination()));
+    std::string destination = encodeAsFilename(current->getLinkDestination());
+    writeStringToFile(body, destination);
+    return destination;
 }
-
 
 void dispatch(std::vector<Link>* targets, Browser& b, int threadIdx) {
     std::vector<Link>& refT = *targets;
@@ -246,6 +248,11 @@ Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM){
         d = true;
     }
 
+    // this ensures some nice invariants about the browser, like always having at least one valid page.
+    bool start = goToSite("about://newtab");
+    if(!start) {
+        throw BrowserStartError{};
+    }
 }
 
 // TODO: SHould add more stuff here too, like the links stuff.

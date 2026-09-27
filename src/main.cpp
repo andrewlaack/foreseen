@@ -335,7 +335,8 @@ int main(int argc, char** argv) {
 
     initColors();
 
-    b.goToSite("about://newtab"); // baseline site so we can guarantee we have a starting point that's working.
+    // TODO: Would it be possible to have this done by default so our tests can be more consistent with actual usage
+    // where we expect this to default happen?
 
     std::string destination = "";
 

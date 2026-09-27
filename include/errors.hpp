@@ -9,6 +9,11 @@ public:
 };
 
 
+class BrowserStartError : public std::logic_error {
+    public:
+        BrowserStartError() : std::logic_error("An issue occurred while creating the browser") { };
+};
+
 class FileReadError : public std::invalid_argument
 {
 public:
