@@ -149,7 +149,7 @@ Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPat
         }
         // TODO: how should I discern file types?
         return new Site {"20 text/gemini", fileStr};
-    } else if(isPrefixed(destination, "about:")){
+    } else if(isPrefixed(destination, "about://")){
         return new Site {"20 text/gemini", getNewTab()};
     } else {
         throw NotImplemented();

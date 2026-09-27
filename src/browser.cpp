@@ -327,22 +327,24 @@ void Browser::followLinkNumber(int linkToFollow) {
 void Browser::goBack() {
 
     int original = previousIdx;
+    std::string starting = getCurrentLink()->getLinkDestination().to_string();
 
     previousIdx -= 1;
 
     if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
 
         int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-        while(!(prSC >= 20 && prSC <= 29)) {
+        std::string current = siteHistory[previousIdx]->getLinkDestination().to_string();
+        while(!(prSC >= 20 && prSC <= 29) || starting == current) {
             previousIdx -= 1;
             if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
                 prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
+                current = siteHistory[previousIdx]->getLinkDestination().to_string();
             } else {
                 previousIdx = original;
-                return;
+                return; // safely fail with rollback
             }
         }
-
         goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
 
     } else {
@@ -353,17 +355,22 @@ void Browser::goBack() {
 void Browser::goForward() {
 
     int original = previousIdx;
+    std::string starting = getCurrentLink()->getLinkDestination().to_string();
 
     previousIdx += 1;
 
     if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
+
         int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-        while(!(prSC >= 20 && prSC <= 29)) {
+        std::string current = siteHistory[previousIdx]->getLinkDestination().to_string();
+
+        while(!(prSC >= 20 && prSC <= 29) || starting == current) {
             previousIdx += 1;
             if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
                 prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
+                current = siteHistory[previousIdx]->getLinkDestination().to_string();
             } else {
-                previousIdx = original;
+                previousIdx = original; // fail safely
                 return;
             }
         }

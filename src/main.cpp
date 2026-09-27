@@ -334,11 +334,11 @@ int main(int argc, char** argv) {
 
     initColors();
 
-    b.goToSite("about:newtab",true);
+    b.goToSite("about://newtab",true);
 
     if(argc > 1) {
         // TODO: This should have tests.
-
+        // This should also be factored into the default cli input handling stuff too, possibly.
         if(std::filesystem::exists(argv[1])) {
             std::string path = "file:///" + std::filesystem::current_path().string() + "/" + argv[1];
             b.goToSite(path,true);
