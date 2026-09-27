@@ -26,7 +26,7 @@ Open a specific site:
 Open a local gemtext file:
     gem-browser {path}
 
-Start gem-browser with your default search engine:
+Start gem-browser:
     gem-browser
 
 

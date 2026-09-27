@@ -346,15 +346,16 @@ int main(int argc, char** argv) {
             std::string inputString = argv[1];
             if(inputString.find("gemini://") == 0) {
                 b.goToSite(argv[1], true);
-            } else {
+            } else if (inputString.find(':') == std::string::npos){
                 b.goToSite(std::string {"gemini://"} + argv[1], true);
+            } else {
+                b.goToSite(argv[1], true);
             }
         }
 
     } else {
-        b.goToSite(DEFAULT_SEARCH_ENGINE,true);
+        b.goToSite("about://newtab",true);
     }
-
 
     int input = 0;
 
