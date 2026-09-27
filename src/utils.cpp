@@ -265,4 +265,32 @@ std::filesystem::path getHome()
     return home;
 }
 
+std::optional<std::string> handleCLIDestination(std::string destination) {
+    if(destination != "") {
+        // TODO: This should have tests.
+        // This should also be factored into the default cli input handling stuff too, possibly.
+        if(std::filesystem::exists(destination)) {
+            std::string path = "file://" + std::filesystem::current_path().string() + "/" + destination;
 
+            if(destination.find('/') == std::size_t(0)) {
+                path = "file://" + destination;
+            }
+
+            return path;
+
+        }  else {
+            std::string inputString = destination;
+            if(inputString.find("gemini://") == 0) {
+                return destination;
+            } else if (inputString.find(':') == std::string::npos){
+                return std::string {"gemini://"} + destination;
+            } else {
+                return destination;
+            }
+        }
+
+    } else {
+        return std::nullopt;
+    }
+
+}

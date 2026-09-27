@@ -27,3 +27,4 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
 void writeStringToFile(std::string toWrite, std::string filePath);
 std::string encodeAsFilename(uri link);
 std::filesystem::path getHome();
+std::optional<std::string> handleCLIDestination(std::string destination);

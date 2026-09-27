@@ -33,7 +33,7 @@ class Browser {
         Browser();
         void setLinksOfCurrentLines();
         ~Browser();
-        void goToSite(std::string url, bool addToHistory, bool refresh = false);
+        void goToSite(std::string url, bool addToHistory = true, bool refresh = false);
         void setDone(int threadIdx);
         void refresh();
         Site* getCurrentSite();

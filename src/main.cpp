@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <ncurses.h>
+#include <optional>
 #include <string>
 #include <unctrl.h>
 #include <utility>
@@ -316,7 +317,6 @@ std::string handleUserInput(DrawState ds) {
     return "?" + acc;
 }
 
-
 int main(int argc, char** argv) {
 
     Browser* bPtr = new Browser{};
@@ -334,28 +334,21 @@ int main(int argc, char** argv) {
 
     initColors();
 
-    b.goToSite("about://newtab",true);
+    b.goToSite("about://newtab"); // baseline site so we can guarantee we have a starting point that's working.
+
+
+    std::string destination = "";
 
     if(argc > 1) {
-        // TODO: This should have tests.
-        // This should also be factored into the default cli input handling stuff too, possibly.
-        if(std::filesystem::exists(argv[1])) {
-            std::string path = "file:///" + std::filesystem::current_path().string() + "/" + argv[1];
-            b.goToSite(path,true);
-        }  else {
-            std::string inputString = argv[1];
-            if(inputString.find("gemini://") == 0) {
-                b.goToSite(argv[1], true);
-            } else if (inputString.find(':') == std::string::npos){
-                b.goToSite(std::string {"gemini://"} + argv[1], true);
-            } else {
-                b.goToSite(argv[1], true);
-            }
-        }
-
-    } else {
-        b.goToSite("about://newtab",true);
+        destination = argv[1];
     }
+
+    std::optional<std::string> cliDestination = handleCLIDestination(destination);
+
+    if(cliDestination != std::nullopt) {
+        b.goToSite(cliDestination.value());
+    }
+
 
     int input = 0;
 
@@ -409,7 +402,7 @@ int main(int argc, char** argv) {
                             locationToGo = DEFAULT_SEARCH_ENGINE + urlEncode(locationToGo);
                         }
                     }
-                    b.goToSite(locationToGo, true);
+                    b.goToSite(locationToGo);
                     ds.y = 0; // todo: make this part of state somewhere.
 
                 }
@@ -427,7 +420,7 @@ int main(int argc, char** argv) {
 
                 std::string inputQuery = handleUserInput(ds);
                 if(inputQuery != "?") { // TODO: Better handling
-                    b.goToSite(inputQuery,true);
+                    b.goToSite(inputQuery);
                     ds.y = 0; // todo: make this part of state somewhere.
                 } else {
                     b.goBack();
@@ -444,7 +437,7 @@ int main(int argc, char** argv) {
                 if(dir == BACKWARD) {
                     b.goBack();
                 } else {
-                    b.goToSite(b.getCurrentSite()->getMeta(),true);
+                    b.goToSite(b.getCurrentSite()->getMeta());
                     ds.y = 0; // todo: make this part of state somewhere.
                 }
             } else { // this should handle invalid status codes as well as 5x and 6x (for now)

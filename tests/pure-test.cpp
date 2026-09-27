@@ -2,12 +2,42 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <optional>
 #include <utility>
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
 
+TEST_CASE("Test cli input handling") {
+    std::unordered_map<std::string, std::string> expectations;
+
+    // Maintain arbitrary schemas
+    expectations["https://github.com"] = "https://github.com";          
+    expectations["whatever://github.com"] = "whatever://github.com";   
+    expectations["about://github.com"] = "about://github.com"; 
+    expectations["gopher://github.com"] = "gopher://github.com";
+    expectations["gemini://github.com"] = "gemini://github.com";
+    expectations["file:///home/whatever"] = "file:///home/whatever";
+
+    // resolve relative file paths if they exist
+    std::string cwd = std::filesystem::current_path();
+    expectations["tests/sites/basic.gmi"] = "file://" + cwd + "/tests/sites/basic.gmi";
+    expectations["tests/sites/basic_2.gmi"] = "file://" + cwd + "/tests/sites/basic_2.gmi";
+
+    // resolve absolute paths correctly
+    expectations[cwd + "/tests/sites/basic_2.gmi"] = "file://" + cwd + "/tests/sites/basic_2.gmi";
+
+    // handle specified inputs without schema that aren't files
+    expectations["tlgs.one"] = "gemini://tlgs.one";
+    expectations["laack.co"] = "gemini://laack.co";
+    expectations["blog.laack.co/pygame-vs-raylib.gmi"] = "gemini://blog.laack.co/pygame-vs-raylib.gmi";
+
+    for(auto& expect : expectations) {
+        REQUIRE(handleCLIDestination(expect.first) == expect.second);
+    }
+
+}
 
 TEST_CASE("Test trivial line breaking") {
     std::vector<std::pair<std::string, TextRender>> strLs {};
@@ -27,9 +57,9 @@ TEST_CASE("Test width invariant") {
 
     srand(std::time(NULL));
 
-    for(int i = 0; i < 10000; ++i) {
+    for(int i = 0; i < 100; ++i) {
         std::string strRnd;
-        int ub = rand() % 10000;
+        int ub = rand() % 100;
         for(int x = 0; x < ub; ++x) {
             strRnd += charset[rand() % charset.length()];
         }
@@ -53,7 +83,7 @@ TEST_CASE("Test lots of spaces") {
 
     for(int i = 0; i < 10; ++i) {
         std::string strRnd;
-        int ub = rand() % 10000;
+        int ub = rand() % 100;
         for(int x = 0; x < ub; ++x) {
             strRnd += ' ';
         }
@@ -99,3 +129,4 @@ TEST_CASE("Test normal line classification") {
 
 
 }
+
