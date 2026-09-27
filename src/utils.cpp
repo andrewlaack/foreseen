@@ -8,6 +8,7 @@
 #include "../include/errors.hpp"
 #include "../include/plaintext.hpp"
 #include "../include/preformatted.hpp"
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
@@ -308,10 +309,15 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
         }
     } else {
         try {
-            int dest = std::stoi(destination);
-            ret.linkNumber = dest;
-            ret.t = NUMBER_DESTINATION;
-            return ret;
+            std::size_t pos = 0;
+            int dest = std::stoi(destination,&pos);
+            if(pos == destination.size()) {
+                ret.linkNumber = dest;
+                ret.t = NUMBER_DESTINATION;
+                return ret;
+            } else {
+                throw std::invalid_argument("Unable to convert fully");
+            }
         } catch (...) {
             if(destination.find(":") == std::string::npos) {
                 if(destination.find('.') != std::string::npos && destination.find(' ') == std::string::npos) {

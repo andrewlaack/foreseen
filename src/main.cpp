@@ -347,7 +347,7 @@ int main(int argc, char** argv) {
 
     // TODO: Refactor to switch statement
     if(cliDestination.t != NO_DESTINATION) {
-        assert(cliDestination.linkNumber = 0);
+        assert(cliDestination.t == STRING_DESTINATION);
         b.goToSite(cliDestination.destination);
     }
 
@@ -383,6 +383,7 @@ int main(int argc, char** argv) {
         } else if(input == 'o') {
             std::string locationToGo = openPageHandler(ds);
             Destination destination = handleDestinationResolution(locationToGo, false); 
+
             switch(destination.t) {
                 case NUMBER_DESTINATION:
                     b.followLinkNumber(destination.linkNumber);

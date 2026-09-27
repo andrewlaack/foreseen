@@ -36,8 +36,14 @@ TEST_CASE("Test cli input handling") {
 
     for(auto& expect : expectations) {
         REQUIRE(handleDestinationResolution(expect.first, true).destination == expect.second);
+        REQUIRE(handleDestinationResolution(expect.first, true).t == STRING_DESTINATION);
     }
 
+}
+
+TEST_CASE("Edge cases for input handling") {
+    REQUIRE(handleDestinationResolution("123movies.com",false).t == STRING_DESTINATION);
+    REQUIRE(handleDestinationResolution("123movies.com",false).destination == "gemini://123movies.com");
 }
 
 TEST_CASE("Test user input handling for destinations") {
@@ -46,7 +52,19 @@ TEST_CASE("Test user input handling for destinations") {
         REQUIRE(handleDestinationResolution(std::to_string(i), false).linkNumber == i);
         REQUIRE(handleDestinationResolution(std::to_string(i), false).t == NUMBER_DESTINATION);
     }
-    
+
+    REQUIRE(handleDestinationResolution("gemini://test.com", false).t == STRING_DESTINATION);
+    REQUIRE(handleDestinationResolution("what is the capital of scotland?", false).t == STRING_DESTINATION);
+    REQUIRE(handleDestinationResolution("laack.co", false).t == STRING_DESTINATION);
+    REQUIRE(handleDestinationResolution("file:///test/whatever", false).t == STRING_DESTINATION);
+
+    REQUIRE(handleDestinationResolution("gemini://test.com", false).destination == "gemini://test.com");
+    // TODO: Should this return a string destination or should it just return something like LOOKUP?
+    REQUIRE(handleDestinationResolution("what is the capital of scotland?", false).destination == "gemini://tlgs.one/search?" + urlEncode("what is the capital of scotland?"));
+    REQUIRE(handleDestinationResolution("laack.co", false).destination == "gemini://laack.co");
+
+    REQUIRE(handleDestinationResolution("file:///test/whatever", false).destination == "file:///test/whatever");
+    REQUIRE(handleDestinationResolution("", false).t == NO_DESTINATION);
 }
 
 TEST_CASE("Test trivial line breaking") {
