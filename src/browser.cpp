@@ -327,6 +327,15 @@ void Browser::followLinkNumber(int linkToFollow) {
 void Browser::goBack() {
 
     int original = previousIdx;
+
+    // we track this because sometimes sites do this:
+        // start site
+        // input something
+        // redirect back to start site
+    // and in such cases, I'd expect back and forward to treat the same site as one site, 
+    // but only in cases where they are right next to each other without any other 2X status code sites
+    // between them. 
+
     std::string starting = getCurrentLink()->getLinkDestination().to_string();
 
     previousIdx -= 1;
