@@ -11,9 +11,7 @@
 #include "cache.hpp"
 #include "link.hpp"
 #include "utils.hpp"
-
-const int SITE_CACHE_LIMIT = 10;
-const int THREAD_NUM = 4;
+#include "shared.hpp"
 
 class Browser {
     private:

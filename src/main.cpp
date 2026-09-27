@@ -4,7 +4,6 @@
 #include <cassert>
 #include <cstddef>
 #include <filesystem>
-#include <iostream>
 #include <ncurses.h>
 #include <string>
 #include <unctrl.h>
@@ -19,11 +18,6 @@
 int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
     return (strLs.size() - (LINES - 2)) + 1; // this gives us two new lines at the end because the last line should contain a \n.
 }
-
-const int maxWidth = 80;
-
-const std::string DEFAULT_SEARCH_ENGINE="gemini://tlgs.one/search?";
-
 
 bool isValidUserInput(int uinput) {
     if ((uinput >= 0x20 && uinput <= 0x7E)) {

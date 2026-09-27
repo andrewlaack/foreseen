@@ -2,6 +2,7 @@
 #include <optional>
 #include <string>
 #include "../include/utils.hpp"
+#include "../include/shared.hpp"
 #include "../vendor/uri.hpp"
 #include <ncurses.h>
 

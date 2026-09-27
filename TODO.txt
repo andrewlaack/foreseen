@@ -63,3 +63,11 @@
         - I'm wary to make it too interactive as that might draw focus away from the text being read. 
 
 - bookmarks
+
+---
+
+- testing for all the ways to parse inputs / urls
+
+---
+
+- 

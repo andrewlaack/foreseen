@@ -6,9 +6,6 @@
 #include "line.hpp"
 #include "../vendor/uri.hpp"
 
-const int COLOR_LINK = 159;
-const int COLOR_PREFORMATTED = 201;
-
 struct TextRender {
     int color;
     bool isBold;

@@ -5,7 +5,6 @@
 #include <optional>
 #include <unordered_map>
 
-const int CACHE_SIZE = 500;
 
 class Cache {
     private:

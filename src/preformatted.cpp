@@ -1,5 +1,5 @@
 #include "../include/preformatted.hpp"
-#include "../include/utils.hpp"
+#include "../include/shared.hpp"
 #include <ncurses.h>
 
 Preformatted::Preformatted(std::string input) : text(input) {}

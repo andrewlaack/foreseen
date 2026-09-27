@@ -1,7 +1,7 @@
 #include "../include/cache.hpp"
 #include "../include/site.hpp"
+#include "../include/shared.hpp"
 #include <cassert>
-#include <iostream>
 #include <mutex>
 #include <optional>
 
