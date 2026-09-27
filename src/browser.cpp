@@ -1,5 +1,6 @@
 #include "../include/browser.hpp"
 #include <cassert>
+#include <iostream>
 #include <string>
 #include <thread>
 #include <unistd.h>
@@ -78,7 +79,7 @@ void Browser::refresh() {
     goToSite(getPriorUri().value().to_string(), false, true);
 }
 
-void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
+bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     Link* prior = nullptr;
 
@@ -108,7 +109,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
         openThread = std::thread(openUrl,  urlString);
 
         delete destination;
-        return;
+        return true;
     }
 
 
@@ -135,10 +136,8 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
         if(site != nullptr) {
             delete site;
         }
-        previousIdx += 1;
         delete destination;
-        goBack();
-        return;
+        return false;
     }
 
     if(addToHistory) {
@@ -174,6 +173,7 @@ void Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     }
 
     tryCacheTargets();
+    return true;
 }
 
 Identity Browser::getIdentity(uri uriInput) {
@@ -336,6 +336,8 @@ void Browser::goBack() {
     // but only in cases where they are right next to each other without any other 2X status code sites
     // between them. 
 
+    Link* cur = getCurrentLink();
+
     std::string starting = getCurrentLink()->getLinkDestination().to_string();
 
     previousIdx -= 1;
@@ -354,7 +356,9 @@ void Browser::goBack() {
                 return; // safely fail with rollback
             }
         }
-        goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+        if(!goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false)) {
+            previousIdx = original;
+        }
 
     } else {
         previousIdx = original;
@@ -364,6 +368,9 @@ void Browser::goBack() {
 void Browser::goForward() {
 
     int original = previousIdx;
+
+    Link* cur = getCurrentLink();
+
     std::string starting = getCurrentLink()->getLinkDestination().to_string();
 
     previousIdx += 1;
@@ -384,7 +391,9 @@ void Browser::goForward() {
             }
         }
 
-        goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false);
+        if(!goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false)) {
+            previousIdx = original;
+        }
     } else {
         previousIdx = original;
     }

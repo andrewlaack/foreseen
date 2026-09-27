@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstddef>
 #include <filesystem>
+#include <iostream>
 #include <ncurses.h>
 #include <optional>
 #include <string>
@@ -336,19 +337,19 @@ int main(int argc, char** argv) {
 
     b.goToSite("about://newtab"); // baseline site so we can guarantee we have a starting point that's working.
 
-
     std::string destination = "";
 
     if(argc > 1) {
         destination = argv[1];
     }
 
-    std::optional<std::string> cliDestination = handleDestinationResolution(destination, true);
+    Destination cliDestination = handleDestinationResolution(destination, true);
 
-    if(cliDestination != std::nullopt) {
-        b.goToSite(cliDestination.value());
+    // TODO: Refactor to switch statement
+    if(cliDestination.t != NO_DESTINATION) {
+        assert(cliDestination.linkNumber = 0);
+        b.goToSite(cliDestination.destination);
     }
-
 
     int input = 0;
 
@@ -381,33 +382,19 @@ int main(int argc, char** argv) {
 
         } else if(input == 'o') {
             std::string locationToGo = openPageHandler(ds);
-
-            // TODO: Check if this is an int and if it is try to use that link.
-            // if it's not, then try to go to domain (should consider having a default search engine too.)
-
-            try {
-                b.followLinkNumber(std::stoi(locationToGo));
-            } catch (...) {
-                if(locationToGo != "") {
-                    if(locationToGo.find(":") == std::string::npos) { // TODO: Is this how we which scheme was specified?
-                        
-                        // This still feels weak, but my urlencode(locationToGo) != locationToGo was worse
-                        // because that removed stuff like tlgs.one/robots.txt and stuff like that.
-                        //
-                        // TODO: Make this a pure function and then write tests for it to define expected behavior.
-
-                        if(locationToGo.find('.') != std::string::npos && locationToGo.find(' ') == std::string::npos) {
-                            locationToGo = "gemini://" + locationToGo;
-                        } else {
-                            locationToGo = DEFAULT_SEARCH_ENGINE + urlEncode(locationToGo);
-                        }
-                    }
-                    b.goToSite(locationToGo);
-                    ds.y = 0; // todo: make this part of state somewhere.
-
-                }
+            Destination destination = handleDestinationResolution(locationToGo, false); 
+            switch(destination.t) {
+                case NUMBER_DESTINATION:
+                    b.followLinkNumber(destination.linkNumber);
+                    ds.y = 0;
+                    break;
+                case STRING_DESTINATION:
+                    b.goToSite(destination.destination);
+                    ds.y = 0;
+                    break;
+                case NO_DESTINATION:
+                    break;
             }
-
         }
 
         // this is the loop where we deal with redirects and stuff like that. 

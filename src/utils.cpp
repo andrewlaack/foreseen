@@ -3,6 +3,7 @@
 #include "../include/quote.hpp"
 #include "../include/heading.hpp"
 #include "../include/link.hpp"
+#include "../include/shared.hpp"
 #include "../include/format-switch.hpp"
 #include "../include/errors.hpp"
 #include "../include/plaintext.hpp"
@@ -16,6 +17,7 @@
 #include <iostream>
 #include <regex>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <filesystem>
@@ -265,34 +267,64 @@ std::filesystem::path getHome()
     return home;
 }
 
-std::optional<std::string> handleDestinationResolution(std::string destination, bool isCli) {
+Destination handleDestinationResolution(std::string destination, bool isCli) {
+
+    Destination ret {};
+
+    if(destination == "") {
+        ret.t = NO_DESTINATION;
+        return ret;
+    }
 
     if(isCli) {
-        if(destination != "") {
-            if(std::filesystem::exists(destination)) {
-                std::string path = "file://" + std::filesystem::current_path().string() + "/" + destination;
+        if(std::filesystem::exists(destination)) {
+            std::string path = "file://" + std::filesystem::current_path().string() + "/" + destination;
 
-                if(destination.find('/') == std::size_t(0)) {
-                    path = "file://" + destination;
-                }
-
-                return path;
-
-            }  else {
-                std::string inputString = destination;
-                if(inputString.find("gemini://") == 0) {
-                    return destination;
-                } else if (inputString.find(':') == std::string::npos){
-                    return std::string {"gemini://"} + destination;
-                } else {
-                    return destination;
-                }
+            if(destination.find('/') == std::size_t(0)) {
+                path = "file://" + destination;
             }
 
-        } else {
-            return std::nullopt;
+            ret.destination = path;
+            ret.t = STRING_DESTINATION;
+            return ret;
+
+        }  else {
+            std::string inputString = destination;
+            if(inputString.find("gemini://") == 0) {
+                ret.destination = destination;
+                ret.t = STRING_DESTINATION;
+                return ret;
+            } else if (inputString.find(':') == std::string::npos){
+                ret.destination = std::string {"gemini://"} + destination;
+                ret.t = STRING_DESTINATION;
+                return ret;
+
+            } else {
+                ret.destination = destination;
+                ret.t = STRING_DESTINATION;
+                return ret;
+
+            }
         }
     } else {
-        throw NotImplemented();
+        try {
+            int dest = std::stoi(destination);
+            ret.linkNumber = dest;
+            ret.t = NUMBER_DESTINATION;
+            return ret;
+        } catch (...) {
+            if(destination.find(":") == std::string::npos) {
+                if(destination.find('.') != std::string::npos && destination.find(' ') == std::string::npos) {
+                    destination = "gemini://" + destination;
+                } else {
+                    destination = DEFAULT_SEARCH_ENGINE + urlEncode(destination);
+                }
+            }
+            ret.destination = destination;
+            ret.t = STRING_DESTINATION;
+            return ret;
+        }
+
     }
+    throw std::logic_error("Unexpected input.");
 }

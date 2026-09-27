@@ -27,4 +27,17 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
 void writeStringToFile(std::string toWrite, std::string filePath);
 std::string encodeAsFilename(uri link);
 std::filesystem::path getHome();
-std::optional<std::string> handleDestinationResolution(std::string destination, bool isCli);
+
+enum ReturnType {
+    NUMBER_DESTINATION,
+    STRING_DESTINATION,
+    NO_DESTINATION
+};
+
+struct Destination {
+    int linkNumber;
+    std::string destination;
+    ReturnType t;
+};
+
+Destination handleDestinationResolution(std::string destination, bool isCli);

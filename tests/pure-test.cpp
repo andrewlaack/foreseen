@@ -1,5 +1,6 @@
 // Testing pure functions
 #include <catch2/catch_test_macros.hpp>
+#include <climits>
 #include <cstdlib>
 #include <ctime>
 #include <filesystem>
@@ -34,9 +35,18 @@ TEST_CASE("Test cli input handling") {
     expectations["blog.laack.co/pygame-vs-raylib.gmi"] = "gemini://blog.laack.co/pygame-vs-raylib.gmi";
 
     for(auto& expect : expectations) {
-        REQUIRE(handleDestinationResolution(expect.first, true) == expect.second);
+        REQUIRE(handleDestinationResolution(expect.first, true).destination == expect.second);
     }
 
+}
+
+TEST_CASE("Test user input handling for destinations") {
+
+    for(int i = 0; i < 10000; ++i) {
+        REQUIRE(handleDestinationResolution(std::to_string(i), false).linkNumber == i);
+        REQUIRE(handleDestinationResolution(std::to_string(i), false).t == NUMBER_DESTINATION);
+    }
+    
 }
 
 TEST_CASE("Test trivial line breaking") {

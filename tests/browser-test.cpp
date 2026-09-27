@@ -25,3 +25,9 @@ TEST_CASE( "Local filesystem relative navigation" ) {
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
 }
 
+TEST_CASE("Test browser doesn't crash on invalid sites.") {
+    Browser b{};
+    b.goToSite("about://newtab");
+    b.goToSite("gemini://this_site_doesn_t_exsist");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+}
