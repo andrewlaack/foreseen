@@ -352,7 +352,7 @@ int main(int argc, char** argv) {
         }
 
     } else {
-        b.goToSite("gemini://tlgs.one",true);
+        b.goToSite(DEFAULT_SEARCH_ENGINE,true);
     }
 
 

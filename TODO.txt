@@ -70,4 +70,12 @@
 
 ---
 
-- 
+- background doesn't update with resizing when using a popup
+
+---
+
+- the following flow is strange:
+    - start on site
+    - enter information into a status code 10 input
+    - status code 10 sends me back to where I just was
+- basically, it's weird that pressing back would ever send you to the same page you were on before; same with forwards

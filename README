@@ -8,20 +8,30 @@ C++ compiler, make, openssl, ncurses
 
 Installation
 ============
-TBD
+Edit config.mk to match your local setup if necessary for building (gem-browser
+will be installed into /usr/local/bin by default).
 
+Then run the following command to build and install gem-browser:
+    make install
+
+(the above command may require root, depending on the installation location)
 
 Usage
 =====
-TBD
+Open a specific site:
+    gem-browser {url}
 
+(gemini:// is optional)
 
-Examples
-========
-TBD
+Open a local gemtext file:
+    gem-browser {path}
+
+Start gem-browser with your default search engine:
+    gem-browser
+
 
 Identities
-=========
+==========
 These are specified in:
     $HOME/.gb/{hostname}/client.crt
     $HOME/.gb/{hostname}/client.key
@@ -39,10 +49,8 @@ Example:
 
 (I recommend symlinking ~/.gb to somewhere you backup regularly)
 
-NOTE: You must have $HOME set in your shell.
-
 Example command to generate keys:
-    openssl req -x509 -newkey rsa:2048 -nodes -days 3650   -keyout client.key -out client.crt -subj "/CN=yourname"
+    openssl req -x509 -newkey rsa:2048 -nodes -days 3650   -keyout client.key -out client.crt -subj "/CN=localhost"
 
 Caching
 =======
