@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstddef>
 #include <ncurses.h>
+#include <locale.h>
 #include <string>
 #include <unctrl.h>
 #include <utility>
@@ -138,7 +139,7 @@ void draw(DrawState& ds) {
 
     } else {
         current = ds.bPtr->renderSite();
-        removeNonAscii(current);
+        // removeNonAscii(current);
         current = breakLines(current,std::min(COLS, maxWidth), COLS);
         ds.prior = current;
     }
@@ -322,6 +323,8 @@ int main(int argc, char** argv) {
 
     DrawState ds {};
     ds.bPtr = bPtr;
+
+    setlocale(LC_CTYPE, ""); // emojis and such
 
     initscr();
     set_escdelay(25);

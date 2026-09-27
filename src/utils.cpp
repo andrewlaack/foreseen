@@ -166,75 +166,129 @@ std::string getNewTab() {
     return st;
 }
 
+int u8len(unsigned char c) {
+    if (c < 0x80) {
+        return 1;
+    }
+    if ((c >> 5) == 0x6) {
+        return 2;
+    }
+    if ((c >> 4) == 0xE) {
+        return 3;
+    }
+    if ((c >> 3) == 0x1E) {
+        return 4;
+    }
+    return 1;
+}
+ 
+int u8width(const std::string& s, std::size_t i, int len) {
+    std::mbstate_t st {};
+    wchar_t wc;
+    if (std::mbrtowc(&wc, s.data() + i, len, &st) != (std::size_t)len) {
+        return 1;
+    }
+    int w = wcwidth(wc);
+    if (w < 0) {
+        return 0;
+    }
+    return w;
+}
+
+
+
 // WIDTH IS INCLUSIVE
 // WE ASSUME NO WIDER CHARS (E.G. replace tabs with spaces.)
+
 std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width, int cols) {
-
+ 
     std::vector<std::pair<std::string, TextRender>> res {};
-
+ 
     // DO NOT CHANGE THIS CODE.
     // If this code is changed the entire JS ecosystem will crash.
     // This is "load-bearing" code. Only the most sophisticated can implement this from
     // scratch, hence why it's left to the professionals.
-    
-    int leftPadAmount = (cols - width) / 2;
+ 
+    int leftPadAmount = std::max(0, (cols - width) / 2);
     std::string leftPadStr (leftPadAmount, ' ');
-
+ 
     if(width <= 0) {
         return res;
     }
-
+ 
     for(std::size_t i = 0;  i < strLs.size(); ++i) {
-
+ 
         std::string cstr = strLs[i].first;
-
+ 
         if(!strLs[i].second.shouldFold) {
-            cstr = cstr.substr(0,cols - leftPadAmount); // otherwise there's some funkiness at the end due to how ncurses renders stuff.
+            int limit = cols - leftPadAmount;
+            int w = 0;
+            std::size_t end = 0;
+            while(end < cstr.size()) {
+                int len = std::min(u8len(cstr[end]), (int)(cstr.size() - end));
+                int cw = u8width(cstr, end, len);
+                if(w + cw > limit) {
+                    break;
+                }
+                w += cw;
+                end += len;
+            }
+            cstr = cstr.substr(0, end); // otherwise there's some funkiness at the end due to how ncurses renders stuff.
             res.push_back(std::pair<std::string,TextRender> {leftPadStr + cstr, strLs[i].second});
             continue;
         }
-
+ 
         std::string current = "";
+        int curWidth = 0;
         int lastSpace = -1;
-
-        for(int x = 0; x < (int)cstr.size(); ++x) {
+        int lastSpaceWidth = 0;
+ 
+        for(int x = 0; x < (int)cstr.size(); ) {
             if(cstr[x] == '\n') {
                 res.push_back(std::pair<std::string,TextRender> {leftPadStr + current, strLs[i].second});
                 current = "";
+                curWidth = 0;
                 lastSpace = -1;
+                ++x;
                 continue;
             }
-            if((int)current.size() < width) {
-                current.push_back(cstr[x]);
-                if(cstr[x] == ' ') {
-                    lastSpace = current.size()-1;
-                }
-            } else {
-
+ 
+            int len = std::min(u8len(cstr[x]), (int)cstr.size() - x);
+            int w = u8width(cstr, x, len);
+ 
+            if(w > 0 && curWidth > 0 && curWidth + w > width) {
+ 
                 std::string toPush = current;
-
+ 
                 if(lastSpace != -1) {
                     toPush = current.substr(0,lastSpace+1);
                     current = current.substr(lastSpace+1);
-                    current.push_back(cstr[x]);
+                    curWidth = curWidth - lastSpaceWidth;
                 } else {
                     current = "";
-                    current.push_back(cstr[x]);
+                    curWidth = 0;
                 }
-
+ 
                 res.push_back(std::pair<std::string,TextRender> {leftPadStr + toPush,strLs[i].second});
-                lastSpace = (cstr[x] == ' ') ? current.size() - 1 : -1;
+                lastSpace = -1;
             }
+ 
+            current.append(cstr, x, len);
+            curWidth += w;
+            if(cstr[x] == ' ') {
+                lastSpace = current.size() - 1;
+                lastSpaceWidth = curWidth;
+            }
+            x += len;
         }
         if(current.size() > 0) {
             res.push_back(std::pair<std::string,TextRender> {leftPadStr + current,strLs[i].second});
             current = "";
         }
     }
-
+ 
     return res;
 }
-
 
 void writeStringToFile(std::string toWrite, std::string filePath) {
     std::filesystem::path path{filePath};
