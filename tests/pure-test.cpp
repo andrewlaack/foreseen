@@ -59,7 +59,6 @@ TEST_CASE("Test user input handling for destinations") {
     REQUIRE(handleDestinationResolution("file:///test/whatever", false).t == STRING_DESTINATION);
 
     REQUIRE(handleDestinationResolution("gemini://test.com", false).destination == "gemini://test.com");
-    // TODO: Should this return a string destination or should it just return something like LOOKUP?
     REQUIRE(handleDestinationResolution("what is the capital of scotland?", false).destination == "gemini://tlgs.one/search?" + urlEncode("what is the capital of scotland?"));
     REQUIRE(handleDestinationResolution("laack.co", false).destination == "gemini://laack.co");
 

@@ -3,10 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <filesystem>
-#include <iostream>
 #include <ncurses.h>
-#include <optional>
 #include <string>
 #include <unctrl.h>
 #include <utility>
@@ -335,9 +332,6 @@ int main(int argc, char** argv) {
 
     initColors();
 
-    // TODO: Would it be possible to have this done by default so our tests can be more consistent with actual usage
-    // where we expect this to default happen?
-
     std::string destination = "";
 
     if(argc > 1) {
@@ -346,9 +340,8 @@ int main(int argc, char** argv) {
 
     Destination cliDestination = handleDestinationResolution(destination, true);
 
-    // TODO: Refactor to switch statement
     if(cliDestination.t != NO_DESTINATION) {
-        assert(cliDestination.t == STRING_DESTINATION);
+        assert(cliDestination.t == STRING_DESTINATION); // we don't allow numeric link following on startup.
         b.goToSite(cliDestination.destination);
     }
 
@@ -438,7 +431,7 @@ int main(int argc, char** argv) {
         if(clk != nullptr) {
             ds.header = clk->getLinkDestination().to_string();
         } else {
-            ds.header = "Welcome!";
+            ds.header = "gem-browser";
         }
 
         auto* st = b.getCurrentSite();
