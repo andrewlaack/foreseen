@@ -343,7 +343,7 @@ int main(int argc, char** argv) {
         destination = argv[1];
     }
 
-    std::optional<std::string> cliDestination = handleCLIDestination(destination);
+    std::optional<std::string> cliDestination = handleDestinationResolution(destination, true);
 
     if(cliDestination != std::nullopt) {
         b.goToSite(cliDestination.value());

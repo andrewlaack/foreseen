@@ -34,7 +34,7 @@ TEST_CASE("Test cli input handling") {
     expectations["blog.laack.co/pygame-vs-raylib.gmi"] = "gemini://blog.laack.co/pygame-vs-raylib.gmi";
 
     for(auto& expect : expectations) {
-        REQUIRE(handleCLIDestination(expect.first) == expect.second);
+        REQUIRE(handleDestinationResolution(expect.first, true) == expect.second);
     }
 
 }
