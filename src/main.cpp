@@ -402,7 +402,13 @@ int main(int argc, char** argv) {
             } catch (...) {
                 if(locationToGo != "") {
                     if(locationToGo.find(":") == std::string::npos) { // TODO: Is this how we which scheme was specified?
-                        if(locationToGo.find('.') != std::string::npos && urlEncode(locationToGo) == locationToGo) { // hmm, this feels weak. Like I can't search something if I add a period?
+                        
+                        // This still feels weak, but my urlencode(locationToGo) != locationToGo was worse
+                        // because that removed stuff like tlgs.one/robots.txt and stuff like that.
+                        //
+                        // TODO: Make this a pure function and then write tests for it to define expected behavior.
+
+                        if(locationToGo.find('.') != std::string::npos && locationToGo.find(' ') == std::string::npos) {
                             locationToGo = "gemini://" + locationToGo;
                         } else {
                             locationToGo = DEFAULT_SEARCH_ENGINE + urlEncode(locationToGo);
@@ -446,6 +452,8 @@ int main(int argc, char** argv) {
                     b.goToSite(b.getCurrentSite()->getMeta(),true);
                     ds.y = 0; // todo: make this part of state somewhere.
                 }
+            } else { // this should handle invalid status codes as well as 5x and 6x (for now)
+                b.goBack();
             }
         }
 
