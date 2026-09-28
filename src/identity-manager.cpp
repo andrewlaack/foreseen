@@ -24,9 +24,14 @@ Identity IdentityManager::getIdentityForURI(uri destination) {
     }
     fs::path dir = certDir / name;
 
-    if (fs::exists(dir / "client.crt") && fs::exists(dir / "client.key")) {
-        return Identity{(dir / "client.key").string(), (dir / "client.crt").string()};
+    try {
+        if (fs::exists(dir / "client.crt") && fs::exists(dir / "client.key")) {
+            return Identity{(dir / "client.key").string(), (dir / "client.crt").string()};
+        }
     }
-
+    catch (const fs::filesystem_error& e){
+        // this can happen if the domain is stupidly long.
+        // in such cases, there are bigger issues.
+    }
     return Identity{"", ""};
 }

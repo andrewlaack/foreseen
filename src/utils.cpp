@@ -424,3 +424,7 @@ void sanitizeCharactersToDraw(std::vector<std::pair<std::string, TextRender>>& s
     }
     return;
 }
+
+bool isSendableIfGeminiUrl(const uri& u) {
+    return u.get_scheme() != "gemini" || u.to_string().size() <= 1024;
+}

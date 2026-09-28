@@ -1,5 +1,6 @@
 #include "../include/site.hpp"
 #include <algorithm>
+#include <cstdint>
 #include <string>
 
 Site::Site(std::string h, std::string b) : body(b), header(h) {}
@@ -12,8 +13,12 @@ std::string Site::getBody() {
     return body;
 }
 uint32_t Site::getStatusCode() {
-    uint32_t statusCode = std::stoi(header.substr(0,2));
-    return statusCode;
+    try {
+        uint32_t statusCode = std::stoi(header.substr(0,2));
+        return statusCode;
+    } catch (...) {
+        return uint32_t {41};
+    }
 }
 
 std::string Site::getMeta() {

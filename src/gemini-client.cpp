@@ -15,6 +15,10 @@
 
 Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string keyPath) {
 
+    if (!isSendableIfGeminiUrl(link.getLinkDestination())) {
+        return nullptr;
+    }
+
     std::string host = link.getLinkDestination().get_host();
     std::string req  = link.getLinkDestination().to_string() + "\r\n";
     std::string conn = host + ":1965";
@@ -120,7 +124,7 @@ Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPat
         try {
             return getNetworkedSite(link, crtPath, keyPath);
         } catch (...) {
-            auto* unreach = new Site{"", ""};
+            auto* unreach = new Site{"41 server unreachable", ""};
             unreach->setUnreachable();
             return unreach;
         }

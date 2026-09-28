@@ -99,3 +99,7 @@
 ---
 
 - finalize name + renaming
+
+---
+
+- fix up the config.mk and makefile

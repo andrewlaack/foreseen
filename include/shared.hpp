@@ -14,4 +14,11 @@ const int COLOR_PREFORMATTED = 201; // color used for preformatted text regions
  // We guarantee responses can be at least the size limit, and at most 4096 additional bytes
 const int RESPONSE_SIZE_LIMIT_MB = 5;
 
-const char openUnknownScheme [] = "xdg-open";
+// since the xdg-open stuff is in a seperate process nothing will go to stdout
+// even in the echo case.
+
+#ifdef DEBUG_MODE
+    const char openUnknownScheme[] = "echo";
+#else
+    const char openUnknownScheme[] = "xdg-open";
+#endif
