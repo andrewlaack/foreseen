@@ -15,7 +15,6 @@
 #define CTRL(c) ((c) & 037)
 #endif
 
-
 int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
     return (strLs.size() - (LINES - 2)) + 1; // this gives us two new lines at the end because the last line should contain a \n.
 }

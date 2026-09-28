@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include "../include/gemini-client.hpp"
 #include "../include/site.hpp"
+#include "../include/shared.hpp"
 #include <chrono>
 #include "../include/utils.hpp"
 #include "../include/errors.hpp"
@@ -73,13 +74,22 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
     std::string response;
     char buf[4096];
     int n;
+
+    int sizeRemaining = RESPONSE_SIZE_LIMIT_MB * 1024 * 1024;
+    bool truncated = false;
+
     while ((n = BIO_read(bio, buf, sizeof buf)) > 0) {
         response.append(buf, n);
+
+        sizeRemaining -= n;
+        if(sizeRemaining <= 0) {
+            truncated = true;
+            break;
+        }
     }
 
     BIO_free_all(bio);
     SSL_CTX_free(ctx);
-
 
     std::size_t nl = response.find('\n');
     if (nl == std::string::npos) {
@@ -90,6 +100,9 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
     if (end > 0 && response[end - 1] == '\r') {
         end -= 1;
     }
+
+    // TODO: should we track when these are truncated? We have a variable for that
+    // but nothign about it in our site. 
 
     std::string status = response.substr(0, end);
     std::string body   = response.substr(nl + 1);

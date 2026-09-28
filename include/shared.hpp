@@ -10,3 +10,6 @@ const int maxWidth = 80;            // max text width (left and right will be pa
 const int CACHE_SIZE = 500;         // max number of elements in history cache and prefetch cache (500 for both)
 const int COLOR_LINK = 159;         // color used for links
 const int COLOR_PREFORMATTED = 201; // color used for preformatted text regions
+
+ // We guarantee responses can be at least the size limit, and at most 4096 additional bytes
+const int RESPONSE_SIZE_LIMIT_MB = 5;

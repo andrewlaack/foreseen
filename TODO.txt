@@ -99,3 +99,7 @@
         - what are those?
 - this is messed up too:
     - gemini://supernovas.space/gemlog/2023-08-19-gemini-page-counter.gmi
+
+---
+
+- some sort of rpc thing to do language tranlsations
