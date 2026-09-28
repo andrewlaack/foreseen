@@ -277,4 +277,3 @@ TEST_CASE("Crash test rng") {
     }
 
 }
-

@@ -81,3 +81,18 @@ TEST_CASE("Test encoding allows relative linking with : in parameter") {
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?https%3A%2F%2Ftest.com");
 }
 
+
+
+
+
+TEST_CASE("Sanitize characters to draw  tests") {
+    Browser b {};
+    bool res = b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/line-return.gmi");
+    REQUIRE(res);
+    auto ls = b.renderSite();
+    sanitizeCharactersToDraw(ls);
+    for(auto& line : ls) {
+        REQUIRE(line.first.find('\r') == std::string::npos);
+    }
+}
+

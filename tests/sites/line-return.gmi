@@ -1,0 +1,46 @@
+
+# 🪐 Hidden Nexus
+A social place in Gemspace!
+
+=> /register/ 🌱 Register
+=> /feed 📃 Just Browsing!
+
+
+### What is the Hidden Nexus?
+The Hidden Nexus is a place in Gemspace that allows capsuleers, Geminauts, and other explorers of Gemspace to collaborate and communicate together. It was designed from the beginning to provide a clean UI with granular settings to customize the user experience to ones needs.
+        
+        Register if you would like, or just browse the existing feed!
+        Established 2023-08-24, we are currently home to 53 registered users!
+        
+        With a friendly user experience, powerful settings, and many planned features, it speaks for itself.
+
+
+## 📰 News
+
+### 2026-01-15
+=> gemini://hidden.nexus/gcl/content/ Gemini Capsule Library released!
+----------------
+Hidden Nexus' dynamic forms and interactivity have been enabled by a project I've made called Gemini Capsule Library!
+This Python library allows for easy creation of dynamic forms, as well as the ability to extend functionality to create things such as account registration.
+
+If anyone has any questions on how to use this project, please feel free to email me or post about it!
+----------------
+### 2023-08-23
+=> /captchasubmission/ We're looking for more knowledge questions!
+----------------
+As you've seen when registering, you're asked a kind of captcha from a list of question/answer pairs.
+I've tasked myself and friends with thinking of the ones currently being used, but I would like to ask anyone to contribute!
+
+Registered users can click on title of this news bulletin and submit a question answer pair!
+These can be any kind of question category (logic, math, reading comprehention, etc.) as long as they are relatively ACCESSIBLE. In the style of the existing pairs.
+
+I'll go through them and add ones I like to the database of question/answer pairs!
+----------------
+
+
+
+
+=> /register/ Register
+----------------
+=> mailto:abraxas@hidden.nexus Contact
+=> /about.gmi ℹ️ About

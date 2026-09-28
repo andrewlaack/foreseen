@@ -2,6 +2,7 @@
 #include "../include/utils.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <chrono>
 #include <cstdint>
 #include <ncurses.h>
@@ -34,6 +35,7 @@ void initColors() {
         }
     }
 }
+
 struct DrawState {
     std::vector<std::pair<std::string, TextRender>> prior;
     Browser* bPtr;
@@ -117,10 +119,15 @@ void draw(DrawState& ds) {
 
     if(cs != nullptr && (cs->getStatusCode() < 20 || cs->getStatusCode() > 29)) {
         current = ds.prior;
+        current = breakLines(current,std::min(COLS, maxWidth), COLS);
+        sanitizeCharactersToDraw(current);
 
     } else {
+
         current = ds.bPtr->renderSite();
         current = breakLines(current,std::min(COLS, maxWidth), COLS);
+        sanitizeCharactersToDraw(current);
+
         ds.prior = current;
     }
 
