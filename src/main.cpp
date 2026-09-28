@@ -114,28 +114,18 @@ void draw(DrawState& ds) {
         return;
     }
 
-    auto& current = ds.prior;
     auto* cs = ds.bPtr->getCurrentSite();
 
-    if(cs != nullptr && (cs->getStatusCode() < 20 || cs->getStatusCode() > 29)) {
-        current = ds.prior;
-        current = breakLines(current,std::min(COLS, maxWidth), COLS);
-        sanitizeCharactersToDraw(current);
-
-    } else {
-
-        current = ds.bPtr->renderSite();
-        current = breakLines(current,std::min(COLS, maxWidth), COLS);
-        sanitizeCharactersToDraw(current);
-
-        ds.prior = current;
+    if (!(cs != nullptr && (cs->getStatusCode() < 20 || cs->getStatusCode() > 29))) {
+        ds.prior = ds.bPtr->renderSite();
     }
 
+    auto current = breakLines(ds.prior, std::min(COLS, maxWidth), COLS);
+    sanitizeCharactersToDraw(current);
     if(ds.toLowest) {
         ds.y = lowestPos(current);
         ds.toLowest = false;
     }
-
 
     ds.y = std::max(0,std::min(ds.y,lowestPos(current)));
 
