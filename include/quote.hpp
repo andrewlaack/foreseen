@@ -3,7 +3,7 @@
 
 class Quote : public Line {
     private:
-        std::string text = "";
+        std::string textToRender;
     public:
         Quote(std::string text);
         std::string textToDraw() override;

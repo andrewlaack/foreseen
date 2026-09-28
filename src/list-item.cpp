@@ -1,9 +1,14 @@
 #include "../include/list-item.hpp"
+#include "../include/utils.hpp"
 
-ListItem::ListItem(std::string input)  : text(input) {}
+ListItem::ListItem(std::string input) {
+    textToRender = input.substr(1);
+    textToRender = stripLeadingWhiteSpace(textToRender);
+    textToRender = "* " + textToRender;
+}
 
 std::string ListItem::textToDraw() {
-    return text + "\n";
+    return textToRender;
 }
 
 int ListItem::getColor() {

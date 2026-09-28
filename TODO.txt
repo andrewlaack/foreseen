@@ -6,7 +6,6 @@
         - lynx just yoinks the final part of the path, it seems
 - way to show where links go
 - text search
-- character encoding options
 - should reset y value when switching between some tabs
     - persistent memory sometimes though. 
         - perhaps on the basis of a page? sort of wonder about that though; like should this be stored in browser and then perhaps
@@ -79,3 +78,8 @@
     - enter information into a status code 10 input
     - status code 10 sends me back to where I just was
 - basically, it's weird that pressing back would ever send you to the same page you were on before; same with forwards
+
+---
+
+- bookmarks:
+    - 

@@ -3,7 +3,7 @@
 
 class ListItem : public Line {
     private:
-        std::string text = "";
+        std::string textToRender;
     public:
         ListItem(std::string text);
         std::string textToDraw() override;

@@ -1,5 +1,6 @@
 #include "../include/heading.hpp"
 #include "../include/errors.hpp"
+#include "../include/utils.hpp"
 #include <ncurses.h>
 
 Heading::Heading(std::string text) : actualText(text) {
@@ -7,22 +8,32 @@ Heading::Heading(std::string text) : actualText(text) {
     // TODO: Actually handle whitespace correctly here.
     if(text.substr(0,3) == "###") {
         headingLevel = 3;
-        return;
+        toDraw = actualText.substr(3);
     }
 
-    if(text.substr(0,2) == "##") {
+    else if(text.substr(0,2) == "##") {
         headingLevel = 2;
-        return;
+        toDraw = actualText.substr(2);
+    }
+    else if(text.substr(0,1) == "#") {
+        headingLevel = 1;
+        toDraw = actualText.substr(1);
     }
 
-    if(text.substr(0,1) == "#") {
-        headingLevel = 1;
-        return;
-    }
+    toDraw = stripLeadingWhiteSpace(toDraw);
 }
 
 std::string Heading::textToDraw() {
-    return actualText;
+    switch (headingLevel) {
+        case 3:
+            return "### " + toDraw;
+        case 2:
+            return "## " + toDraw;
+        case 1:
+            return "# " + toDraw;
+        default:
+            throw NotImplemented();
+    }
 }
 int Heading::getColor() {
     switch (headingLevel) {

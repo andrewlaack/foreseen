@@ -157,3 +157,43 @@ TEST_CASE("Test normal line classification") {
 
 }
 
+TEST_CASE("Test line parsing handles whitespace correctly") {
+
+    std::unordered_map<std::string, LineType> prefixes {};
+
+    prefixes["*"]  = LIST_ITEM;
+    prefixes[">"] = QUOTE;
+    prefixes["#"] = H1;
+    prefixes["##"] = H2;
+    prefixes["###"] = H3;
+
+    std::vector<std::string> options{" ", "\t"};
+
+    for(auto& prefix: prefixes) {
+        for(int x = 0; x < 100; ++x) {
+
+            std::string acc = options[rand() % 2];
+
+            for(int i = 0; i < 1000; ++i) {
+                std::string check = prefix.first +  acc + "test line content";
+                auto ln = lineToLine(check,  std::nullopt, 1, false);
+                REQUIRE(ln->type() == prefix.second);
+                REQUIRE(ln->textToDraw() == prefix.first + " test line content");
+                acc += options[rand() % 2];
+            }
+        }
+    }
+
+    std::string acc = options[rand() % 2];
+
+    // TODO: Should add tests for non-human readable links as well. 
+    for(int x = 0; x < 10; ++x) {
+        for(int i = 0; i < 10; ++i) {
+            std::string check = "=>" + acc + "gemini://laack.co" + acc + "link human text";
+            auto ln = lineToLine(check,  std::nullopt, 1, false);
+            REQUIRE(ln->type() == LINK);
+            REQUIRE(ln->textToDraw() == "[1] link human text");
+            acc += options[rand() % 2];
+        }
+    }
+}

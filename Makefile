@@ -10,22 +10,22 @@ install: build
 	cp gem-browser.out ${PREFIX}/bin/gem-browser
 
 clean:
-	rm -rf test.out gem-browser.out
+	rm -rf test*.out gem-browser.out
 
 browser-test:
-	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test.out
-	./test.out
-	rm test.out
+	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test1.out
+	./test1.out
+	rm test1.out
 
 fetch-test:
-	${TCOMMAND_P} tests/fetch-test.cpp ${TCOMMAND_S} -o test.out
-	./test.out
-	rm test.out
+	${TCOMMAND_P} tests/fetch-test.cpp ${TCOMMAND_S} -o test2.out
+	./test2.out
+	rm test2.out
 
 pure-test:
-	${TCOMMAND_P} tests/pure-test.cpp ${TCOMMAND_S} -o test.out
-	./test.out
-	rm test.out
+	${TCOMMAND_P} tests/pure-test.cpp ${TCOMMAND_S} -o test3.out
+	./test3.out
+	rm test3.out
 
 
 test: pure-test browser-test fetch-test

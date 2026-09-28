@@ -59,6 +59,15 @@ std::string readFileToString(std::string filePath) {
     return sstr.str();
 }
 
+std::string stripLeadingWhiteSpace(std::string& input) {
+    int x = 0;
+
+    while(x < input.size() && isWhiteSpace(input, x)) {
+        x += 1;
+    }
+    return input.substr(x);
+}
+
 bool isWhiteSpace(std::string& line, int idx) {
     return line[idx] == ' ' || line[idx] == '\t';
 }

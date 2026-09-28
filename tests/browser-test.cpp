@@ -26,6 +26,14 @@ TEST_CASE( "Local filesystem relative navigation" ) {
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
 }
 
+TEST_CASE ("Local filesystems navigation via links") {
+    Browser b{};
+    b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/basic.gmi", true);
+    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
+    b.followLinkNumber(1);
+    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
+}
+
 TEST_CASE("Test browser doesn't crash on invalid sites.") {
     Browser b{};
     b.goToSite("gemini://this_site_doesn_t_exsist");

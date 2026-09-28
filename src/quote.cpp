@@ -1,10 +1,15 @@
 #include "../include/quote.hpp"
+#include "../include/utils.hpp"
 #include <ncurses.h>
 
-Quote::Quote(std::string input) : text(input) {}
+Quote::Quote(std::string input) {
+    textToRender = input.substr(1);
+    textToRender = stripLeadingWhiteSpace(textToRender);
+    textToRender = "> " + textToRender;
+}
 
 std::string Quote::textToDraw() {
-    return text + "\n";
+    return textToRender;
 }
 
 int Quote::getColor() {

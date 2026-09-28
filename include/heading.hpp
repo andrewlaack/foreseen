@@ -8,6 +8,7 @@
 class Heading : public Line {
         int headingLevel = 1;
         std::string actualText;
+        std::string toDraw;
     public:
         Heading(std::string text);
         std::string textToDraw() override;

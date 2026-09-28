@@ -44,6 +44,17 @@ Link::Link(std::string text, std::optional<uri> prior, int linkNumber) {
     } else {
         linkDestination = parseDestination(afterWhite, prior);
     }
+
+    if(linkText != std::nullopt) {
+        std::string tmp = linkText.value();
+        std::string rdlt = stripLeadingWhiteSpace(tmp);
+
+        renderedText = "[" + std::to_string(linkNumber) + "] " + rdlt;
+    } else {
+        std::string tmp = linkDestination.to_string();
+        std::string rdlt = stripLeadingWhiteSpace(tmp);
+        renderedText = "[" + std::to_string(linkNumber) + "] " + linkDestination.to_string();
+    }
 }
 
 uri Link::parseDestination(std::string destination, std::optional<uri> prior) {
@@ -87,11 +98,7 @@ std::optional<std::string> Link::getLinkText() {
 }
 
 std::string Link::textToDraw() {
-    if(linkText != std::nullopt) {
-        return "[" + std::to_string(linkNumber) + "] " + linkText.value() + "\n";
-
-    }
-    return "[" + std::to_string(linkNumber) + "] " + linkDestination.to_string() + "\n";
+    return renderedText;
 }
 
 int Link::getColor() {
