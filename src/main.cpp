@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <cstddef>
 #include <cstdint>
 #include <ncurses.h>
 #include <locale.h>
@@ -27,30 +26,6 @@ bool isValidUserInput(int uinput) {
     }
     return false;
 }
-
-// we do this because this is built against ncurses, would be nice to do away w/ this
-// bc ppl use lots of emojis on gemini sites.
-
-void removeNonAscii(std::vector<std::pair<std::string, TextRender>>& strLs) {
-    for(std::size_t i = 0; i < strLs.size(); ++i) {
-
-        std::string& s = strLs[i].first;
-
-        std::string out;
-        for (int c: s)
-            if ((c >= 0x20 && c <= 0x7E) || (c == '\n')) {
-                out += c;
-            } else if (c == '\t') {
-                out += "    "; // \t is a larger character and fucks with breaklines.
-            }
-
-        strLs[i].first = out;
-    }
-    return;
-}
-
-
-
 void initColors() {
     if(has_colors()) {
         start_color();
@@ -121,6 +96,9 @@ void drawInputBox(std::string text, std::string userInput) {
     addstr(userTextToRender.c_str());
 
 }
+uint64_t getCurrentTime() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
 
 void draw(DrawState& ds) {
 
@@ -143,7 +121,6 @@ void draw(DrawState& ds) {
 
     } else {
         current = ds.bPtr->renderSite();
-        // removeNonAscii(current);
         current = breakLines(current,std::min(COLS, maxWidth), COLS);
         ds.prior = current;
     }
@@ -205,7 +182,7 @@ void draw(DrawState& ds) {
     }
 
     if(ds.issueText != "") {
-        uint64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        uint64_t now = getCurrentTime();
         if(ds.timeToClearIssueText <= now) {
             ds.issueText = "";
         } else {
@@ -339,7 +316,7 @@ void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
     bool visitSuccess = b.goToSite(site);
     if(!visitSuccess) {
         ds.issueText = "Unable to access the requested site.";
-        ds.timeToClearIssueText = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count() + 1000;
+        ds.timeToClearIssueText = getCurrentTime() + 1000;
     } else {
         ds.y = 0; 
     }

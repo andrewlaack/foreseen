@@ -81,5 +81,13 @@
 
 ---
 
-- bookmarks:
-    - 
+- bookmarks
+
+---
+
+- gotosite should return status code on failure to be shown to users
+    - this will aid in understanding:
+        - server unreachable
+        - request rejected
+        - cert issues
+        - ...
