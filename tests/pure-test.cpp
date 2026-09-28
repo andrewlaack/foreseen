@@ -179,7 +179,7 @@ TEST_CASE("Test line parsing handles whitespace correctly") {
                 std::string check = prefix.first +  acc + "test line content";
                 auto ln = lineToLine(check,  std::nullopt, 1, false);
                 REQUIRE(ln->type() == prefix.second);
-                REQUIRE(ln->textToDraw() == prefix.first + " test line content");
+                REQUIRE(ln->textToDraw() == prefix.first + " test line content\n");
                 acc += options[rand() % 2];
             }
         }
@@ -192,7 +192,7 @@ TEST_CASE("Test line parsing handles whitespace correctly") {
             std::string check = "=>" + acc + "gemini://laack.co" + acc + "link human text";
             auto ln = lineToLine(check,  std::nullopt, 1, false);
             REQUIRE(ln->type() == LINK);
-            REQUIRE(ln->textToDraw() == "[1] link human text");
+            REQUIRE(ln->textToDraw() == "[1] link human text\n");
             acc += options[rand() % 2];
         }
     }

@@ -102,7 +102,7 @@ std::optional<std::string> Link::getLinkText() {
 }
 
 std::string Link::textToDraw() {
-    return renderedText;
+    return renderedText + "\n";
 }
 
 int Link::getColor() {

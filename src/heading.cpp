@@ -26,11 +26,11 @@ Heading::Heading(std::string text) : actualText(text) {
 std::string Heading::textToDraw() {
     switch (headingLevel) {
         case 3:
-            return "### " + toDraw;
+            return "### " + toDraw + "\n";
         case 2:
-            return "## " + toDraw;
+            return "## " + toDraw + "\n";
         case 1:
-            return "# " + toDraw;
+            return "# " + toDraw + "\n";
         default:
             throw NotImplemented();
     }

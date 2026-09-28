@@ -3,7 +3,7 @@
 Plaintext::Plaintext(std::string input) : text(input) {}
 
 std::string Plaintext::textToDraw() {
-    return text;
+    return text + "\n";
 }
 
 int Plaintext::getColor() {

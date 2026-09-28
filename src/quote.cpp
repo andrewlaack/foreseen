@@ -9,7 +9,7 @@ Quote::Quote(std::string input) {
 }
 
 std::string Quote::textToDraw() {
-    return textToRender;
+    return textToRender + "\n";
 }
 
 int Quote::getColor() {

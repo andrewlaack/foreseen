@@ -5,7 +5,7 @@
 Preformatted::Preformatted(std::string input) : text(input) {}
 
 std::string Preformatted::textToDraw() {
-    return text;
+    return text + "\n";
 }
 
 int Preformatted::getColor() {

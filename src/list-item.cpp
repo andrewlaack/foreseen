@@ -8,7 +8,7 @@ ListItem::ListItem(std::string input) {
 }
 
 std::string ListItem::textToDraw() {
-    return textToRender;
+    return textToRender + "\n";
 }
 
 int ListItem::getColor() {
