@@ -72,3 +72,12 @@ TEST_CASE("Test page downloading.") {
     REQUIRE(out == b.getCurrentSite()->getBody());
     REQUIRE(std::filesystem::remove(destination));
 }
+
+TEST_CASE("Test encoding allows relative linking with : in parameter") {
+    Browser b{};
+    b.goToSite("gemini://tlgs.one/search");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search");
+    b.goToSite("?https://test.com");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?https%3A%2F%2Ftest.com");
+}
+

@@ -117,7 +117,6 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     Site* site = nullptr;
 
-
     // Caching: when there's an identity we don't read from cache and we don't add sites to the cache
     // additionally, when performing prefetch caching, we check if there's an identity for the site and if there is we 
     // don't send a request to it. This means prefetch caching is only used for un-authenticated hosts.

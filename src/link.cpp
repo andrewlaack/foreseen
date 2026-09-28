@@ -60,7 +60,11 @@ Link::Link(std::string text, std::optional<uri> prior, int linkNumber) {
 uri Link::parseDestination(std::string destination, std::optional<uri> prior) {
 
     // TODO: Not sure if this is right w/ how file paths work.
-    if(destination.find(":") == std::string::npos) {
+    
+    // TODO: There's a mess here to untangle. Like I think there might be some relative links that'll get fucked by this.
+    // despite  that, this is a requirement to get search parameters working correctly which are probably more important.
+
+    if(destination.find(":") == std::string::npos || destination[0] == '?') {
         if(prior != std::nullopt) {
             // query parameter special casing
             if(destination.substr(0,1) == "?") {
