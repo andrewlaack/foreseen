@@ -440,7 +440,7 @@ int main(int argc, char** argv) {
         if(clk != nullptr) {
             ds.header = clk->getLinkDestination().to_string();
         } else {
-            ds.header = "gemi";
+            ds.header = "foreseen";
         }
 
         auto* st = b.getCurrentSite();

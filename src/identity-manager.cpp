@@ -16,7 +16,7 @@ Identity IdentityManager::getIdentityForURI(uri destination) {
     }
 
     namespace fs = std::filesystem;
-    fs::path certDir = fs::path(getHome()) / ".gemi";
+    fs::path certDir = fs::path(getHome()) / ".foreseen";
     std::string host = destination.get_host();
     std::string name = host;
     if (destination.get_port() && destination.get_port() != 1965) {

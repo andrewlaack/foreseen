@@ -49,7 +49,7 @@
 - auto-follow redirects based on domain?
     - A/y/n -- always, no, yes
 - hmm, does this not work with redirects from the cli?
-    - gemi gemini://larsthebear.me/
+    - foreseen gemini://larsthebear.me/
         - (seems so... perhaps I was on the non-updated version.)
 
 ---

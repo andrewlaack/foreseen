@@ -1,16 +1,16 @@
 include config.mk
 
 debug:
-	${DCOMMAND_P} src/main.cpp ${DCOMMAND_S} -o gemi.out
+	${DCOMMAND_P} src/main.cpp ${DCOMMAND_S} -o foreseen.out
 
 build:
-	${COMMAND_P} src/main.cpp ${COMMAND_S} -o gemi.out
+	${COMMAND_P} src/main.cpp ${COMMAND_S} -o foreseen.out
 
 install: build
-	cp gemi.out ${PREFIX}/bin/gemi
+	cp foreseen.out ${PREFIX}/bin/foreseen
 
 clean:
-	rm -rf test*.out gemi.out
+	rm -rf test*.out foreseen.out
 
 browser-test:
 	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test1.out
