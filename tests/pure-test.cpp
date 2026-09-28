@@ -1,4 +1,5 @@
 // Testing pure functions
+
 #include <catch2/catch_test_macros.hpp>
 #include <climits>
 #include <cstdlib>
@@ -186,7 +187,6 @@ TEST_CASE("Test line parsing handles whitespace correctly") {
 
     std::string acc = options[rand() % 2];
 
-    // TODO: Should add tests for non-human readable links as well. 
     for(int x = 0; x < 10; ++x) {
         for(int i = 0; i < 10; ++i) {
             std::string check = "=>" + acc + "gemini://laack.co" + acc + "link human text";

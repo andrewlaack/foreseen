@@ -4,7 +4,7 @@ PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
 LIBS = -lssl -lcrypto -lncursesw
-TLIBS = -lCatch2Main -lCatch2 ${LIBS}
+TLIBS = -lCatch2Main -lCatch2 -lrapidcheck ${LIBS}
 
 CC = g++
 
