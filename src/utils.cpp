@@ -69,7 +69,10 @@ std::string stripLeadingWhiteSpace(std::string& input) {
 }
 
 bool isWhiteSpace(std::string& line, int idx) {
-    return line[idx] == ' ' || line[idx] == '\t';
+    if(idx < line.size() && idx >= 0) {
+        return line[idx] == ' ' || line[idx] == '\t';
+    } 
+    return false;
 }
 
 std::string truncateAfter(std::string input, char truncate) {
@@ -110,20 +113,23 @@ Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, boo
     }
 
     if(!isPreformatted) {
-        if(input.substr(0,2) == "=>") {
+        if(input.substr(0,2) == "=>" && isWhiteSpace(input,2)) {
             Link* ln = new Link{input, prior, linkCount};
             return ln;
         }
-        if(input.substr(0,1) == "#") {
+        if(input.substr(0,1) == "#" &&      isWhiteSpace(input,1) ||
+            input.substr(0,2) == "##" &&    isWhiteSpace(input,2) ||
+            input.substr(0,3) == "###" &&   isWhiteSpace(input,3)) {
+
             Heading* hd = new Heading{input};
             return hd;
         }
 
-        if(input.substr(0,1) == ">") {
+        if(input.substr(0,1) == ">" && isWhiteSpace(input,1)) {
             Quote* qt= new Quote{input};
             return qt;
         }
-        if(input.substr(0,1) == "*") {
+        if(input.substr(0,1) == "*" && isWhiteSpace(input,1)) {
             ListItem* li= new ListItem{input};
             return li;
         }

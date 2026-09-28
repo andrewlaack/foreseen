@@ -197,3 +197,64 @@ TEST_CASE("Test line parsing handles whitespace correctly") {
         }
     }
 }
+
+TEST_CASE("Proper whitespace compliance") {
+    auto res1 = lineToLine("",  std::nullopt, -1, false);
+    REQUIRE(res1->type() == PLAINTEXT);
+
+    auto res2 = lineToLine("",  std::nullopt, -1, true);
+    REQUIRE(res2->type() == PREFORMATTED);
+
+    auto res3 = lineToLine("=>gemini://laack.co",  std::nullopt, 1, false);
+    REQUIRE(res3->type() == PLAINTEXT);
+
+    auto res4 = lineToLine("```",  std::nullopt, 1, false);
+    REQUIRE(res4->type() == FORMAT_SWITCH);
+
+    auto res5 = lineToLine("#H1 Heading",  std::nullopt, 1, false);
+    REQUIRE(res5->type() == PLAINTEXT);
+
+    auto res6 = lineToLine("##H2 Heading",  std::nullopt, 1, false);
+    REQUIRE(res6->type() == PLAINTEXT);
+
+    auto res7 = lineToLine("###H3 Heading",  std::nullopt, 1, false);
+    REQUIRE(res7->type() == PLAINTEXT);
+
+    auto res8 = lineToLine(">test quote",  std::nullopt, 1, false);
+    REQUIRE(res8->type() == PLAINTEXT);
+
+    auto res9 = lineToLine("*test li",  std::nullopt, 1, false);
+    REQUIRE(res9->type() == PLAINTEXT);
+
+
+}
+
+
+TEST_CASE("Crash test") {
+    auto res1 = lineToLine("",  std::nullopt, -1, false);
+    REQUIRE(res1->type() == PLAINTEXT);
+
+    auto res2 = lineToLine("",  std::nullopt, -1, true);
+    REQUIRE(res2->type() == PREFORMATTED);
+
+    auto res3 = lineToLine("=>",  std::nullopt, 1, false);
+    REQUIRE(res3->type() == PLAINTEXT);
+
+    auto res4 = lineToLine("```",  std::nullopt, 1, false);
+    REQUIRE(res4->type() == FORMAT_SWITCH);
+
+    auto res5 = lineToLine("#",  std::nullopt, 1, false);
+    REQUIRE(res5->type() == PLAINTEXT);
+
+    auto res6 = lineToLine("##",  std::nullopt, 1, false);
+    REQUIRE(res6->type() == PLAINTEXT);
+
+    auto res7 = lineToLine("###",  std::nullopt, 1, false);
+    REQUIRE(res7->type() == PLAINTEXT);
+
+    auto res8 = lineToLine(">",  std::nullopt, 1, false);
+    REQUIRE(res8->type() == PLAINTEXT);
+
+    auto res9 = lineToLine("*",  std::nullopt, 1, false);
+    REQUIRE(res9->type() == PLAINTEXT);
+}
