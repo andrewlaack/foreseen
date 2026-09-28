@@ -16,12 +16,23 @@
 
 
 // TODO: Wrap this because it could probably throw.
-std::string Browser::downloadPage() {
+std::string Browser::tryDownloadPage(std::string downloadPath) noexcept {
     std::string body = currentSite->getBody();
     Link* current = getCurrentLink();
     assert(current != nullptr); // calling download page should always happen from a page...
+
     std::string destination = encodeAsFilename(current->getLinkDestination());
-    writeStringToFile(body, destination);
+
+    if(downloadPath != "") {
+        destination = downloadPath;
+    }
+
+    try {
+        writeStringToFile(body, destination);
+    } catch (...) {
+        return "";
+    }
+
     return destination;
 }
 

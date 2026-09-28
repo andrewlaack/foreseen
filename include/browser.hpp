@@ -37,7 +37,7 @@ class Browser {
         void setDone(int threadIdx);
         void refresh();
         Site* getCurrentSite();
-        std::string downloadPage();
+        std::string tryDownloadPage(std::string destinationPath = "") noexcept;
         Link* getCurrentLink();
         std::optional<uri> getPriorUri();
         std::vector<std::pair<std::string, TextRender>> renderSite();

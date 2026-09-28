@@ -376,7 +376,8 @@ int main(int argc, char** argv) {
             b.goForward();
             ds.y = 0; // todo: make this part of state somewhere.
         } else if(input == 'd') {
-            b.downloadPage();
+            // TODO: Handle outLocation == "" meaning failed
+            std::string outLocation = b.tryDownloadPage();
         } else if(input == 'b') {
             b.goBack();
             ds.y = 0; // todo: make this part of state somewhere.

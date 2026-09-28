@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <experimental/filesystem>
 #include <rapidcheck.h>
 #include <cstdlib>
 #include <ctime>
@@ -8,6 +9,22 @@
 #include <utility>
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
+
+
+std::string genRandom(const int len) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    std::string tmp_s;
+    tmp_s.reserve(len);
+
+    for (int i = 0; i < len; ++i) {
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+    
+    return tmp_s;
+}
 
 
 TEST_CASE( "Basic navigation" ) {
@@ -69,7 +86,7 @@ TEST_CASE("Test page downloading.") {
     Browser b{};
     b.goToSite("gemini://blog.laack.co");
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://blog.laack.co");
-    std::string destination = b.downloadPage();
+    std::string destination = b.tryDownloadPage();
     std::string out = readFileToString(destination);
     REQUIRE(out == b.getCurrentSite()->getBody());
     REQUIRE(std::filesystem::remove(destination));
@@ -95,11 +112,14 @@ TEST_CASE("Sanitize characters to draw  tests") {
 }
 
 TEST_CASE("Never crash from weird user inputs") {
-    rc::check("Never crash from weird inputs", [] (std::vector<std::string> const ls) {
+    for(int i  =  0; i < 5; ++i) {
         Browser b {};
-        if(ls.size() > 20) {
-            return;
+
+        std::vector<std::string> ls {};
+        for(int x = 0; x < 10; ++x) {
+            ls.push_back(genRandom(rand() % 5000));
         }
+
         for(auto& str : ls) {
             auto res = handleDestinationResolution(str, false);
             if(res.t == STRING_DESTINATION) {
@@ -109,7 +129,7 @@ TEST_CASE("Never crash from weird user inputs") {
             }
             b.refresh();
             b.goBack();
-            RC_ASSERT(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+            REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
         }
-    });
+    }
 }

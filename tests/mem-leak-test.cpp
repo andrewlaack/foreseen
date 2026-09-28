@@ -7,7 +7,7 @@
 #include <ctime>
 #include <unistd.h>
 
-std::string gen_random(const int len) {
+std::string genRandom(const int len) {
     static const char alphanum[] =
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -47,18 +47,18 @@ void traversal() {
             b.goBack();
         } else if (rand() % 5 == 0){
             if(rand() % 5 == 0) {
-                std::string dst = std::string{"gemini://"} + gen_random(rand() % 5000) + ".com";
+                std::string dst = std::string{"gemini://"} + genRandom(rand() % 5000) + ".com";
                 std::cout << "TRAVELLING TO: " << dst << std::endl;
                 b.goToSite(dst);
             } else {
-                std::string dst = std::string{"gemini://"} + gen_random(rand() % 15) + ".com";
+                std::string dst = std::string{"gemini://"} + genRandom(rand() % 15) + ".com";
                 std::cout << "TRAVELLING TO: " << dst << std::endl;
                 b.goToSite(dst);
             }
         } else if (rand() % 20 == 0) {
-            Destination destination = handleDestinationResolution(gen_random(rand() % 50), false); 
+            Destination destination = handleDestinationResolution(genRandom(rand() % 50), false); 
             if(rand() % 2 == 0) {
-                destination = handleDestinationResolution(gen_random(rand() % 5), false);
+                destination = handleDestinationResolution(genRandom(rand() % 5), false);
             }
             switch (destination.t) {
                 case NO_DESTINATION:
