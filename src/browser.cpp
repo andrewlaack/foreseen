@@ -15,6 +15,7 @@
 #include <vector>
 
 
+// TODO: Wrap this because it could probably throw.
 std::string Browser::downloadPage() {
     std::string body = currentSite->getBody();
     Link* current = getCurrentLink();

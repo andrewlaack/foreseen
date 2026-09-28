@@ -2,7 +2,14 @@
 
 #include <string>
 
-const std::string DEFAULT_SEARCH_ENGINE = "gemini://tlgs.one/search?";
+
+
+#ifdef DEBUG_MODE
+    const std::string DEFAULT_SEARCH_ENGINE = "gemini://notasearchengine.somethingelse/search?";
+#else
+    const std::string DEFAULT_SEARCH_ENGINE = "gemini://tlgs.one/search?";
+#endif
+
 
 const int SITE_CACHE_LIMIT = 10;    // number of links to prefetch per page
 const int THREAD_NUM = 4;           // thread count in thread pool for pre-fetching

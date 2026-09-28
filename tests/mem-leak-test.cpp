@@ -1,5 +1,6 @@
 #include "../include/browser.hpp"
 #include <cstdlib>
+#include <iostream>
 #include <thread>
 #include <vector>
 #include <ctime>
@@ -25,23 +26,60 @@ void traversal() {
     b.goToSite("gemini://laack.co", true);
 
     for(int i = 0; i < 10000; ++i) {
+
         auto* lls = b.getLinkLines();
         std::size_t count = lls->size();
         delete lls;
+
+        if(b.getCurrentLink() != nullptr) {
+            std::cout << "CURRENTLY  AT: " << b.getCurrentLink()->getLinkDestination().to_string() << std::endl;
+        }
+
         if(count == 0 && rand() % 5 == 0) {
+            std::cout << "GOING BACK" << std::endl;
             b.goBack();
         } else if(rand() % 5 == 0) {
+            std::cout << "GOING FORWARD" << std::endl;
             b.goForward();
         } else if(rand() % 5 == 0) {
+            std::cout << "GOING BACK" << std::endl;
             b.goBack();
         } else if (rand() % 5 == 0){
-            b.goToSite(std::string{"gemini://"} + gen_random(rand() % 5000) + ".com");
+            if(rand() % 5 == 0) {
+                std::string dst = std::string{"gemini://"} + gen_random(rand() % 5000) + ".com";
+                std::cout << "TRAVELLING TO: " << dst << std::endl;
+                b.goToSite(dst);
+            } else {
+                std::string dst = std::string{"gemini://"} + gen_random(rand() % 15) + ".com";
+                std::cout << "TRAVELLING TO: " << dst << std::endl;
+                b.goToSite(dst);
+            }
+
+        } else if (rand() % 10 == 0) {
+            Destination destination = handleDestinationResolution(gen_random(rand() % 50), false); 
+            if(rand() % 2 == 0) {
+                destination = handleDestinationResolution(gen_random(rand() % 5), false);
+            }
+            switch (destination.t) {
+                case NO_DESTINATION:
+                    break;
+                case NUMBER_DESTINATION:
+                    std::cout << "LINK NUMBER: " << destination.linkNumber << std::endl;
+                    b.followLinkNumber(destination.linkNumber);
+                    break;
+                case STRING_DESTINATION:
+                    std::cout << "DESTINATION: " << destination.destination << std::endl;
+                    b.goToSite(destination.destination);
+                    break;
+            }
         }
         else {
             if(count == 0) {
                 count = 10;
             }
-            b.followLinkNumber(((rand() % count) + 1) + (rand() % 5));
+            int num = ((rand() % count) + 1) + (rand() % 5);
+            std::cout << "LINK NUMBER(2): " << num << std::endl;
+            b.followLinkNumber(num);
         }
     }
 }
@@ -52,7 +90,7 @@ void traversal() {
 
 int main() {
     std::vector<std::thread*> vec {};
-    for(int x = 0; x < 5; ++x) {
+    for(int x = 0; x < 10; ++x) {
         auto* t = new std::thread (&traversal);
         vec.push_back(t);
     }
