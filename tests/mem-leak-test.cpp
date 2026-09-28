@@ -24,7 +24,7 @@ void traversal() {
     Browser b{};
     b.goToSite("gemini://laack.co", true);
 
-    for(int i = 0; i < 1000; ++i) {
+    for(int i = 0; i < 10000; ++i) {
         auto* lls = b.getLinkLines();
         std::size_t count = lls->size();
         delete lls;

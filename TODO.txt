@@ -103,3 +103,10 @@
 ---
 
 - fix up the config.mk and makefile
+
+---
+
+- BUGS:
+    - just typing in:
+        - "what :// :// test" --- fails
+            - i'd expect that to be searched.
