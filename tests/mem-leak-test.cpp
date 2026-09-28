@@ -1,4 +1,5 @@
 #include "../include/browser.hpp"
+#include <csignal>
 #include <cstdlib>
 #include <iostream>
 #include <thread>
@@ -89,6 +90,7 @@ void traversal() {
 // because it'll probably try to follow http links that are found. 
 
 int main() {
+    std::signal(SIGPIPE, SIG_IGN); // this is also done in main for the actual executable, this is for consistency.
     std::vector<std::thread*> vec {};
     for(int x = 0; x < 10; ++x) {
         auto* t = new std::thread (&traversal);

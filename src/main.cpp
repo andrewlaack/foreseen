@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cctype>
 #include <chrono>
+#include <csignal>
 #include <cstdint>
 #include <ncurses.h>
 #include <locale.h>
@@ -102,7 +103,6 @@ uint64_t getCurrentTime() {
 }
 
 void draw(DrawState& ds) {
-
     if(COLS < 20) {
         erase();
         addstr("Screen width too small.");
@@ -319,6 +319,8 @@ void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
 }
 
 int main(int argc, char** argv) {
+
+    std::signal(SIGPIPE, SIG_IGN); // need this in case of swapping network connections bc that shouldn't kill the whole process.
 
     Browser* bPtr = new Browser{};
     Browser& b = *bPtr;

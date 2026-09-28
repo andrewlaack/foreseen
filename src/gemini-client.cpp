@@ -119,7 +119,6 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
 Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPath) {
     std::string destination = link.getLinkDestination().to_string();
 
-    // TODO: Actually handle uris
     if(isPrefixed(destination, "gemini://")) {
         try {
             return getNetworkedSite(link, crtPath, keyPath);
