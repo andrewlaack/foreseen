@@ -94,14 +94,4 @@
 
 ---
 
-ISSUES:
-
-- gemini://bbs.geminispace.org/u/dragfyre
-    - first link is:
-        - [1] gemini://broken-link.com
-    - but should be:
-        - https://mastodon.sandwich.net/@dragfyre
-
----
-
 - some sort of rpc thing to do language tranlsations
