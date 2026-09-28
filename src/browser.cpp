@@ -1,6 +1,5 @@
 #include "../include/browser.hpp"
 #include <cassert>
-#include <iostream>
 #include <string>
 #include <thread>
 #include <unistd.h>

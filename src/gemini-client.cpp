@@ -23,29 +23,33 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
         conn = host + ":"  + std::to_string(link.getLinkDestination().get_port());
     }
 
-    SSL_CTX* ctx = SSL_CTX_new(TLS_client_method());
+    std::unique_ptr<SSL_CTX, decltype(&SSL_CTX_free)> ctx(SSL_CTX_new(TLS_client_method()), SSL_CTX_free);
 
+    if (!ctx) {
+        return nullptr;
+    }
 
     if(crtPath != "" && keyPath != "") {
-        if (SSL_CTX_use_certificate_file(ctx, crtPath.c_str(), SSL_FILETYPE_PEM) <= 0 ||
-            SSL_CTX_use_PrivateKey_file(ctx, keyPath.c_str(), SSL_FILETYPE_PEM) <= 0 ||
-            !SSL_CTX_check_private_key(ctx)) {
-            SSL_CTX_free(ctx);
+        if (SSL_CTX_use_certificate_file(ctx.get(), crtPath.c_str(), SSL_FILETYPE_PEM) <= 0 || SSL_CTX_use_PrivateKey_file(ctx.get(), keyPath.c_str(), SSL_FILETYPE_PEM) <= 0 || !SSL_CTX_check_private_key(ctx.get())) {
             return nullptr;
         }
     }
 
-    BIO* bio = BIO_new_ssl_connect(ctx);
+    std::unique_ptr<BIO, decltype(&BIO_free_all)> bio(BIO_new_ssl_connect(ctx.get()), BIO_free_all);
+
+    if (!bio) {
+        return nullptr;
+    } 
 
     SSL* ssl;
-    BIO_get_ssl(bio, &ssl);
+    BIO_get_ssl(bio.get(), &ssl);
     SSL_set_tlsext_host_name(ssl, host.c_str());
-    BIO_set_conn_hostname(bio, conn.c_str());
-    BIO_set_nbio(bio, 1);
+    BIO_set_conn_hostname(bio.get(), conn.c_str());
+    BIO_set_nbio(bio.get(), 1);
 
     auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
 
-    while (BIO_do_connect(bio) <= 0) {
+    while (BIO_do_connect(bio.get()) <= 0) {
 
         int fd = -1;
 
@@ -53,23 +57,21 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
         pollfd p{};
 
         // yikes.
-        if (!BIO_should_retry(bio) || BIO_get_fd(bio, &fd) < 0 || fd < 0 || ms <= 0 || (p = {fd, short(BIO_should_read(bio) ? POLLIN : POLLOUT), 0}, poll(&p, 1, int(ms)) <= 0)) {
-            BIO_free_all(bio);
-            SSL_CTX_free(ctx);
+        if (!BIO_should_retry(bio.get()) || BIO_get_fd(bio.get(), &fd) < 0 || fd < 0 || ms <= 0 || (p = {fd, short(BIO_should_read(bio.get()) ? POLLIN : POLLOUT), 0}, poll(&p, 1, int(ms)) <= 0)) {
             return nullptr;
         }
     }
 
     // timeout, 5 seconds
     int fd = -1;
-    if (BIO_get_fd(bio, &fd) >= 0 && fd >= 0) {
+    if (BIO_get_fd(bio.get(), &fd) >= 0 && fd >= 0) {
         BIO_socket_nbio(fd, 0);
         timeval tv{5, 0};
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
         setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
     }
 
-    BIO_write(bio, req.data(), (int)req.size());
+    BIO_write(bio.get(), req.data(), (int)req.size());
 
     std::string response;
     char buf[4096];
@@ -78,7 +80,7 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
     int sizeRemaining = RESPONSE_SIZE_LIMIT_MB * 1024 * 1024;
     bool truncated = false;
 
-    while ((n = BIO_read(bio, buf, sizeof buf)) > 0) {
+    while ((n = BIO_read(bio.get(), buf, sizeof buf)) > 0) {
         response.append(buf, n);
 
         sizeRemaining -= n;
@@ -88,8 +90,7 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
         }
     }
 
-    BIO_free_all(bio);
-    SSL_CTX_free(ctx);
+    bio.reset();
 
     std::size_t nl = response.find('\n');
     if (nl == std::string::npos) {

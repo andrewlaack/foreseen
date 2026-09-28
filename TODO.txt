@@ -95,3 +95,7 @@
 ---
 
 - some sort of rpc thing to do language tranlsations
+
+---
+
+- finalize name + renaming

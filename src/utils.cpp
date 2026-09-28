@@ -38,8 +38,8 @@ void openUrl(const std::string& url) {
     posix_spawn_file_actions_adddup2(&fa, 1, 2);
 
     pid_t pid;
-    char* argv[] = {(char*)"xdg-open", (char*)url.c_str(), nullptr};
-    if (posix_spawnp(&pid, "xdg-open", &fa, nullptr, argv, environ) == 0) {
+    char* argv[] = {(char*)openUnknownScheme, (char*)url.c_str(), nullptr};
+    if (posix_spawnp(&pid, openUnknownScheme, &fa, nullptr, argv, environ) == 0) {
         waitpid(pid, nullptr, 0);
     }
     posix_spawn_file_actions_destroy(&fa);

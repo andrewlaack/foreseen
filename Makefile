@@ -27,5 +27,10 @@ pure-test:
 	./test3.out
 	rm test3.out
 
+# NOTE: This is purposely not included in the make test command
+mem-leak-test:
+	${STCOMMAND_P} tests/mem-leak-test.cpp ${COMMAND_S} -o test4.out
+	valgrind --tool=memcheck ./test4.out
+	rm test4.out
 
 test: pure-test browser-test fetch-test
