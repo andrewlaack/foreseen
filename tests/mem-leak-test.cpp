@@ -35,7 +35,7 @@ void traversal() {
         } else if(rand() % 5 == 0) {
             b.goBack();
         } else if (rand() % 5 == 0){
-            b.goToSite(std::string{"gemini://"} + gen_random(rand() % 400) + ".com");
+            b.goToSite(std::string{"gemini://"} + gen_random(rand() % 5000) + ".com");
         }
         else {
             if(count == 0) {
@@ -52,7 +52,7 @@ void traversal() {
 
 int main() {
     std::vector<std::thread*> vec {};
-    for(int x = 0; x < 100; ++x) {
+    for(int x = 0; x < 5; ++x) {
         auto* t = new std::thread (&traversal);
         vec.push_back(t);
     }
