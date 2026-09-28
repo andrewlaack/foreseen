@@ -320,7 +320,6 @@ void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
     } else {
         ds.y = 0; 
     }
-
 }
 
 int main(int argc, char** argv) {

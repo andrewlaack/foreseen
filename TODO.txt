@@ -91,3 +91,11 @@
         - request rejected
         - cert issues
         - ...
+
+---
+
+- gemini://m0yng.uk/2020/10/A-simple-hit-counter/
+    - something is fucking up that site; seems like trailing ^M characters I see in vim 
+        - what are those?
+- this is messed up too:
+    - gemini://supernovas.space/gemlog/2023-08-19-gemini-page-counter.gmi
