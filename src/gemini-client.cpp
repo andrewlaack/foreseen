@@ -1,3 +1,5 @@
+#include <cassert>
+#include <cstddef>
 #include <stdexcept>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -79,13 +81,12 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
     SSL_CTX_free(ctx);
 
 
-    int nl = response.find("\n");
-    if (nl == -1) {
-        return nullptr; 
+    std::size_t nl = response.find('\n');
+    if (nl == std::string::npos) {
+        return nullptr;
     }
 
     std::size_t end = nl;
-
     if (end > 0 && response[end - 1] == '\r') {
         end -= 1;
     }

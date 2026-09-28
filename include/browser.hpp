@@ -42,7 +42,7 @@ class Browser {
         std::optional<uri> getPriorUri();
         std::vector<std::pair<std::string, TextRender>> renderSite();
         std::vector<Line*> toLines(Site* site);
-        void followLinkNumber(int linkToFollow);
+        bool followLinkNumber(int linkToFollow);
         std::vector<Link>* getLinkLines();
         Identity getIdentity(uri uriInput);
         void justCacheSite(Link link);

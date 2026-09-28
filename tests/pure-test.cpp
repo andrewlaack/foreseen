@@ -229,7 +229,6 @@ TEST_CASE("Proper whitespace compliance") {
 
 }
 
-
 TEST_CASE("Crash test") {
     auto res1 = lineToLine("",  std::nullopt, -1, false);
     REQUIRE(res1->type() == PLAINTEXT);
@@ -258,3 +257,24 @@ TEST_CASE("Crash test") {
     auto res9 = lineToLine("*",  std::nullopt, 1, false);
     REQUIRE(res9->type() == PLAINTEXT);
 }
+
+static std::string linecharset = "#>=abc##  de_-><0193248$#)(&@)(*&$#^*&#^%^&*&fghijklmnopqrstuvwxyz #````ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+TEST_CASE("Crash test rng") {
+    for(int x = 0; x < 10000; ++x) {
+        std::string strRnd = "";
+        for(int i = 0; i < 1000; ++i) {
+            strRnd += linecharset[rand() % linecharset.length()];
+            auto* ln = lineToLine(strRnd, std::nullopt, 1, false);
+        }
+    }
+    for(int x = 0; x < 10000; ++x) {
+        std::string strRnd = "";
+        for(int i = 0; i < 1000; ++i) {
+            strRnd += linecharset[rand() % linecharset.length()];
+            auto* ln = lineToLine(strRnd, std::nullopt, 1, true);
+        }
+    }
+
+}
+

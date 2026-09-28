@@ -318,16 +318,17 @@ std::vector<Link>* Browser::getLinkLines() {
 }
 
 
-void Browser::followLinkNumber(int linkToFollow) {
+bool Browser::followLinkNumber(int linkToFollow) {
     if((int)links.size() > linkToFollow-1 && linkToFollow-1 >= 0) {
         std::size_t pos = links[linkToFollow-1];
         if(lines.size() > pos) {
             Line* ptr = lines[pos];
             Link* ptrLnk = dynamic_cast<Link*>(ptr);
-            goToSite(ptrLnk->getLinkDestination().to_string(), true);
+            bool res = goToSite(ptrLnk->getLinkDestination().to_string(), true);
+            return res;
         }
     }
-
+    return false;
 }
 
 void Browser::goBack() {

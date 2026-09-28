@@ -2,7 +2,9 @@
 #include "../include/utils.hpp"
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cstddef>
+#include <cstdint>
 #include <ncurses.h>
 #include <locale.h>
 #include <string>
@@ -66,6 +68,8 @@ struct DrawState {
     bool handleInput;
     bool handleOpenOther;
     bool handleRedirect;
+    std::string issueText;
+    int64_t timeToClearIssueText;
     std::string redirInput;
     std::string openOtherInput;
     std::string userInput;
@@ -200,6 +204,21 @@ void draw(DrawState& ds) {
         drawInputBox("Destination / Link Number: ", ds.openOtherInput);
     }
 
+    if(ds.issueText != "") {
+        uint64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        if(ds.timeToClearIssueText <= now) {
+            ds.issueText = "";
+        } else {
+            move(0,0);
+            attron(A_BOLD);
+            attron(COLOR_PAIR(COLOR_RED+1));
+            addstr(ds.issueText.c_str());
+            attroff(COLOR_PAIR(COLOR_RED+1));
+            attroff(A_BOLD);
+        }
+
+    }
+
     refresh();
 
 }
@@ -316,6 +335,17 @@ std::string handleUserInput(DrawState ds) {
     return "?" + acc;
 }
 
+void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
+    bool visitSuccess = b.goToSite(site);
+    if(!visitSuccess) {
+        ds.issueText = "Unable to access the requested site.";
+        ds.timeToClearIssueText = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count() + 1000;
+    } else {
+        ds.y = 0; 
+    }
+
+}
+
 int main(int argc, char** argv) {
 
     Browser* bPtr = new Browser{};
@@ -345,7 +375,7 @@ int main(int argc, char** argv) {
 
     if(cliDestination.t != NO_DESTINATION) {
         assert(cliDestination.t == STRING_DESTINATION); // we don't allow numeric link following on startup.
-        b.goToSite(cliDestination.destination);
+        tryVisitSite(ds,b, cliDestination.destination);
     }
 
     int input = 0;
@@ -381,14 +411,17 @@ int main(int argc, char** argv) {
             std::string locationToGo = openPageHandler(ds);
             Destination destination = handleDestinationResolution(locationToGo, false); 
 
+            bool res;
+
             switch(destination.t) {
                 case NUMBER_DESTINATION:
-                    b.followLinkNumber(destination.linkNumber);
-                    ds.y = 0;
+                    res = b.followLinkNumber(destination.linkNumber);
+                    if(res) {
+                        ds.y = 0;
+                    }
                     break;
                 case STRING_DESTINATION:
-                    b.goToSite(destination.destination);
-                    ds.y = 0;
+                    tryVisitSite(ds, b, destination.destination);
                     break;
                 case NO_DESTINATION:
                     break;
@@ -405,8 +438,7 @@ int main(int argc, char** argv) {
 
                 std::string inputQuery = handleUserInput(ds);
                 if(inputQuery != "?") { // TODO: Better handling
-                    b.goToSite(inputQuery);
-                    ds.y = 0; // todo: make this part of state somewhere.
+                    tryVisitSite(ds, b,inputQuery);
                 } else {
                     b.goBack();
                 }
@@ -422,10 +454,9 @@ int main(int argc, char** argv) {
                 if(dir == BACKWARD) {
                     b.goBack();
                 } else {
-                    b.goToSite(b.getCurrentSite()->getMeta());
-                    ds.y = 0; // todo: make this part of state somewhere.
+                    tryVisitSite(ds, b, b.getCurrentSite()->getMeta());
                 }
-            } else { // this should handle invalid status codes as well as 5x and 6x (for now)
+            } else { // this should handle invalid status codes
                 b.goBack();
             }
         }
