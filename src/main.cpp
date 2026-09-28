@@ -439,7 +439,7 @@ int main(int argc, char** argv) {
         if(clk != nullptr) {
             ds.header = clk->getLinkDestination().to_string();
         } else {
-            ds.header = "gem-browser";
+            ds.header = "gemi";
         }
 
         auto* st = b.getCurrentSite();

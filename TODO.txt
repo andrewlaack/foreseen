@@ -49,7 +49,7 @@
 - auto-follow redirects based on domain?
     - A/y/n -- always, no, yes
 - hmm, does this not work with redirects from the cli?
-    - gem-browser gemini://larsthebear.me/
+    - gemi gemini://larsthebear.me/
         - (seems so... perhaps I was on the non-updated version.)
 
 ---
@@ -110,3 +110,10 @@
     - just typing in:
         - "what :// :// test" --- fails
             - i'd expect that to be searched.
+    - gemini://9e4.com
+        - that site just seems to ... hang? for like a long time, too long.
+
+- TESTING CHANGES:
+    - should be able to download to a specific path
+        - would like to be able to send stuff to /dev/null
+    - add more asserts in my code so edges can be pushed

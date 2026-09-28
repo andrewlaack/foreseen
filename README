@@ -8,10 +8,10 @@ C++ compiler, make, openssl, ncurses
 
 Installation
 ============
-Edit config.mk to match your local setup if necessary for building (gem-browser
+Edit config.mk to match your local setup if necessary for building (gemi
 will be installed into /usr/local/bin by default).
 
-Then run the following command to build and install gem-browser:
+Then run the following command to build and install gemi:
     make install
 
 (the above command may require root, depending on the installation location)
@@ -19,35 +19,35 @@ Then run the following command to build and install gem-browser:
 Usage
 =====
 Open a specific site:
-    gem-browser {url}
+    gemi {url}
 
 (gemini:// is optional)
 
 Open a local gemtext file:
-    gem-browser {path}
+    gemi {path}
 
-Start gem-browser:
-    gem-browser
+Start gemi:
+    gemi
 
 
 Identities
 ==========
 These are specified in:
-    $HOME/.gb/{hostname}/client.crt
-    $HOME/.gb/{hostname}/client.key
+    $HOME/.gmi/{hostname}/client.crt
+    $HOME/.gmi/{hostname}/client.key
 
 Or for a non-standard port (port != 1965):
-    $HOME/.gb/{hostname}:{port}/client.crt
-    $HOME/.gb/{hostname}:{port}/client.key
+    $HOME/.gemi/{hostname}:{port}/client.crt
+    $HOME/.gemi/{hostname}:{port}/client.key
 
 Example:
-    > tree .gb
-    .gb
+    > tree .gemi
+    .gemi
     └── bbs.geminispace.org
         ├── client.crt
         └── client.key
 
-(I recommend symlinking ~/.gb to somewhere you backup regularly)
+(I recommend symlinking ~/.gemi to somewhere you backup regularly)
 
 Example command to generate keys:
     openssl req -x509 -newkey rsa:2048 -nodes -days 3650   -keyout client.key -out client.crt -subj "/CN=localhost"

@@ -1,16 +1,16 @@
 include config.mk
 
 debug:
-	${DCOMMAND_P} src/main.cpp ${DCOMMAND_S} -o gem-browser.out
+	${DCOMMAND_P} src/main.cpp ${DCOMMAND_S} -o gemi.out
 
 build:
-	${COMMAND_P} src/main.cpp ${COMMAND_S} -o gem-browser.out
+	${COMMAND_P} src/main.cpp ${COMMAND_S} -o gemi.out
 
 install: build
-	cp gem-browser.out ${PREFIX}/bin/gem-browser
+	cp gemi.out ${PREFIX}/bin/gemi
 
 clean:
-	rm -rf test*.out gem-browser.out
+	rm -rf test*.out gemi.out
 
 browser-test:
 	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test1.out

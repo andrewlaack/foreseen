@@ -24,7 +24,7 @@ std::string gen_random(const int len) {
 
 void traversal() {
     Browser b{};
-    b.goToSite("gemini://laack.co", true);
+    b.goToSite("gemini://laack.co/known-hosts", true);
 
     for(int i = 0; i < 10000; ++i) {
 
@@ -36,13 +36,13 @@ void traversal() {
             std::cout << "CURRENTLY  AT: " << b.getCurrentLink()->getLinkDestination().to_string() << std::endl;
         }
 
-        if(count == 0 && rand() % 5 == 0) {
+        if(count == 0 && rand() % 10 == 0) {
             std::cout << "GOING BACK" << std::endl;
             b.goBack();
         } else if(rand() % 5 == 0) {
             std::cout << "GOING FORWARD" << std::endl;
             b.goForward();
-        } else if(rand() % 5 == 0) {
+        } else if(rand() % 10 == 0) {
             std::cout << "GOING BACK" << std::endl;
             b.goBack();
         } else if (rand() % 5 == 0){
@@ -55,8 +55,7 @@ void traversal() {
                 std::cout << "TRAVELLING TO: " << dst << std::endl;
                 b.goToSite(dst);
             }
-
-        } else if (rand() % 10 == 0) {
+        } else if (rand() % 20 == 0) {
             Destination destination = handleDestinationResolution(gen_random(rand() % 50), false); 
             if(rand() % 2 == 0) {
                 destination = handleDestinationResolution(gen_random(rand() % 5), false);
@@ -92,7 +91,7 @@ void traversal() {
 int main() {
     std::signal(SIGPIPE, SIG_IGN); // this is also done in main for the actual executable, this is for consistency.
     std::vector<std::thread*> vec {};
-    for(int x = 0; x < 10; ++x) {
+    for(int x = 0; x < 5; ++x) {
         auto* t = new std::thread (&traversal);
         vec.push_back(t);
     }
