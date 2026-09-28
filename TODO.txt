@@ -114,6 +114,8 @@
         - that site just seems to ... hang? for like a long time, too long.
 
 - TESTING CHANGES:
-    - should be able to download to a specific path
-        - would like to be able to send stuff to /dev/null
     - add more asserts in my code so edges can be pushed
+
+---
+
+- proper argparse
