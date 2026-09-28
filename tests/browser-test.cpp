@@ -1,8 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
+#include <rapidcheck.h>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <filesystem>
+#include <rapidcheck/Assertions.h>
 #include <utility>
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
@@ -92,3 +94,22 @@ TEST_CASE("Sanitize characters to draw  tests") {
     }
 }
 
+TEST_CASE("Never crash from weird user inputs") {
+    rc::check("Never crash from weird inputs", [] (std::vector<std::string> const ls) {
+        Browser b {};
+        if(ls.size() > 20) {
+            return;
+        }
+        for(auto& str : ls) {
+            auto res = handleDestinationResolution(str, false);
+            if(res.t == STRING_DESTINATION) {
+                bool result = b.goToSite(res.destination);
+            } else if (res.t == NUMBER_DESTINATION) {
+                bool result = b.followLinkNumber(res.linkNumber);
+            }
+            b.refresh();
+            b.goBack();
+            RC_ASSERT(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+        }
+    });
+}

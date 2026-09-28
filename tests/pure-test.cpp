@@ -1,5 +1,6 @@
 // Testing pure functions
 
+#include <rapidcheck.h>
 #include <catch2/catch_test_macros.hpp>
 #include <climits>
 #include <cstdlib>
@@ -100,7 +101,6 @@ TEST_CASE("Test width invariant") {
     for(auto& res: result) {
         REQUIRE(res.first.size() <= 80);
     }
-
 }
 
 TEST_CASE("Test lots of spaces") {
@@ -187,16 +187,32 @@ TEST_CASE("Test line parsing handles whitespace correctly") {
 
     std::string acc = options[rand() % 2];
 
-    for(int x = 0; x < 10; ++x) {
-        for(int i = 0; i < 10; ++i) {
-            std::string check = "=>" + acc + "gemini://laack.co" + acc + "link human text";
-            auto ln = lineToLine(check,  std::nullopt, 1, false);
-            REQUIRE(ln->type() == LINK);
-            REQUIRE(ln->textToDraw() == "[1] link human text\n");
-            acc += options[rand() % 2];
-        }
-    }
+    rc::check("any non-zero number of whitespaces results in the same link text",
+            [](const std::vector<bool> &l0) {
+                std::string acc = "";
+                if(l0.size() == 0) {
+                    if(rand() % 2 == 0) {
+                        acc = " ";
+                    } else {
+                        acc = "\t";
+                    }
+                }
+                for(bool i : l0) {
+                    if(i) {
+                        acc += '\t';
+                    } else {
+                        acc += ' ';
+                    }
+                }
+                std::string check = "=>" + acc + "gemini://laack.co" + acc + "link human text";
+                auto ln = lineToLine(check,  std::nullopt, 1, false);
+                RC_ASSERT(ln->type() == LINK);
+                RC_ASSERT(ln->textToDraw() == "[1] link human text\n");
+                REQUIRE(ln->type() == LINK);
+                REQUIRE(ln->textToDraw() == "[1] link human text\n");
+            });
 }
+
 
 TEST_CASE("Proper whitespace compliance") {
     auto res1 = lineToLine("",  std::nullopt, -1, false);

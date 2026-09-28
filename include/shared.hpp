@@ -5,7 +5,7 @@
 
 
 #ifdef DEBUG_MODE
-    const std::string DEFAULT_SEARCH_ENGINE = "gemini://notasearchengine.somethingelse/search?";
+    const std::string DEFAULT_SEARCH_ENGINE = "gemini://laack.co/search?"; // this doesn't exist.
 #else
     const std::string DEFAULT_SEARCH_ENGINE = "gemini://tlgs.one/search?";
 #endif
