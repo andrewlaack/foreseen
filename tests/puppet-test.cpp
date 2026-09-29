@@ -67,3 +67,39 @@ TEST_CASE("Open page and search the web") {
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?" + urlEncode(rnd));
 }
 
+TEST_CASE("Open page after backspacing character") {
+    Browser b {};
+    DrawState ds {};
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, 'l'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, KEY_BACKSPACE));
+    REQUIRE(mainLoop(ds, b, 'c'));
+    REQUIRE(mainLoop(ds, b, 'k'));
+    REQUIRE(mainLoop(ds, b, '.'));
+    REQUIRE(mainLoop(ds, b, 'c'));
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, '\n'));
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+}
+
+TEST_CASE("Cancel 'o' menu by pressing escape") {
+    Browser b {};
+    DrawState ds {};
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, 'l'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, KEY_BACKSPACE));
+    REQUIRE(mainLoop(ds, b, 'c'));
+    REQUIRE(mainLoop(ds, b, 'k'));
+    REQUIRE(mainLoop(ds, b, '.'));
+    REQUIRE(mainLoop(ds, b, 'c'));
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, 27)); // escape
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+}
+
