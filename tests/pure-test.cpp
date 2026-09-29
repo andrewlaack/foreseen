@@ -137,6 +137,26 @@ TEST_CASE("Test user input handling for destinations") {
 
 }
 
+
+TEST_CASE("Test width == 0 doesn't crash program") {
+    std::vector<std::pair<std::string, TextRender>> strLs {};
+    for(int i = 0; i < 10; ++i) {
+        std::pair<std::string, TextRender> current {"this is a simple test line", TextRender{10,false}};
+        strLs.push_back(current);
+    }
+    REQUIRE_NOTHROW(breakLines(strLs, 0,80));
+}
+
+TEST_CASE("Don't fold doesn't fold lines") {
+    std::vector<std::pair<std::string, TextRender>> strLs {};
+    for(int i = 0; i < 10; ++i) {
+        std::pair<std::string, TextRender> current {"this is a simple test line", TextRender{10,true,false}};
+        strLs.push_back(current);
+    }
+    auto result = breakLines(strLs, 10,80);
+    REQUIRE(result.size() ==  strLs.size());
+}
+
 TEST_CASE("Test trivial line breaking") {
     std::vector<std::pair<std::string, TextRender>> strLs {};
     for(int i = 0; i < 10; ++i) {
@@ -404,4 +424,18 @@ TEST_CASE("Crash test random line strings") {
             auto* ln = lineToLine(st, std::nullopt, 1, false);
             delete ln;
         });
+}
+
+TEST_CASE("Test cache never exceeds CACHE_SIZE") {
+    const int size = CACHE_SIZE;
+    Cache c{};
+
+    for (int i = 0; i < 10000; ++i) {
+        c.addSite("gemini://" + std::to_string(i), Site("header", "body"));
+        if (i >= size) {
+            REQUIRE(c.getSite("gemini://" + std::to_string(i - size)) == std::nullopt);
+        }
+        int oldest = std::max(0, i - size + 1);
+        REQUIRE(c.getSite("gemini://" + std::to_string(oldest)) != std::nullopt);
+    }
 }

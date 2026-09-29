@@ -31,9 +31,8 @@ std::string Heading::textToDraw() {
             return "## " + toDraw + "\n";
         case 1:
             return "# " + toDraw + "\n";
-        default:
-            throw NotImplemented();
     }
+    throw NotImplemented();
 }
 int Heading::getColor() {
     switch (headingLevel) {
@@ -43,9 +42,8 @@ int Heading::getColor() {
             return COLOR_GREEN;
         case 1:
             return COLOR_RED;
-        default:
-            throw NotImplemented();
     }
+    throw NotImplemented();
 }
 LineType Heading::type() {
     switch (headingLevel) {
@@ -55,9 +53,8 @@ LineType Heading::type() {
             return H2;
         case 1:
             return H1;
-        default:
-            throw NotImplemented();
     }
+    throw NotImplemented();
 }
 bool Heading::isBold() {
     return true;

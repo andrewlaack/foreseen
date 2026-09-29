@@ -75,15 +75,6 @@ bool isWhiteSpace(std::string& line, int idx) {
     return false;
 }
 
-std::string truncateAfter(std::string input, char truncate) {
-    for(int i = input.size() - 1; i >= 0; --i) {
-        if(input[i] == truncate) {
-            return  input.substr(0,i+1);
-        }
-    }
-    return input;
-}
-
 std::vector<std::string> stringToList(std::string input)
 {
     std::vector<std::string> res;

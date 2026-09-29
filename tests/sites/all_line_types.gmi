@@ -1,0 +1,40 @@
+# H1
+## H1
+## H1
+
+```
+tthis is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.his is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.
+this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.
+this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.
+this is some preformatted text.this is some preformatted text.this is some preformatted text.this is some preformatted text.
+```
+
+=> basic.gmi this is a link)(*&)($*7230947123087)$(* & #)(#@$&)(#@*&$ )987(@0348794)
+
+> This is a quote
+
+
+tthis is a normal line.this is a normal line.this is a normal line.this is a normal line.this is a normal line.this is a normal line.this is a normal line.this is a normal line.this is a normal line.this is a normal line.his is a normal line.
+
+this is a normal line.
+this is a normal line.
+this is a normal line.
+
+* list item 1
+* list item 2
+* list item 3
+* list item 4
+*
+
+=>
+*
+-
+>
+#
+##
+###
+
+
+
+```
+

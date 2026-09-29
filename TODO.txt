@@ -120,4 +120,4 @@
 
 - proper argparse
 - man pages
-- refactor tests to use built in catch2 generators + sections
+- refactor makefile to only generate coverage when requested.
