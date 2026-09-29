@@ -123,9 +123,9 @@ TEST_CASE("Never crash from weird user inputs") {
         for(auto& str : ls) {
             auto res = handleDestinationResolution(str, false);
             if(res.t == STRING_DESTINATION) {
-                bool result = b.goToSite(res.destination);
+                b.goToSite(res.destination);
             } else if (res.t == NUMBER_DESTINATION) {
-                bool result = b.followLinkNumber(res.linkNumber);
+                b.followLinkNumber(res.linkNumber);
             }
             b.refresh();
             b.goBack();

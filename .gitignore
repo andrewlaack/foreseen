@@ -1,2 +1,6 @@
 *.out
 vgcore*
+*.gcno
+*.gcda
+coverage-html/
+*.info

@@ -353,8 +353,6 @@ void Browser::goBack() {
     // but only in cases where they are right next to each other without any other 2X status code sites
     // between them. 
 
-    Link* cur = getCurrentLink();
-
     std::string starting = getCurrentLink()->getLinkDestination().to_string();
 
     previousIdx -= 1;
@@ -385,8 +383,6 @@ void Browser::goBack() {
 void Browser::goForward() {
 
     int original = previousIdx;
-
-    Link* cur = getCurrentLink();
 
     std::string starting = getCurrentLink()->getLinkDestination().to_string();
 

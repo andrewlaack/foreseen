@@ -82,14 +82,12 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
     int n;
 
     int sizeRemaining = RESPONSE_SIZE_LIMIT_MB * 1024 * 1024;
-    bool truncated = false;
 
     while ((n = BIO_read(bio.get(), buf, sizeof buf)) > 0) {
         response.append(buf, n);
 
         sizeRemaining -= n;
         if(sizeRemaining <= 0) {
-            truncated = true;
             break;
         }
     }

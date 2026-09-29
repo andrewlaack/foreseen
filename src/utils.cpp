@@ -60,7 +60,7 @@ std::string readFileToString(std::string filePath) {
 }
 
 std::string stripLeadingWhiteSpace(std::string& input) {
-    int x = 0;
+    std::size_t x = 0;
 
     while(x < input.size() && isWhiteSpace(input, x)) {
         x += 1;
@@ -69,7 +69,7 @@ std::string stripLeadingWhiteSpace(std::string& input) {
 }
 
 bool isWhiteSpace(std::string& line, int idx) {
-    if(idx < line.size() && idx >= 0) {
+    if(idx < (int)line.size() && idx >= 0) {
         return line[idx] == ' ' || line[idx] == '\t';
     } 
     return false;
@@ -117,9 +117,9 @@ Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, boo
             Link* ln = new Link{input, prior, linkCount};
             return ln;
         }
-        if(input.substr(0,1) == "#" &&      isWhiteSpace(input,1) ||
-            input.substr(0,2) == "##" &&    isWhiteSpace(input,2) ||
-            input.substr(0,3) == "###" &&   isWhiteSpace(input,3)) {
+        if( (input.substr(0,1) == "#" &&      isWhiteSpace(input,1)) ||
+            (input.substr(0,2) == "##" &&    isWhiteSpace(input,2)) ||
+            (input.substr(0,3) == "###" &&   isWhiteSpace(input,3))) {
 
             Heading* hd = new Heading{input};
             return hd;

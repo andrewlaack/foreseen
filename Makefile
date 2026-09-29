@@ -11,6 +11,8 @@ install: build
 
 clean:
 	rm -rf test*.out foreseen.out
+	rm -rf *.gcda *.gcno
+	rm -rf coverage.info
 
 browser-test:
 	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test1.out
@@ -39,3 +41,11 @@ crash-test:
 	rm test5.out
 
 test: pure-test browser-test fetch-test
+	lcov --capture --directory . --output-file coverage.info \
+		--no-external \
+		--rc geninfo_unexecuted_blocks=1 \
+		--ignore-errors inconsistent,inconsistent
+	genhtml coverage.info --output-directory coverage-html \
+		--ignore-errors inconsistent,inconsistent
+	rm -rf *.gcda *.gcno
+	rm -rf coverage.info
