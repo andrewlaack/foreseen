@@ -112,6 +112,9 @@
             - i'd expect that to be searched.
     - gemini://9e4.com
         - that site just seems to ... hang? for like a long time, too long.
+    - back button seems to still sometimes go back to the same page I was on before
+        - page_0 -> page_1 -> redirect -> page_1
+            - back should go to page_0
 
 - TESTING CHANGES:
     - add more asserts in my code so edges can be pushed
@@ -119,3 +122,5 @@
 ---
 
 - proper argparse
+- man pages
+- refactor tests to use built in catch2 generators + sections
