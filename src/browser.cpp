@@ -15,7 +15,6 @@
 #include <vector>
 
 
-// TODO: Wrap this because it could probably throw.
 std::string Browser::tryDownloadPage(std::string downloadPath) noexcept {
     std::string body = currentSite->getBody();
     Link* current = getCurrentLink();

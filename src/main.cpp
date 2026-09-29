@@ -2,7 +2,6 @@
 #include "../include/utils.hpp"
 #include <algorithm>
 #include <cassert>
-#include <cctype>
 #include <chrono>
 #include <csignal>
 #include <cstdint>

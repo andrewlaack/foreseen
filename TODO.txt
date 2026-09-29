@@ -107,9 +107,6 @@
 ---
 
 - BUGS:
-    - just typing in:
-        - "what :// :// test" --- fails
-            - i'd expect that to be searched.
     - gemini://9e4.com
         - that site just seems to ... hang? for like a long time, too long.
     - back button seems to still sometimes go back to the same page I was on before

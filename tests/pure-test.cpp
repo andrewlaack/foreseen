@@ -61,6 +61,19 @@ TEST_CASE("Verify urls with numeric prefix are resolved correctly") {
     REQUIRE(handleDestinationResolution("123movies.com",false).destination == "gemini://123movies.com");
 }
 
+TEST_CASE("Inputs with spaces outside of the cli are always searched") {
+    auto d1 = handleDestinationResolution("what :// :// test", false);
+    REQUIRE(d1.destination == "gemini://tlgs.one/search?what%20%3A%2F%2F%20%3A%2F%2F%20test");
+    rc::check("Inputs with spaces outside of the cli are always searched",
+            [](const std::string& st) {
+                auto dest = handleDestinationResolution(st, false);
+                if(st.find(' ') != std::string::npos) {
+                    RC_ASSERT(dest.destination.find("tlgs.one") != std::string::npos);
+                }
+            });
+}
+
+
 TEST_CASE("Test user input handling for destinations") {
 
     SECTION("Convert numbers to link numbers") {

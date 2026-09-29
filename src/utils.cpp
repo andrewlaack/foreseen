@@ -388,7 +388,7 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
                 throw std::invalid_argument("Unable to convert fully");
             }
         } catch (...) {
-            if(destination.find(":") == std::string::npos) {
+            if(destination.find(":") == std::string::npos || destination.find(' ') != std::string::npos) {
                 if(destination.find('.') != std::string::npos && destination.find(' ') == std::string::npos) {
                     destination = "gemini://" + destination;
                 } else {
