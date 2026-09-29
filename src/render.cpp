@@ -313,6 +313,7 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
             draw(ds);
             return true;
         }
+        draw(ds);
         return true;
     }
 
