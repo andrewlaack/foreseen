@@ -13,7 +13,7 @@ DFLAGS = -O0 -fsanitize=address,undefined -g -std=c++23 -Wpedantic -Wall -Wextra
 
 CTFLAGS = -O0 -fsanitize=undefined -g -std=c++23 -Wpedantic -Wall -Wextra -Wno-deprecated-declarations -fprofile-arcs -ftest-coverage -fPIC
 
-BASE_FILES = src/identity-manager.cpp src/quote.cpp src/list-item.cpp src/preformatted.cpp src/format-switch.cpp src/cache.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp src/heading.cpp 
+BASE_FILES = src/identity-manager.cpp src/quote.cpp src/list-item.cpp src/preformatted.cpp src/format-switch.cpp src/cache.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp src/heading.cpp src/render.cpp
 
 COMMAND_P = ${CC} ${CFLAGS} -D NDEBUG
 COMMAND_S = ${BASE_FILES} ${LIBS}
