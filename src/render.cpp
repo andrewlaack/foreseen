@@ -310,9 +310,13 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
                 ds.openOtherInput = "";
             }
         } else {
+            auto* clk = b.getCurrentLink();
+            ds.header = clk->getLinkDestination().to_string();
             draw(ds);
             return true;
         }
+        auto* clk = b.getCurrentLink();
+        ds.header = clk->getLinkDestination().to_string();
         draw(ds);
         return true;
     }
