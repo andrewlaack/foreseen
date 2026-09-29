@@ -179,49 +179,31 @@ void draw(DrawState& ds) {
 
 }
 
-std::string openPageHandler(DrawState ds) {
+void openPageHandler(DrawState& ds, int sel) {
 
-    ds.handleOpenOther = true;
-    draw(ds);
-    std::string acc = "";
-
-    while(true) {
-        int sel = getch();
-
-        if(sel == KEY_BACKSPACE) {
-            if(acc.size() > 0) {
-                acc = acc.substr(0,acc.size() - 1);
-            }
-            ds.openOtherInput = acc;
-            draw(ds);
-            continue;
+    if(sel == KEY_BACKSPACE) {
+        if(ds.openOtherInput.size() > 0) {
+            ds.openOtherInput = ds.openOtherInput.substr(0,ds.openOtherInput.size() - 1);
         }
-
-        if(sel ==  27) {
-            acc = "";
-            break;
-        }
-
-        if(sel == '\n' || sel == KEY_ENTER) {
-            break;
-        }
-
-        if(isValidUserInput(sel)) {
-            acc += std::string {(char)sel};
-        }
-
-        ds.openOtherInput = acc;
         draw(ds);
-
     }
 
-    ds.openOtherInput = acc;
-    ds.handleOpenOther = false;
+    if(sel ==  27) {
+        ds.openOtherInput = "";
+        ds.handleOpenOther = false;
+        return;
+    }
+
+    if(sel == '\n' || sel == KEY_ENTER) {
+        ds.handleOpenOther = false;
+        return;
+    }
+
+    if(isValidUserInput(sel)) {
+        ds.openOtherInput += std::string {(char)sel};
+    }
+
     draw(ds);
-
-
-
-    return acc;
 }
 
 enum Direction {
@@ -236,6 +218,7 @@ Direction handleRedir(DrawState ds) {
     draw(ds);
 
     while(true) {
+        // TODO: Remove this getch invocation and make this entire file non-blocking
         int input = getch();
         if(input == 'y') {
             ds.redirInput = "y";
@@ -261,6 +244,7 @@ std::string handleUserInput(DrawState ds) {
 
     while(true) {
 
+        // TODO: Remove this getch invocation and make this entire file non-blocking
         int sel = getch();
         if(sel == '\n' || sel == KEY_ENTER) {
             break;
@@ -302,6 +286,37 @@ void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
 }
 
 bool mainLoop(DrawState& ds, Browser& b, int input)  {
+
+    if(ds.handleOpenOther) {
+        openPageHandler(ds,input);
+        if(!ds.handleOpenOther) {
+            draw(ds);
+            if(ds.openOtherInput != "") {
+                Destination destination = handleDestinationResolution(ds.openOtherInput , false); 
+                bool res;
+                switch(destination.t) {
+                    case NUMBER_DESTINATION:
+                        res = b.followLinkNumber(destination.linkNumber);
+                        if(res) {
+                            ds.y = 0;
+                        }
+                        break;
+                    case STRING_DESTINATION:
+                        tryVisitSite(ds, b, destination.destination);
+                        break;
+                    case NO_DESTINATION:
+                        break;
+                }
+                ds.openOtherInput = "";
+            }
+        } else {
+            draw(ds);
+            return true;
+        }
+        return true;
+    }
+
+
     if(input == 'q') {
         return false;
     }
@@ -331,24 +346,8 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
         ds.y = 0; // todo: make this part of state somewhere.
 
     } else if(input == 'o') {
-        std::string locationToGo = openPageHandler(ds);
-        Destination destination = handleDestinationResolution(locationToGo, false); 
-
-        bool res;
-
-        switch(destination.t) {
-            case NUMBER_DESTINATION:
-                res = b.followLinkNumber(destination.linkNumber);
-                if(res) {
-                    ds.y = 0;
-                }
-                break;
-            case STRING_DESTINATION:
-                tryVisitSite(ds, b, destination.destination);
-                break;
-            case NO_DESTINATION:
-                break;
-        }
+        ds.handleOpenOther = true;
+        mainLoop(ds, b, KEY_RESIZE);
     }
 
     // this is the loop where we deal with redirects and stuff like that. 

@@ -13,6 +13,7 @@ clean:
 	rm -rf test*.out foreseen.out
 	rm -rf *.gcda *.gcno
 	rm -rf coverage.info
+	rm -rf coverage-html
 
 browser-test:
 	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test1.out
