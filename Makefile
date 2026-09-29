@@ -24,6 +24,11 @@ fetch-test:
 	./test2.out
 	rm test2.out
 
+puppet-test:
+	${TCOMMAND_P} tests/puppet-test.cpp ${TCOMMAND_S} -o test6.out
+	./test6.out
+	rm test6.out
+
 pure-test:
 	${TCOMMAND_P} tests/pure-test.cpp ${TCOMMAND_S} -o test3.out
 	./test3.out
@@ -40,7 +45,7 @@ crash-test:
 	./test5.out
 	rm test5.out
 
-test: pure-test browser-test fetch-test
+test: pure-test browser-test fetch-test puppet-test
 	lcov --capture --directory . --output-file coverage.info \
 		--no-external \
 		--rc geninfo_unexecuted_blocks=1 \
