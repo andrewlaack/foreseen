@@ -174,9 +174,7 @@ void draw(DrawState& ds) {
         }
 
     }
-
     refresh();
-
 }
 
 void openPageHandler(DrawState& ds, int sel) {
@@ -309,6 +307,7 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
                 }
                 ds.openOtherInput = "";
             }
+            mainLoop(ds, b, KEY_RESIZE);
         } else {
             auto* clk = b.getCurrentLink();
             ds.header = clk->getLinkDestination().to_string();
@@ -401,6 +400,5 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
     }
 
     draw(ds);
-    refresh();
     return true;
 }
