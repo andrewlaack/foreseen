@@ -121,3 +121,8 @@
 - proper argparse
 - man pages
 - refactor makefile to only generate coverage when requested.
+
+---
+
+- setup headless execution
+    - getch passed to headless execution function as char

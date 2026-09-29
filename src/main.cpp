@@ -317,6 +317,106 @@ void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
     }
 }
 
+bool mainLoop(DrawState& ds, Browser& b, int input)  {
+    if(input == 'q') {
+        return false;
+    }
+
+    if(input == KEY_DOWN) {
+        ds.y += 1;
+    } else if (input == KEY_UP){
+        ds.y -= 1;
+    } else if (input == 'g'){
+        ds.y = 0;
+    } else if (input == 'G'){
+        ds.toLowest = true;
+    } else if (input == CTRL('d')){
+        ds.y += LINES / 2;
+    } else if (input == CTRL('u')) {
+        ds.y -= LINES / 2;
+    } else if (input == 'r' || input == CTRL('r')){
+        b.refresh();
+    } else if(input == 'f') {
+        b.goForward();
+        ds.y = 0; // todo: make this part of state somewhere.
+    } else if(input == 'd') {
+        // TODO: Handle outLocation == "" meaning failed
+        std::string outLocation = b.tryDownloadPage();
+    } else if(input == 'b') {
+        b.goBack();
+        ds.y = 0; // todo: make this part of state somewhere.
+
+    } else if(input == 'o') {
+        std::string locationToGo = openPageHandler(ds);
+        Destination destination = handleDestinationResolution(locationToGo, false); 
+
+        bool res;
+
+        switch(destination.t) {
+            case NUMBER_DESTINATION:
+                res = b.followLinkNumber(destination.linkNumber);
+                if(res) {
+                    ds.y = 0;
+                }
+                break;
+            case STRING_DESTINATION:
+                tryVisitSite(ds, b, destination.destination);
+                break;
+            case NO_DESTINATION:
+                break;
+        }
+    }
+
+    // this is the loop where we deal with redirects and stuff like that. 
+    while(b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) {
+        if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
+            auto* st = b.getCurrentSite();
+            if(st != nullptr) {
+                ds.metaLine = st->getMeta();
+            }
+
+            std::string inputQuery = handleUserInput(ds);
+            if(inputQuery != "?") { // TODO: Better handling
+                tryVisitSite(ds, b,inputQuery);
+            } else {
+                b.goBack();
+            }
+
+        } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
+            
+            auto* st = b.getCurrentSite();
+            if(st != nullptr) {
+                ds.metaLine = st->getMeta();
+            }
+
+            Direction dir = handleRedir(ds);
+            if(dir == BACKWARD) {
+                b.goBack();
+            } else {
+                tryVisitSite(ds, b, b.getCurrentSite()->getMeta());
+            }
+        } else { // this should handle invalid status codes
+            b.goBack();
+        }
+    }
+
+    auto* clk = b.getCurrentLink();
+    if(clk != nullptr) {
+        ds.header = clk->getLinkDestination().to_string();
+    } else {
+        ds.header = "foreseen";
+    }
+
+    auto* st = b.getCurrentSite();
+    if(st != nullptr) {
+        ds.metaLine = st->getMeta();
+    }
+
+    draw(ds);
+    refresh();
+    return true;
+}
+
 int main(int argc, char** argv) {
 
     std::signal(SIGPIPE, SIG_IGN); // need this in case of swapping network connections bc that shouldn't kill the whole process.
@@ -353,104 +453,11 @@ int main(int argc, char** argv) {
 
     int input = 0;
 
-    // this is the main loop.
-    //
-    while( input != 'q') {
-
-        if(input == KEY_DOWN) {
-            ds.y += 1;
-        } else if (input == KEY_UP){
-            ds.y -= 1;
-        } else if (input == 'g'){
-            ds.y = 0;
-        } else if (input == 'G'){
-            ds.toLowest = true;
-        } else if (input == CTRL('d')){
-            ds.y += LINES / 2;
-        } else if (input == CTRL('u')) {
-            ds.y -= LINES / 2;
-        } else if (input == 'r' || input == CTRL('r')){
-            b.refresh();
-        } else if(input == 'f') {
-            b.goForward();
-            ds.y = 0; // todo: make this part of state somewhere.
-        } else if(input == 'd') {
-            // TODO: Handle outLocation == "" meaning failed
-            std::string outLocation = b.tryDownloadPage();
-        } else if(input == 'b') {
-            b.goBack();
-            ds.y = 0; // todo: make this part of state somewhere.
-
-        } else if(input == 'o') {
-            std::string locationToGo = openPageHandler(ds);
-            Destination destination = handleDestinationResolution(locationToGo, false); 
-
-            bool res;
-
-            switch(destination.t) {
-                case NUMBER_DESTINATION:
-                    res = b.followLinkNumber(destination.linkNumber);
-                    if(res) {
-                        ds.y = 0;
-                    }
-                    break;
-                case STRING_DESTINATION:
-                    tryVisitSite(ds, b, destination.destination);
-                    break;
-                case NO_DESTINATION:
-                    break;
-            }
+    while(true) {
+        bool continueExecution = mainLoop(ds,b,input);
+        if(!continueExecution) {
+            break;
         }
-
-        // this is the loop where we deal with redirects and stuff like that. 
-        while(b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) {
-            if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
-                auto* st = b.getCurrentSite();
-                if(st != nullptr) {
-                    ds.metaLine = st->getMeta();
-                }
-
-                std::string inputQuery = handleUserInput(ds);
-                if(inputQuery != "?") { // TODO: Better handling
-                    tryVisitSite(ds, b,inputQuery);
-                } else {
-                    b.goBack();
-                }
-
-            } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
-                
-                auto* st = b.getCurrentSite();
-                if(st != nullptr) {
-                    ds.metaLine = st->getMeta();
-                }
-
-                Direction dir = handleRedir(ds);
-                if(dir == BACKWARD) {
-                    b.goBack();
-                } else {
-                    tryVisitSite(ds, b, b.getCurrentSite()->getMeta());
-                }
-            } else { // this should handle invalid status codes
-                b.goBack();
-            }
-        }
-
-        auto* clk = b.getCurrentLink();
-        if(clk != nullptr) {
-            ds.header = clk->getLinkDestination().to_string();
-        } else {
-            ds.header = "foreseen";
-        }
-
-        auto* st = b.getCurrentSite();
-        if(st != nullptr) {
-            ds.metaLine = st->getMeta();
-        }
-
-        draw(ds);
-        refresh();
-
-
         input = getch();
     }
 
