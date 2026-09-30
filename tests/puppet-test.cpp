@@ -103,3 +103,62 @@ TEST_CASE("Cancel 'o' menu by pressing escape") {
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
 }
 
+TEST_CASE("Handle redirects") {
+    Browser b {};
+    DrawState ds {};
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, 'c'));
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, 'n'));
+    REQUIRE(mainLoop(ds, b, 'm'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, 'n'));
+    REQUIRE(mainLoop(ds, b, '.'));
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, 'r'));
+    REQUIRE(mainLoop(ds, b, 'g'));
+    REQUIRE(mainLoop(ds, b, '\n'));
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://conman.org");
+
+    REQUIRE(mainLoop(ds, b, 'y')); // follow redirect
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://gemini.conman.org/");
+
+}
+
+//TEST_CASE("Enter an input") {
+//    Browser b {};
+//    DrawState ds {};
+//
+//    REQUIRE(mainLoop(ds, b, 'o'));
+//    REQUIRE(mainLoop(ds, b, 't'));
+//    REQUIRE(mainLoop(ds, b, 'l'));
+//    REQUIRE(mainLoop(ds, b, 'g'));
+//    REQUIRE(mainLoop(ds, b, 's'));
+//    REQUIRE(mainLoop(ds, b, '.'));
+//    REQUIRE(mainLoop(ds, b, 'o'));
+//    REQUIRE(mainLoop(ds, b, 'n'));
+//    REQUIRE(mainLoop(ds, b, 'e'));
+//    REQUIRE(mainLoop(ds, b, '\n'));
+//
+//    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one");
+//
+//    REQUIRE(mainLoop(ds,b,'o'));
+//    REQUIRE(mainLoop(ds,b,'2'));
+//    REQUIRE(mainLoop(ds, b, '\n'));
+//
+//    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search");
+//
+//    std::string rnd = genRandom(10);
+//
+//    INFO(rnd);
+//
+//    for(auto& ch : rnd) {
+//        REQUIRE(mainLoop(ds, b, ch));
+//    }
+//
+//    REQUIRE(mainLoop(ds, b, '\n'));
+//
+//    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?" + urlEncode(rnd));
+//}
+

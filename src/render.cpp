@@ -6,6 +6,7 @@
 #include <chrono>
 #include <csignal>
 #include <cstdint>
+#include <iostream>
 #include <ncurses.h>
 #include <locale.h>
 #include <string>
@@ -204,42 +205,26 @@ void openPageHandler(DrawState& ds, int sel) {
     draw(ds);
 }
 
-enum Direction {
-    FORWARD,
-    BACKWARD
-};
-
-Direction handleRedir(DrawState ds) {
-
-    ds.handleRedirect = true;
-    ds.redirInput = "";
-    draw(ds);
-
-    while(true) {
-        // TODO: Remove this getch invocation and make this entire file non-blocking
-        int input = getch();
-        if(input == 'y') {
-            ds.redirInput = "y";
-            draw(ds);
-            ds.handleRedirect = false;
-            return FORWARD;
-        }
-        if(input == 'n') {
-            ds.redirInput = "n";
-            draw(ds);
-            ds.handleRedirect = false;
-            return BACKWARD;
-        }
+void handleRedir(DrawState& ds, int input, Browser& b) {
+    if(input == 'y') {
+        ds.redirInput = "y";
         draw(ds);
+        ds.handleRedirect = false;
+        tryVisitSite(ds, b, b.getCurrentSite()->getMeta());
     }
+    if(input == 'n') {
+        ds.redirInput = "n";
+        draw(ds);
+        ds.handleRedirect = false;
+        b.goBack();
+    }
+    draw(ds);
 }
 
-std::string handleUserInput(DrawState ds) {
-
+std::string handleUserInput(DrawState& ds) {
     ds.handleInput = true;
     draw(ds);
     std::string acc = "";
-
     while(true) {
 
         // TODO: Remove this getch invocation and make this entire file non-blocking
@@ -318,6 +303,12 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
         ds.header = clk->getLinkDestination().to_string();
         draw(ds);
         return true;
+    } else if (ds.handleRedirect) {
+        handleRedir(ds, input, b);
+        if(!ds.handleRedirect) {
+            mainLoop(ds, b, KEY_RESIZE);
+        }
+        return true;
     }
 
 
@@ -355,7 +346,11 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
     }
 
     // this is the loop where we deal with redirects and stuff like that. 
-    while(b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) {
+    // TODO: I don't think this has to still be a loop?
+    // Broadly, we are moving away from a loop based approach, sequestering them to either browser with forward / backward
+    // or main.cpp / tests.
+
+    while( (b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) && !ds.handleRedirect) {
         if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
             auto* st = b.getCurrentSite();
             if(st != nullptr) {
@@ -369,21 +364,16 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
                 b.goBack();
             }
 
-        } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39){
-            
+        } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39 && !ds.handleRedirect){
             auto* st = b.getCurrentSite();
             if(st != nullptr) {
                 ds.metaLine = st->getMeta();
             }
 
-            Direction dir = handleRedir(ds);
-            if(dir == BACKWARD) {
-                b.goBack();
-            } else {
-                tryVisitSite(ds, b, b.getCurrentSite()->getMeta());
-            }
-        } else { // this should handle invalid status codes
-            b.goBack();
+            ds.redirInput = "";
+            ds.handleRedirect = true;
+            mainLoop(ds, b, KEY_RESIZE);
+
         }
     }
 
