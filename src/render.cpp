@@ -376,7 +376,7 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
     // Broadly, we are moving away from a loop based approach, sequestering them to either browser with forward / backward
     // or main.cpp / tests.
 
-    while( (b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) && !ds.handleRedirect && !ds.handleInput) {
+    if( (b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) && !ds.handleRedirect && !ds.handleInput) {
         if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
             auto* st = b.getCurrentSite();
             if(st != nullptr) {
@@ -396,7 +396,6 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
             ds.redirInput = "";
             ds.handleRedirect = true;
             mainLoop(ds, b, KEY_RESIZE);
-
         }
     }
 

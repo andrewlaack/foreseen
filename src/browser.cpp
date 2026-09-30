@@ -153,6 +153,13 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
         return false;
     }
 
+    int sc = site->getStatusCode();
+    if (sc < 10 || sc >= 40) {
+        delete site;
+        delete destination;
+        return false;
+    }
+
     if(addToHistory) {
         while((int)siteHistory.size() > previousIdx + 1) {
             delete siteHistory[siteHistory.size() -  1];
@@ -168,7 +175,8 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     currentSite = site;
 
     if(urlString.find("gemini://") != std::string::npos) {
-        if(id.keyPath == "" && id.crtPath == "") {
+        int sc = site->getStatusCode();
+        if(sc >= 20 && sc <= 29 && id.keyPath == "" && id.crtPath == "") {
             visitedCache->addSite(urlString, *site);
         }
     }
@@ -210,7 +218,10 @@ void Browser::justCacheSite(Link link) {
     } 
 
     if(site != nullptr) {
-        preFetchCache->addSite(urlString, *site);
+        int sc = site->getStatusCode();
+        if(sc >= 20 && sc <= 29) {
+            preFetchCache->addSite(urlString, *site);
+        }
         delete site;
     }
 
