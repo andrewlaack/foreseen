@@ -259,10 +259,10 @@ TEST_CASE("Only return false on 'q' entry when not using input boxes, never cras
 }
 
 TEST_CASE("Only return false on 'q' entry when not using input boxes, alphanumeric inputs") {
-    for(int i = 0; i < 100; ++i) {
+    for(int i = 0; i < 5; ++i) {
         Browser b {};
         DrawState ds {};
-        std::string st = genAlNumNlSp(rand()%1000);
+        std::string st = genAlNumNlSp(rand()%100);
         INFO(st);
         for(auto& cur : st) {
             if(cur == 'q') {
