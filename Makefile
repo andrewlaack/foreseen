@@ -11,6 +11,7 @@ install: build
 
 clean:
 	rm -rf test*.out foreseen.out
+	rm -rf bench*.out
 	rm -rf *.gcda *.gcno
 	rm -rf coverage.info
 	rm -rf coverage-html
@@ -45,6 +46,10 @@ crash-test:
 	${STCOMMAND_P} tests/mem-leak-test.cpp ${COMMAND_S} -o test5.out
 	./test5.out
 	rm test5.out
+
+benchmark:
+	${BCOMMAND_P} benchmarking/render-bench.cpp ${BCOMMAND_S} -o bench1.out
+	./bench1.out
 
 test: pure-test browser-test fetch-test puppet-test
 	lcov --capture --directory . --output-file coverage.info \
