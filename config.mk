@@ -11,7 +11,7 @@ CC = g++
 IFLAGS = -Ofast -std=c++23
 DFLAGS = -O0 -fsanitize=address,undefined -g -std=c++23 -Wpedantic -Wall -Wextra -Wno-deprecated-declarations
 
-CTFLAGS = -O0 -fsanitize=undefined -g -std=c++23 -Wpedantic -Wall -Wextra -Wno-deprecated-declarations -fprofile-arcs -ftest-coverage -fPIC
+CTFLAGS = -O0 -fsanitize=undefined -g -std=c++23 -Wpedantic -Wall -Wextra -Wno-deprecated-declarations -fprofile-arcs -ftest-coverage -fPIC -D DEBUG_MODE
 
 BASE_FILES = src/identity-manager.cpp src/quote.cpp src/list-item.cpp src/preformatted.cpp src/format-switch.cpp src/cache.cpp src/link.cpp  src/plaintext.cpp src/site.cpp src/utils.cpp src/gemini-client.cpp src/browser.cpp src/heading.cpp src/render.cpp
 

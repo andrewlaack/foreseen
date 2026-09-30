@@ -1,6 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
+#include <rapidcheck.h>
 #include "../include/render.hpp"
 #include <ncurses.h>
+#include <rapidcheck/Check.h>
+#include <rapidcheck/Log.h>
+#include <string>
 
 std::string genRandom(const int len) {
     static const char alpha[] =
@@ -11,6 +15,21 @@ std::string genRandom(const int len) {
 
     for (int i = 0; i < len; ++i) {
         tmp_s += alpha[rand() % (sizeof(alpha) - 1)];
+    }
+    
+    return tmp_s;
+}
+
+std::string genAlNumNlSp(const int len) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz\n ";
+    std::string tmp_s;
+    tmp_s.reserve(len);
+
+    for (int i = 0; i < len; ++i) {
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
     }
     
     return tmp_s;
@@ -217,5 +236,45 @@ TEST_CASE("Enter an input and then cancel") {
     REQUIRE(mainLoop(ds, b, 27)); // escape
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one");
+}
+
+
+TEST_CASE("Only return false on 'q' entry when not using input boxes, never crash, junk inputs") {
+    rc::check("Never return false / fail except with input 'q'", [] (std::string st) {
+        Browser b {};
+        DrawState ds {};
+        RC_LOG(st);
+        for(auto& cur : st) {
+            if(cur == 'q') {
+                if(!ds.handleInput && !ds.handleOpenOther && !ds.handleRedirect) {
+                    REQUIRE_FALSE(mainLoop(ds,b,cur));
+                } else {
+                    REQUIRE(mainLoop(ds,b,cur));
+                }
+            } else {
+                REQUIRE(mainLoop(ds,b,cur));
+            }
+        }
+    });
+}
+
+TEST_CASE("Only return false on 'q' entry when not using input boxes, alphanumeric inputs") {
+    for(int i = 0; i < 100; ++i) {
+        Browser b {};
+        DrawState ds {};
+        std::string st = genAlNumNlSp(rand()%1000);
+        INFO(st);
+        for(auto& cur : st) {
+            if(cur == 'q') {
+                if(!ds.handleInput && !ds.handleOpenOther && !ds.handleRedirect) {
+                    REQUIRE_FALSE(mainLoop(ds,b,cur));
+                } else {
+                    REQUIRE(mainLoop(ds,b,cur));
+                }
+            } else {
+                REQUIRE(mainLoop(ds,b,cur));
+            }
+        }
+    }
 }
 

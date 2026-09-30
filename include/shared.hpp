@@ -2,14 +2,7 @@
 
 #include <string>
 
-
-
-#ifdef DEBUG_MODE
-    const std::string DEFAULT_SEARCH_ENGINE = "gemini://laack.co/search?"; // this doesn't exist.
-#else
-    const std::string DEFAULT_SEARCH_ENGINE = "gemini://tlgs.one/search?";
-#endif
-
+const std::string DEFAULT_SEARCH_ENGINE = "gemini://tlgs.one/search?";
 
 const int SITE_CACHE_LIMIT = 10;    // number of links to prefetch per page
 const int THREAD_NUM = 4;           // thread count in thread pool for pre-fetching

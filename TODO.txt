@@ -130,3 +130,10 @@
     - go to site -> vim buffer
         - stdin?
 - make sure keybindings are up to date on new tab page
+
+- multi-step builds
+
+---
+
+- perf metrics / benchmarks
+- handle downloading in tests...
