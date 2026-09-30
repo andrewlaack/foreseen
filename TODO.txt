@@ -156,3 +156,8 @@
 ---
 
 - benchmarking
+
+---
+
+- if I enter some large fucking number like 120349871023948712304987 it searches because stoi probably fails, or our check does. 
+- would be better to hash the rendered site and then do it that way if possible?

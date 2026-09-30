@@ -7,6 +7,10 @@
 #include <rapidcheck/Check.h>
 #include <rapidcheck/Log.h>
 #include <string>
+#ifndef CTRL
+#define CTRL(c) ((c) & 037)
+#endif
+
 
 std::string genRandom(const int len) {
     static const char alpha[] =
@@ -360,6 +364,119 @@ TEST_CASE("Open file in editor creates file") {
     delete bPtr;
 
 }
+
+// If re-render was true this would mean we have to refresh on the next iteration, but we'd have to send a key to do that
+// which would be weird ux
+
+TEST_CASE("Re-render and re-break are never true outside of the main loop.") {
+
+    setenv("EDITOR", "test" , 1);
+
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
+
+    DrawState ds {};
+    ds.bPtr = bPtr;
+
+    REQUIRE(mainLoop(ds, b, 'o',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, 'l',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, 'a',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, 'a',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, 'c',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, 'k',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, '.',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, 'c',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, 'o',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, '\n',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+    
+    REQUIRE(mainLoop(ds, b, KEY_UP,100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, KEY_DOWN,100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, CTRL('d'),100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, CTRL('u'),100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, KEY_RESIZE, 120,110));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+
+    REQUIRE(mainLoop(ds, b, 'o',100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+    REQUIRE(ds.handleOpenOther);
+
+    REQUIRE(mainLoop(ds, b, 27,100,100));
+    REQUIRE_FALSE(ds.mustReRender);
+    REQUIRE_FALSE(ds.reBreak);
+    REQUIRE_FALSE(ds.handleOpenOther);
+
+    delete bPtr;
+}
+
+
+
 
 TEST_CASE("Basic usage with specified line and col count") {
 
