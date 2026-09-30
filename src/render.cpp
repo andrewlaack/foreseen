@@ -221,41 +221,43 @@ void handleRedir(DrawState& ds, int input, Browser& b) {
     draw(ds);
 }
 
-std::string handleUserInput(DrawState& ds) {
-    ds.handleInput = true;
+void handleUserInput(DrawState& ds, Browser& b, int sel) {
     draw(ds);
-    std::string acc = "";
-    while(true) {
+    if(sel == '\n' || sel == KEY_ENTER) {
 
-        // TODO: Remove this getch invocation and make this entire file non-blocking
-        int sel = getch();
-        if(sel == '\n' || sel == KEY_ENTER) {
-            break;
-        }
-        if(sel ==  27) {
-            acc = "";
-            ds.userInput = acc;
-            break;
-        }
-        if(sel == KEY_BACKSPACE) {
-            if(acc.size() > 0) {
-                acc = acc.substr(0,acc.size() - 1);
-            }
-            ds.userInput = acc;
-            draw(ds);
-            continue;
-        }
-
-        if(isValidUserInput(sel)) {
-            acc += std::string {(char)sel};
-        }
-        ds.userInput = acc;
+        ds.handleInput = false;
         draw(ds);
+
+        if(ds.userInput != "") {
+            tryVisitSite(ds, b, "?"+ds.userInput);
+        } else {
+            b.goBack();
+        }
+
+        ds.handleInput = false;
+        draw(ds);
+        return;
+    }
+    if(sel == 27) {
+        ds.handleInput = false;
+        draw(ds);
+        b.goBack();
+        draw(ds);
+        return;
     }
 
-    ds.handleInput = false;
+    if(sel == KEY_BACKSPACE) {
+        if(ds.userInput.size() > 0) {
+            ds.userInput = ds.userInput.substr(0,ds.userInput.size() - 1);
+        }
+        draw(ds);
+        return;
+    }
+
+    if(isValidUserInput(sel)) {
+        ds.userInput += std::string {(char)sel};
+    }
     draw(ds);
-    return "?" + acc;
 }
 
 void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
@@ -309,6 +311,12 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
             mainLoop(ds, b, KEY_RESIZE);
         }
         return true;
+    } else if (ds.handleInput) {
+        handleUserInput(ds, b, input);
+        if(!ds.handleInput) {
+            mainLoop(ds, b, KEY_RESIZE);
+        }
+        return true;
     }
 
 
@@ -350,19 +358,16 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
     // Broadly, we are moving away from a loop based approach, sequestering them to either browser with forward / backward
     // or main.cpp / tests.
 
-    while( (b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) && !ds.handleRedirect) {
+    while( (b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) && !ds.handleRedirect && !ds.handleInput) {
         if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
             auto* st = b.getCurrentSite();
             if(st != nullptr) {
                 ds.metaLine = st->getMeta();
             }
 
-            std::string inputQuery = handleUserInput(ds);
-            if(inputQuery != "?") { // TODO: Better handling
-                tryVisitSite(ds, b,inputQuery);
-            } else {
-                b.goBack();
-            }
+            ds.handleInput = true;
+            ds.userInput = "";
+            mainLoop(ds, b, KEY_RESIZE);
 
         } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39 && !ds.handleRedirect){
             auto* st = b.getCurrentSite();
