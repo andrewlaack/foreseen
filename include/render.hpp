@@ -25,8 +25,10 @@ struct DrawState {
     std::string userInput;
     std::string metaLine;
     bool toLowest = false;
+    int columns;
+    int lines;
 };
 
-bool mainLoop(DrawState& ds, Browser& b, int input);
+bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines);
 void tryVisitSite(DrawState& ds , Browser& b, std::string site);
 void initColors();

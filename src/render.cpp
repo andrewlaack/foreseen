@@ -28,8 +28,8 @@
 
 
 
-int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
-    return (strLs.size() - (LINES - 2)) + 1; // this gives us two new lines at the end because the last line should contain a \n.
+int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs, DrawState& ds) {
+    return (strLs.size() - (ds.lines - 2)) + 1; // this gives us two new lines at the end because the last line should contain a \n.
 }
 
 bool isValidUserInput(int uinput) {
@@ -48,23 +48,23 @@ void initColors() {
     }
 }
 
-void drawInputBox(std::string text, std::string userInput) {
+void drawInputBox(std::string text, std::string userInput, DrawState& ds) {
 
-    move(LINES/2-1, COLS/4);
+    move(ds.lines/2-1, ds.columns/4);
 
     attron(COLOR_PAIR(COLOR_CYAN+1));
-    for(int i = 0; i < COLS/2; ++i) {
+    for(int i = 0; i < ds.columns/2; ++i) {
         addstr("-");
     }
 
-    move(LINES/2 + 1, COLS/4);
-    for(int i = 0; i < COLS/2; ++i) {
+    move(ds.lines/2 + 1, ds.columns/4);
+    for(int i = 0; i < ds.columns/2; ++i) {
         addstr("-");
     }
     attroff(COLOR_PAIR(COLOR_CYAN+1));
 
     int userInputSize = userInput.size();
-    int width = COLS/2;
+    int width = ds.columns/2;
 
     if((int)text.size() >= width) {
         text = text.substr(0,width-6) + "...: ";
@@ -87,7 +87,7 @@ void drawInputBox(std::string text, std::string userInput) {
         }
     }
 
-    move(LINES/2, COLS/4);
+    move(ds.lines/2, ds.columns/4);
     addstr(text.c_str());
     addstr(userTextToRender.c_str());
 
@@ -97,12 +97,12 @@ uint64_t getCurrentTime() {
 }
 
 void draw(DrawState& ds) {
-    if(COLS < 20) {
+    if(ds.columns < 20) {
         erase();
         addstr("Screen width too small.");
         return;
     }
-    if(LINES < 3) {
+    if(ds.lines < 3) {
         erase();
         addstr("Screen height too small.");
         return;
@@ -114,31 +114,31 @@ void draw(DrawState& ds) {
         ds.prior = ds.bPtr->renderSite();
     }
 
-    auto current = breakLines(ds.prior, std::min(COLS, maxWidth), COLS);
+    auto current = breakLines(ds.prior, std::min(ds.columns, maxWidth), ds.columns);
     sanitizeCharactersToDraw(current);
     if(ds.toLowest) {
-        ds.y = lowestPos(current);
+        ds.y = lowestPos(current, ds);
         ds.toLowest = false;
     }
 
-    ds.y = std::max(0,std::min(ds.y,lowestPos(current)));
+    ds.y = std::max(0,std::min(ds.y,lowestPos(current,ds)));
 
     erase();
-    move(0,(COLS / 2) - ((int)ds.header.size() / 2) );
+    move(0,(ds.columns / 2) - ((int)ds.header.size() / 2) );
 
     attron(A_BOLD);
 
-    if((int)ds.header.size() < COLS) {
+    if((int)ds.header.size() < ds.columns) {
         addstr(ds.header.c_str());
     }  else {
-        addstr((ds.header.substr(0,COLS-3) + "...").c_str());
+        addstr((ds.header.substr(0,ds.columns-3) + "...").c_str());
     }
 
     attroff(A_BOLD);
 
-    addstr(std::string(COLS, ' ').c_str());
+    addstr(std::string(ds.columns, ' ').c_str());
 
-    for(int i = ds.y; i - ds.y < LINES - 2 && i < (int)current.size(); ++i) {
+    for(int i = ds.y; i - ds.y < ds.lines - 2 && i < (int)current.size(); ++i) {
         move(i - ds.y + 2, 0);
 
         attron(COLOR_PAIR(current[i].second.color + 1));
@@ -155,20 +155,20 @@ void draw(DrawState& ds) {
 
     if (ds.handleRedirect) {
         std::string toShow = "Redirect to \"" + ds.metaLine + "\" (y/n): ";
-        drawInputBox(toShow, ds.redirInput);
+        drawInputBox(toShow, ds.redirInput, ds);
     }
 
     if(ds.handleInput) {
         if(ds.metaLine != "") {
-            drawInputBox(ds.metaLine + ": ", ds.userInput);
+            drawInputBox(ds.metaLine + ": ", ds.userInput, ds);
         } else {
-            drawInputBox("Input: ", ds.userInput);
+            drawInputBox("Input: ", ds.userInput, ds);
 
         }
     }
 
     if (ds.handleOpenOther) {
-        drawInputBox("Destination / Link Number: ", ds.openOtherInput);
+        drawInputBox("Destination / Link Number: ", ds.openOtherInput, ds);
     }
 
     if(ds.issueText != "") {
@@ -280,7 +280,10 @@ void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
     }
 }
 
-bool mainLoop(DrawState& ds, Browser& b, int input)  {
+bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
+
+    ds.lines = lines;
+    ds.columns = cols;
 
     if(ds.handleOpenOther) {
         openPageHandler(ds,input);
@@ -304,7 +307,7 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
                 }
                 ds.openOtherInput = "";
             }
-            mainLoop(ds, b, KEY_RESIZE);
+            mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
         } else {
             auto* clk = b.getCurrentLink();
             ds.header = clk->getLinkDestination().to_string();
@@ -318,13 +321,13 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
     } else if (ds.handleRedirect) {
         handleRedir(ds, input, b);
         if(!ds.handleRedirect) {
-            mainLoop(ds, b, KEY_RESIZE);
+            mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
         }
         return true;
     } else if (ds.handleInput) {
         handleUserInput(ds, b, input);
         if(!ds.handleInput) {
-            mainLoop(ds, b, KEY_RESIZE);
+            mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
         }
         return true;
     }
@@ -343,9 +346,9 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
     } else if (input == 'G'){
         ds.toLowest = true;
     } else if (input == CTRL('d')){
-        ds.y += LINES / 2;
+        ds.y += ds.lines / 2;
     } else if (input == CTRL('u')) {
-        ds.y -= LINES / 2;
+        ds.y -= ds.lines / 2;
     } else if (input == 'r' || input == CTRL('r')){
         b.refresh();
     } else if(input == 'f') {
@@ -359,7 +362,7 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
         ds.y = 0; // todo: make this part of state somewhere.
     } else if(input == 'o') {
         ds.handleOpenOther = true;
-        mainLoop(ds, b, KEY_RESIZE);
+        mainLoop(ds, b, KEY_RESIZE,ds.columns, ds.lines);
     } else if (input == 'e'){
         std::string editor = getEditor();
         std::string dl = b.tryDownloadPage(OUT_LOCATION);
@@ -385,7 +388,7 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
 
             ds.handleInput = true;
             ds.userInput = "";
-            mainLoop(ds, b, KEY_RESIZE);
+            mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
 
         } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39 && !ds.handleRedirect){
             auto* st = b.getCurrentSite();
@@ -395,7 +398,7 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
 
             ds.redirInput = "";
             ds.handleRedirect = true;
-            mainLoop(ds, b, KEY_RESIZE);
+            mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
         }
     }
 

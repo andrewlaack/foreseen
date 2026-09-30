@@ -141,3 +141,18 @@
 ---
 
 - refactoring so that everything can be changed via function inputs (no macros / globals / limit env)
+- be able to edit the url
+- better testing environment
+    - setup my own stuff
+    - faux search engine
+    - status code checkers, stuff like that
+
+---
+
+- benchmark scrolling on large sites
+    - gemini://rawtext.club/~/samhunter/folklore/esr_jargon_file.txt
+        - very slow.
+
+---
+
+- benchmarking

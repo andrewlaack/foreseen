@@ -41,153 +41,183 @@ std::string genAlNumNlSp(const int len) {
 // Puppet entire browser
 
 TEST_CASE("q quits session immediately") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE_FALSE(mainLoop(ds, b, 'q'));
+    ds.bPtr = bPtr;
+    REQUIRE_FALSE(mainLoop(ds, b, 'q',0,0));
+    delete bPtr;
 }
 
 TEST_CASE("RESIZE falls through and returns") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE(mainLoop(ds, b, KEY_RESIZE));
+    ds.bPtr = bPtr;
+    REQUIRE(mainLoop(ds, b, KEY_RESIZE,0,0));
+    delete bPtr;
 }
 
 TEST_CASE("Open page handler returns") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE(mainLoop(ds, b, 'o'));
+    ds.bPtr = bPtr;
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    delete bPtr;
 }
 
 TEST_CASE("Open page and navigate to site") {
-    Browser b {};
+
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'l'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'k'));
-    REQUIRE(mainLoop(ds, b, '.'));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    ds.bPtr = bPtr;
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'l',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'k',0,0));
+    REQUIRE(mainLoop(ds, b, '.',0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    delete bPtr;
 }
 
 TEST_CASE("Open page and search the web") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE(mainLoop(ds, b, 'o'));
+    ds.bPtr = bPtr;
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
 
     std::string rnd = genRandom(10);
     INFO(rnd);
     for(auto& ch : rnd) {
-        REQUIRE(mainLoop(ds, b, ch));
+        REQUIRE(mainLoop(ds, b, ch,0,0));
     }
-    REQUIRE(mainLoop(ds, b, '\n'));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?" + urlEncode(rnd));
+    delete bPtr;
 }
 
 TEST_CASE("Open page after backspacing character") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'l'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, KEY_BACKSPACE));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'k'));
-    REQUIRE(mainLoop(ds, b, '.'));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    ds.bPtr = bPtr;
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'l',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, KEY_BACKSPACE,0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'k',0,0));
+    REQUIRE(mainLoop(ds, b, '.',0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    delete bPtr;
 }
 
 TEST_CASE("Cancel 'o' menu by pressing escape") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'l'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, KEY_BACKSPACE));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'k'));
-    REQUIRE(mainLoop(ds, b, '.'));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 27)); // escape
+    ds.bPtr = bPtr;
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'l',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, KEY_BACKSPACE,0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'k',0,0));
+    REQUIRE(mainLoop(ds, b, '.',0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 27,0,0)); // escape
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+    delete bPtr;
 }
 
 TEST_CASE("Handle redirects") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'n'));
-    REQUIRE(mainLoop(ds, b, 'm'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'n'));
-    REQUIRE(mainLoop(ds, b, '.'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'r'));
-    REQUIRE(mainLoop(ds, b, 'g'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    ds.bPtr = bPtr;
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'n',0,0));
+    REQUIRE(mainLoop(ds, b, 'm',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'n',0,0));
+    REQUIRE(mainLoop(ds, b, '.',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'r',0,0));
+    REQUIRE(mainLoop(ds, b, 'g',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://conman.org");
 
-    REQUIRE(mainLoop(ds, b, 'y')); // follow redirect
+    REQUIRE(mainLoop(ds, b, 'y',0,0)); // follow redirect
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://gemini.conman.org/");
+    delete bPtr;
 
 }
 TEST_CASE("Handle redirect rejection") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'n'));
-    REQUIRE(mainLoop(ds, b, 'm'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'n'));
-    REQUIRE(mainLoop(ds, b, '.'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'r'));
-    REQUIRE(mainLoop(ds, b, 'g'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    ds.bPtr = bPtr;
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'n',0,0));
+    REQUIRE(mainLoop(ds, b, 'm',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'n',0,0));
+    REQUIRE(mainLoop(ds, b, '.',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'r',0,0));
+    REQUIRE(mainLoop(ds, b, 'g',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://conman.org");
 
-    REQUIRE(mainLoop(ds, b, 'n')); // follow redirect
+    REQUIRE(mainLoop(ds, b, 'n',0,0)); // follow redirect
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+    delete bPtr;
 }
 
 TEST_CASE("Enter an input") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
+    ds.bPtr = bPtr;
 
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 't'));
-    REQUIRE(mainLoop(ds, b, 'l'));
-    REQUIRE(mainLoop(ds, b, 'g'));
-    REQUIRE(mainLoop(ds, b, 's'));
-    REQUIRE(mainLoop(ds, b, '.'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'n'));
-    REQUIRE(mainLoop(ds, b, 'e'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 't',0,0));
+    REQUIRE(mainLoop(ds, b, 'l',0,0));
+    REQUIRE(mainLoop(ds, b, 'g',0,0));
+    REQUIRE(mainLoop(ds, b, 's',0,0));
+    REQUIRE(mainLoop(ds, b, '.',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'n',0,0));
+    REQUIRE(mainLoop(ds, b, 'e',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one");
 
-    REQUIRE(mainLoop(ds,b,'o'));
-    REQUIRE(mainLoop(ds,b,'2'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    REQUIRE(mainLoop(ds,b,'o',0,0));
+    REQUIRE(mainLoop(ds,b,'2',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search");
 
@@ -196,34 +226,37 @@ TEST_CASE("Enter an input") {
     INFO(rnd);
 
     for(auto& ch : rnd) {
-        REQUIRE(mainLoop(ds, b, ch));
+        REQUIRE(mainLoop(ds, b, ch,0,0));
     }
 
-    REQUIRE(mainLoop(ds, b, '\n'));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?" + urlEncode(rnd));
+    delete bPtr;
 }
 
 TEST_CASE("Enter an input and then cancel") {
-    Browser b {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
     DrawState ds {};
+    ds.bPtr = bPtr;
 
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 't'));
-    REQUIRE(mainLoop(ds, b, 'l'));
-    REQUIRE(mainLoop(ds, b, 'g'));
-    REQUIRE(mainLoop(ds, b, 's'));
-    REQUIRE(mainLoop(ds, b, '.'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'n'));
-    REQUIRE(mainLoop(ds, b, 'e'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 't',0,0));
+    REQUIRE(mainLoop(ds, b, 'l',0,0));
+    REQUIRE(mainLoop(ds, b, 'g',0,0));
+    REQUIRE(mainLoop(ds, b, 's',0,0));
+    REQUIRE(mainLoop(ds, b, '.',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'n',0,0));
+    REQUIRE(mainLoop(ds, b, 'e',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one");
 
-    REQUIRE(mainLoop(ds,b,'o'));
-    REQUIRE(mainLoop(ds,b,'2'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    REQUIRE(mainLoop(ds,b,'o',0,0));
+    REQUIRE(mainLoop(ds,b,'2',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search");
 
@@ -232,12 +265,13 @@ TEST_CASE("Enter an input and then cancel") {
     INFO(rnd);
 
     for(auto& ch : rnd) {
-        REQUIRE(mainLoop(ds, b, ch));
+        REQUIRE(mainLoop(ds, b, ch,0,0));
     }
 
-    REQUIRE(mainLoop(ds, b, 27)); // escape
+    REQUIRE(mainLoop(ds, b, 27,0,0)); // escape
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one");
+    delete bPtr;
 }
 
 
@@ -245,20 +279,23 @@ TEST_CASE("Only return false on 'q' entry when not using input boxes, never cras
     setenv("EDITOR", "test" , 1);
 
     rc::check("Never return false / fail except with input 'q'", [] (std::string st) {
-        Browser b {};
+        Browser* bPtr = new Browser {};
+        Browser& b = *bPtr;
         DrawState ds {};
+        ds.bPtr = bPtr;
         RC_LOG(st);
         for(auto& cur : st) {
             if(cur == 'q') {
                 if(!ds.handleInput && !ds.handleOpenOther && !ds.handleRedirect) {
-                    REQUIRE_FALSE(mainLoop(ds,b,cur));
+                    REQUIRE_FALSE(mainLoop(ds,b,cur,0,0));
                 } else {
-                    REQUIRE(mainLoop(ds,b,cur));
+                    REQUIRE(mainLoop(ds,b,cur,0,0));
                 }
             } else {
-                REQUIRE(mainLoop(ds,b,cur));
+                REQUIRE(mainLoop(ds,b,cur,0,0));
             }
         }
+        delete bPtr;
     });
 }
 
@@ -266,21 +303,26 @@ TEST_CASE("Only return false on 'q' entry when not using input boxes, alphanumer
     setenv("EDITOR", "test" , 1);
 
     for(int i = 0; i < 10; ++i) {
-        Browser b {};
+        Browser* bPtr = new Browser {};
+        Browser& b = *bPtr;
+
         DrawState ds {};
+        ds.bPtr = bPtr;
         std::string st = genAlNumNlSp(rand()%100);
         INFO(st);
         for(auto& cur : st) {
             if(cur == 'q') {
                 if(!ds.handleInput && !ds.handleOpenOther && !ds.handleRedirect) {
-                    REQUIRE_FALSE(mainLoop(ds,b,cur));
+                    REQUIRE_FALSE(mainLoop(ds,b,cur,0,0));
                 } else {
-                    REQUIRE(mainLoop(ds,b,cur));
+                    REQUIRE(mainLoop(ds,b,cur,0,0));
                 }
             } else {
-                REQUIRE(mainLoop(ds,b,cur));
+                REQUIRE(mainLoop(ds,b,cur,0,0));
             }
         }
+        delete bPtr;
+
     }
 }
 
@@ -291,27 +333,83 @@ TEST_CASE("Open file in editor creates file") {
 
     std::filesystem::remove("/tmp/foreseen/laack.co");
 
-    Browser b {};
-    DrawState ds {};
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
 
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, 'l'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'a'));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'k'));
-    REQUIRE(mainLoop(ds, b, '.'));
-    REQUIRE(mainLoop(ds, b, 'c'));
-    REQUIRE(mainLoop(ds, b, 'o'));
-    REQUIRE(mainLoop(ds, b, '\n'));
+    DrawState ds {};
+    ds.bPtr = bPtr;
+
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, 'l',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'a',0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'k',0,0));
+    REQUIRE(mainLoop(ds, b, '.',0,0));
+    REQUIRE(mainLoop(ds, b, 'c',0,0));
+    REQUIRE(mainLoop(ds, b, 'o',0,0));
+    REQUIRE(mainLoop(ds, b, '\n',0,0));
 
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
 
-    REQUIRE(mainLoop(ds,b,'e'));
+    REQUIRE(mainLoop(ds,b,'e',0,0));
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
 
     REQUIRE(std::filesystem::exists("/tmp/foreseen/laack.co"));
     REQUIRE(std::filesystem::remove("/tmp/foreseen/laack.co"));
+    delete bPtr;
 
+}
+
+TEST_CASE("Basic usage with specified line and col count") {
+
+    setenv("EDITOR", "test" , 1);
+
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
+
+    DrawState ds {};
+    ds.bPtr = bPtr;
+
+    REQUIRE(mainLoop(ds, b, 'o',100,100));
+    REQUIRE(mainLoop(ds, b, 'l',100,100));
+    REQUIRE(mainLoop(ds, b, 'a',100,100));
+    REQUIRE(mainLoop(ds, b, 'a',100,100));
+    REQUIRE(mainLoop(ds, b, 'c',100,100));
+    REQUIRE(mainLoop(ds, b, 'k',100,100));
+    REQUIRE(mainLoop(ds, b, '.',100,100));
+    REQUIRE(mainLoop(ds, b, 'c',100,100));
+    REQUIRE(mainLoop(ds, b, 'o',100,100));
+    REQUIRE(mainLoop(ds, b, '\n',100,100));
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+    delete bPtr;
+}
+
+TEST_CASE("Basic usage with small screen sizes") {
+
+    setenv("EDITOR", "test" , 1);
+
+    for(int i = 0; i < 10; ++i) {
+        int x = rand() % 25;
+        int y = rand() % 10;
+        Browser* bPtr = new Browser {};
+        Browser& b = *bPtr;
+        DrawState ds {};
+        ds.bPtr = bPtr;
+        std::string st = "file:///home/andrew/gitRepos/gemini-browser/tests/sites/all_line_types.gmi";
+
+
+        REQUIRE(mainLoop(ds, b, 'o',x,y));
+
+        for(auto& ch: st) {
+            REQUIRE(mainLoop(ds, b, ch,x,y));
+        }
+
+        REQUIRE(mainLoop(ds, b, '\n',x,y));
+
+        REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "file:///home/andrew/gitRepos/gemini-browser/tests/sites/all_line_types.gmi");
+        delete bPtr;
+    }
 }
 

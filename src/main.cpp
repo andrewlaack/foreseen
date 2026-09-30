@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     int input = 0;
 
     while(true) {
-        bool continueExecution = mainLoop(ds,b,input);
+        bool continueExecution = mainLoop(ds,b,input, COLS,LINES);
         if(!continueExecution) {
             break;
         }
