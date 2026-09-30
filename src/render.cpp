@@ -110,18 +110,26 @@ void draw(DrawState& ds) {
 
     auto* cs = ds.bPtr->getCurrentSite();
 
+    // CS is null or has status 2X
     if (!(cs != nullptr && (cs->getStatusCode() < 20 || cs->getStatusCode() > 29))) {
-        ds.prior = ds.bPtr->renderSite();
+        if(ds.mustReRender) {
+            ds.prior = ds.bPtr->renderSite();
+            ds.mustReRender = false;
+            ds.reBreak = true;
+        }
     }
 
-    auto current = breakLines(ds.prior, std::min(ds.columns, maxWidth), ds.columns);
-    sanitizeCharactersToDraw(current);
+    if(ds.reBreak) {
+        ds.broken  = breakLines(ds.prior, std::min(ds.columns, maxWidth), ds.columns);
+        ds.reBreak = false;
+    }
+    sanitizeCharactersToDraw(ds.broken);
     if(ds.toLowest) {
-        ds.y = lowestPos(current, ds);
+        ds.y = lowestPos(ds.broken, ds);
         ds.toLowest = false;
     }
 
-    ds.y = std::max(0,std::min(ds.y,lowestPos(current,ds)));
+    ds.y = std::max(0,std::min(ds.y,lowestPos(ds.broken,ds)));
 
     erase();
     move(0,(ds.columns / 2) - ((int)ds.header.size() / 2) );
@@ -138,19 +146,19 @@ void draw(DrawState& ds) {
 
     addstr(std::string(ds.columns, ' ').c_str());
 
-    for(int i = ds.y; i - ds.y < ds.lines - 2 && i < (int)current.size(); ++i) {
+    for(int i = ds.y; i - ds.y < ds.lines - 2 && i < (int)ds.broken.size(); ++i) {
         move(i - ds.y + 2, 0);
 
-        attron(COLOR_PAIR(current[i].second.color + 1));
-        if(current[i].second.isBold) {
+        attron(COLOR_PAIR(ds.broken[i].second.color + 1));
+        if(ds.broken[i].second.isBold) {
             attron(A_BOLD);
-            addstr(current[i].first.c_str());
+            addstr(ds.broken[i].first.c_str());
             attroff(A_BOLD);
         }
         else {
-            addstr(current[i].first.c_str());
+            addstr(ds.broken[i].first.c_str());
         }
-        attroff(COLOR_PAIR(current[i].second.color + 1));
+        attroff(COLOR_PAIR(ds.broken[i].second.color + 1));
     }
 
     if (ds.handleRedirect) {
@@ -221,12 +229,14 @@ void handleRedir(DrawState& ds, int input, Browser& b) {
         draw(ds);
         ds.handleRedirect = false;
         tryVisitSite(ds, b, b.getCurrentSite()->getMeta());
+        ds.mustReRender = true;
     }
     if(input == 'n') {
         ds.redirInput = "n";
         draw(ds);
         ds.handleRedirect = false;
         b.goBack();
+        ds.mustReRender = true;
     }
     draw(ds);
 }
@@ -242,6 +252,7 @@ void handleUserInput(DrawState& ds, Browser& b, int sel) {
             tryVisitSite(ds, b, "?"+ds.userInput);
         } else {
             b.goBack();
+            ds.mustReRender = true;
         }
 
         ds.handleInput = false;
@@ -252,6 +263,7 @@ void handleUserInput(DrawState& ds, Browser& b, int sel) {
         ds.handleInput = false;
         draw(ds);
         b.goBack();
+        ds.mustReRender = true;
         draw(ds);
         return;
     }
@@ -272,6 +284,9 @@ void handleUserInput(DrawState& ds, Browser& b, int sel) {
 
 void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
     bool visitSuccess = b.goToSite(site);
+    if(visitSuccess) {
+        ds.mustReRender = true;
+    }
     if(!visitSuccess) {
         ds.issueText = "Unable to access the requested site.";
         ds.timeToClearIssueText = getCurrentTime() + 1000;
@@ -281,6 +296,10 @@ void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
 }
 
 bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
+
+    if(lines != ds.lines || cols != ds.columns) {
+        ds.reBreak = true;
+    }
 
     ds.lines = lines;
     ds.columns = cols;
@@ -298,6 +317,7 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
                         if(res) {
                             ds.y = 0;
                         }
+                        ds.mustReRender = true;
                         break;
                     case STRING_DESTINATION:
                         tryVisitSite(ds, b, destination.destination);
@@ -351,14 +371,17 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
         ds.y -= ds.lines / 2;
     } else if (input == 'r' || input == CTRL('r')){
         b.refresh();
+        ds.mustReRender = true;
     } else if(input == 'f') {
         b.goForward();
+        ds.mustReRender = true;
         ds.y = 0; // todo: make this part of state somewhere.
     } else if(input == 'd') {
         // TODO: Handle outLocation == "" meaning failed
         std::string outLocation = b.tryDownloadPage(OUT_LOCATION);
     } else if(input == 'b') {
         b.goBack();
+        ds.mustReRender = true;
         ds.y = 0; // todo: make this part of state somewhere.
     } else if(input == 'o') {
         ds.handleOpenOther = true;

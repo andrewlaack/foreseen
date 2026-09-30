@@ -7,7 +7,52 @@
 #include <rapidcheck/Log.h>
 #include <string>
 
-TEST_CASE("Benchmarking small file") {
+std::string genAlNumNlSp(const int len) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz\n ";
+    std::string tmp_s;
+    tmp_s.reserve(len);
+
+    for (int i = 0; i < len; ++i) {
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+    
+    return tmp_s;
+}
+
+
+TEST_CASE("Benchmarking large file scrolling") {
+    setenv("EDITOR", "test" , 1);
+    writeStringToFile(genAlNumNlSp(100000), "tests/example.out");
+    BENCHMARK("100k character file, load, scroll down 100x, scroll up 100x with 100x100 emulated terminal size") {
+        Browser* bPtr = new Browser {};
+        Browser& b = *bPtr;
+        DrawState ds {};
+        ds.bPtr = bPtr;
+        std::string st = "file:///home/andrew/gitRepos/gemini-browser/tests/example.out";
+
+        REQUIRE(mainLoop(ds, b, 'o',100,100));
+        for(auto& ch: st) {
+            REQUIRE(mainLoop(ds, b, ch,100,100));
+        }
+        REQUIRE(mainLoop(ds, b, '\n',100,100));
+        REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "file:///home/andrew/gitRepos/gemini-browser/tests/example.out");
+
+        for(int i = 0; i < 100; ++i) {
+            REQUIRE(mainLoop(ds, b, KEY_DOWN,100,100));
+        }
+        for(int i = 0; i < 100; ++i) {
+            REQUIRE(mainLoop(ds, b, KEY_UP,100,100));
+        }
+
+        delete bPtr;
+    };
+}
+
+
+TEST_CASE("Benchmarking small file", "[.]") {
 
     setenv("EDITOR", "test" , 1);
 

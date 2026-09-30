@@ -12,12 +12,15 @@
 
 struct DrawState {
     std::vector<std::pair<std::string, TextRender>> prior;
+    std::vector<std::pair<std::string, TextRender>> broken;
+    bool mustReRender = true;
     Browser* bPtr;
     std::string header;
     int y;
     bool handleInput;
     bool handleOpenOther;
     bool handleRedirect;
+    bool reBreak = true;
     std::string issueText;
     uint64_t timeToClearIssueText;
     std::string redirInput;
