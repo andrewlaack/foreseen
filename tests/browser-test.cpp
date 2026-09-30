@@ -136,16 +136,16 @@ TEST_CASE("Test page downloading.") {
 }
 
 
-TEST_CASE("Test downloading to specific location") {
+TEST_CASE("Test downloading to specific directory") {
     std::filesystem::path cwd = std::filesystem::current_path();
 
     Browser b{};
     b.goToSite("gemini://blog.laack.co");
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://blog.laack.co");
-    std::string destination = b.tryDownloadPage(cwd / "out.gmi");
+    std::string destination = b.tryDownloadPage(cwd);
     std::string out = readFileToString(destination);
     REQUIRE(out == b.getCurrentSite()->getBody());
-    REQUIRE(destination == cwd / "out.gmi");
+    REQUIRE(destination == cwd / "blog.laack.co");
     REQUIRE(std::filesystem::remove(destination));
 }
 
