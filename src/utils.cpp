@@ -167,6 +167,7 @@ std::string getNewTab() {
         "* b -> back a page\n"
         "* f -> forward a page\n"
         "* o -> show url entry / link selection\n"
+        "* e -> open current page in your preferred text editor\n"
         "* (r | C-r) -> refresh page\n"
         ;
     return st;
@@ -418,4 +419,14 @@ void sanitizeCharactersToDraw(std::vector<std::pair<std::string, TextRender>>& s
 
 bool isSendableIfGeminiUrl(const uri& u) {
     return u.get_scheme() != "gemini" || u.to_string().size() <= 1024;
+}
+
+std::string getEditor() {
+    const char* editor = std::getenv("EDITOR");
+    if(editor) {
+        return std::string{editor};
+    } else {
+        // if editor isn't set, default to nano
+        return "nano";
+    }
 }

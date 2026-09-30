@@ -1,4 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
+#include <cstdlib>
+#include <filesystem>
 #include <rapidcheck.h>
 #include "../include/render.hpp"
 #include <ncurses.h>
@@ -240,6 +242,8 @@ TEST_CASE("Enter an input and then cancel") {
 
 
 TEST_CASE("Only return false on 'q' entry when not using input boxes, never crash, junk inputs") {
+    setenv("EDITOR", "test" , 1);
+
     rc::check("Never return false / fail except with input 'q'", [] (std::string st) {
         Browser b {};
         DrawState ds {};
@@ -259,6 +263,8 @@ TEST_CASE("Only return false on 'q' entry when not using input boxes, never cras
 }
 
 TEST_CASE("Only return false on 'q' entry when not using input boxes, alphanumeric inputs") {
+    setenv("EDITOR", "test" , 1);
+
     for(int i = 0; i < 5; ++i) {
         Browser b {};
         DrawState ds {};
@@ -276,5 +282,36 @@ TEST_CASE("Only return false on 'q' entry when not using input boxes, alphanumer
             }
         }
     }
+}
+
+
+TEST_CASE("Open file in editor creates file") {
+
+    setenv("EDITOR", "test" , 1);
+
+    std::filesystem::remove("/tmp/foreseen/laack.co");
+
+    Browser b {};
+    DrawState ds {};
+
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, 'l'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, 'a'));
+    REQUIRE(mainLoop(ds, b, 'c'));
+    REQUIRE(mainLoop(ds, b, 'k'));
+    REQUIRE(mainLoop(ds, b, '.'));
+    REQUIRE(mainLoop(ds, b, 'c'));
+    REQUIRE(mainLoop(ds, b, 'o'));
+    REQUIRE(mainLoop(ds, b, '\n'));
+
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+
+    REQUIRE(mainLoop(ds,b,'e'));
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+
+    REQUIRE(std::filesystem::exists("/tmp/foreseen/laack.co"));
+    REQUIRE(std::filesystem::remove("/tmp/foreseen/laack.co"));
+
 }
 

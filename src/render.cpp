@@ -6,6 +6,8 @@
 #include <chrono>
 #include <csignal>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <ncurses.h>
 #include <locale.h>
@@ -17,6 +19,14 @@
 #ifndef CTRL
 #define CTRL(c) ((c) & 037)
 #endif
+
+#ifdef DEBUG_MODE
+    const char* OUT_LOCATION = "/tmp/foreseen"; // TODO: This is bad. Pass these into fn
+#else
+    const char* OUT_LOCATION = "";
+#endif
+
+
 
 int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs) {
     return (strLs.size() - (LINES - 2)) + 1; // this gives us two new lines at the end because the last line should contain a \n.
@@ -343,14 +353,22 @@ bool mainLoop(DrawState& ds, Browser& b, int input)  {
         ds.y = 0; // todo: make this part of state somewhere.
     } else if(input == 'd') {
         // TODO: Handle outLocation == "" meaning failed
-        std::string outLocation = b.tryDownloadPage();
+        std::string outLocation = b.tryDownloadPage(OUT_LOCATION);
     } else if(input == 'b') {
         b.goBack();
         ds.y = 0; // todo: make this part of state somewhere.
-
     } else if(input == 'o') {
         ds.handleOpenOther = true;
         mainLoop(ds, b, KEY_RESIZE);
+    } else if (input == 'e'){
+        std::string editor = getEditor();
+        std::string dl = b.tryDownloadPage(OUT_LOCATION);
+        if(dl != "") {
+            def_prog_mode();
+            endwin();
+            system((editor + " " + dl).c_str());
+            refresh();
+        }
     }
 
     // this is the loop where we deal with redirects and stuff like that. 

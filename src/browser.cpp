@@ -1,5 +1,6 @@
 #include "../include/browser.hpp"
 #include <cassert>
+#include <filesystem>
 #include <string>
 #include <thread>
 #include <unistd.h>
@@ -15,18 +16,19 @@
 #include <vector>
 
 
-std::string Browser::tryDownloadPage(std::string downloadPath) noexcept {
+std::string Browser::tryDownloadPage(std::string downloadDir) noexcept {
     std::string body = currentSite->getBody();
     Link* current = getCurrentLink();
     assert(current != nullptr); // calling download page should always happen from a page...
 
     std::string destination = encodeAsFilename(current->getLinkDestination());
 
-    if(downloadPath != "") {
-        destination = downloadPath;
-    }
-
     try {
+        if(downloadDir != "") {
+            std::filesystem::path pth = std::filesystem::path(downloadDir);
+            std::filesystem::create_directories(pth);
+            destination = pth / destination;
+        }
         writeStringToFile(body, destination);
     } catch (...) {
         return "";

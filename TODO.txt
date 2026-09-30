@@ -137,3 +137,7 @@
 
 - perf metrics / benchmarks
 - handle downloading in tests...
+
+---
+
+- refactoring so that everything can be changed via function inputs (no macros / globals / limit env)
