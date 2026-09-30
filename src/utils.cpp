@@ -396,7 +396,6 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
     throw std::logic_error("Unexpected input.");
 }
 
-// TODO: Should this be part of the rendering step for the browser or should this remain as post-processing?
 void sanitizeCharactersToDraw(std::vector<std::pair<std::string, TextRender>>& strLs) {
     for(std::size_t i = 0; i < strLs.size(); ++i) {
 

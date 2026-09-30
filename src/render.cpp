@@ -114,6 +114,7 @@ void draw(DrawState& ds) {
     if (!(cs != nullptr && (cs->getStatusCode() < 20 || cs->getStatusCode() > 29))) {
         if(ds.mustReRender) {
             ds.prior = ds.bPtr->renderSite();
+            sanitizeCharactersToDraw(ds.prior);
             ds.mustReRender = false;
             ds.reBreak = true;
         }
@@ -123,7 +124,6 @@ void draw(DrawState& ds) {
         ds.broken  = breakLines(ds.prior, std::min(ds.columns, maxWidth), ds.columns);
         ds.reBreak = false;
     }
-    sanitizeCharactersToDraw(ds.broken);
     if(ds.toLowest) {
         ds.y = lowestPos(ds.broken, ds);
         ds.toLowest = false;

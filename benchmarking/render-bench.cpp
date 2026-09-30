@@ -22,7 +22,6 @@ std::string genAlNumNlSp(const int len) {
     return tmp_s;
 }
 
-
 TEST_CASE("Benchmarking large file scrolling") {
     setenv("EDITOR", "test" , 1);
     writeStringToFile(genAlNumNlSp(100000), "tests/example.out");
