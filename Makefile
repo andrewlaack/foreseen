@@ -15,6 +15,10 @@ clean:
 	rm -rf *.gcda *.gcno
 	rm -rf coverage.info
 	rm -rf coverage-html
+	rm -rf *.svg
+	rm -rf *.data
+	rm -rf *.folded
+	rm -rf *.info
 
 browser-test:
 	${TCOMMAND_P} tests/browser-test.cpp ${TCOMMAND_S} -o test1.out
