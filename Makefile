@@ -17,6 +17,7 @@ clean:
 	rm -rf coverage-html
 	rm -rf *.svg
 	rm -rf *.data
+	rm -rf *.data.old
 	rm -rf *.folded
 	rm -rf *.info
 
