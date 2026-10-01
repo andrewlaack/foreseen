@@ -3,9 +3,12 @@
 #include <cstdint>
 
 ListItem::ListItem(std::string input) {
-    textToRender = input.substr(1);
-    textToRender = stripLeadingWhiteSpace(textToRender);
-    textToRender = "* " + textToRender;
+
+//	list-item        = "*" SP text-line
+// notice that a space is required along with a *. There'd be no reason to remove
+// them and then add them back here, so we just pass everything through.
+
+    textToRender = input;
 }
 
 std::string ListItem::textToDraw() {

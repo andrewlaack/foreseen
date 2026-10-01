@@ -3,11 +3,9 @@
 #include <rapidcheck.h>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
-#include <climits>
 #include <cstdlib>
 #include <ctime>
 #include <filesystem>
-#include <iostream>
 #include <optional>
 #include <rapidcheck/Check.h>
 #include <utility>
@@ -269,7 +267,6 @@ TEST_CASE("Test line parsing handles whitespace correctly") {
 
     std::unordered_map<std::string, LineType> prefixes {};
 
-    prefixes["*"]  = LIST_ITEM;
     prefixes[">"] = QUOTE;
     prefixes["#"] = H1;
     prefixes["##"] = H2;
@@ -341,8 +338,16 @@ TEST_CASE("Proper whitespace compliance") {
         auto res8 = lineToLine(">test quote",  std::nullopt, 1, false);
         REQUIRE(res8->type() == QUOTE);
 
+        // the only one that requires a whitespace, and it must be a space, not tab
         auto res9 = lineToLine("*test li",  std::nullopt, 1, false);
-        REQUIRE(res9->type() == LIST_ITEM);
+        REQUIRE(res9->type() == PLAINTEXT);
+
+        auto res10 = lineToLine("*\ttest li",  std::nullopt, 1, false);
+        REQUIRE(res10->type() == PLAINTEXT);
+
+        auto res11 = lineToLine("*  test li",  std::nullopt, 1, false);
+        REQUIRE(res11->type() == LIST_ITEM);
+        REQUIRE(res11->textToDraw() == "*  test li\n");
     }
 
     SECTION("Non-whitespace based line types don't require whitespace") {
@@ -413,7 +418,7 @@ TEST_CASE("Line parser handles lines that are only format characters without whi
     REQUIRE(res8->type() == QUOTE);
 
     auto res9 = lineToLine("*",  std::nullopt, 1, false);
-    REQUIRE(res9->type() == LIST_ITEM);
+    REQUIRE(res9->type() == PLAINTEXT);
 }
 
 static std::string linecharset = "#>=abc##  de_-><0193248$#)(&@)(*&$#^*&#^%^&*&fghijklmnopqrstuvwxyz #````ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";

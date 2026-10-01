@@ -122,7 +122,7 @@ Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, boo
             Quote* qt= new Quote{input};
             return qt;
         }
-        if(input.substr(0,1) == "*") {
+        if(input.substr(0,2) == "* ") {
             ListItem* li= new ListItem{input};
             return li;
         }
