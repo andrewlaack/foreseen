@@ -22,7 +22,37 @@ std::string genAlNumNlSp(const int len) {
     return tmp_s;
 }
 
-TEST_CASE("Benchmarking large file scrolling") {
+TEST_CASE("Benchmarking huge file scrolling") {
+    setenv("EDITOR", "test" , 1);
+    writeStringToFile(genAlNumNlSp(10000000), "tests/example.out");
+    BENCHMARK("5 passes per iteration, 10m character file, load, scroll down 1000x, scroll up 1000x with 100x100 emulated terminal size") {
+            for(int i = 0; i < 5; ++i) {
+                Browser* bPtr = new Browser {};
+                Browser& b = *bPtr;
+                DrawState ds {};
+                ds.bPtr = bPtr;
+                std::string st = "file:///home/andrew/gitRepos/gemini-browser/tests/example.out";
+
+                REQUIRE(mainLoop(ds, b, 'o',100,100));
+                for(auto& ch: st) {
+                    REQUIRE(mainLoop(ds, b, ch,100,100));
+                }
+                REQUIRE(mainLoop(ds, b, '\n',100,100));
+                REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "file:///home/andrew/gitRepos/gemini-browser/tests/example.out");
+
+                for(int i = 0; i < 1000; ++i) {
+                    REQUIRE(mainLoop(ds, b, KEY_DOWN,100,100));
+                }
+                for(int i = 0; i < 1000; ++i) {
+                    REQUIRE(mainLoop(ds, b, KEY_UP,100,100));
+                }
+            delete bPtr;
+        }
+    };
+}
+
+
+TEST_CASE("Benchmarking large file scrolling", "[.]") {
     setenv("EDITOR", "test" , 1);
     writeStringToFile(genAlNumNlSp(100000), "tests/example.out");
     BENCHMARK("100k character file, load, scroll down 100x, scroll up 100x with 100x100 emulated terminal size") {

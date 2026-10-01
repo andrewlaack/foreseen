@@ -1,5 +1,6 @@
 #include "../include/list-item.hpp"
 #include "../include/utils.hpp"
+#include <cstdint>
 
 ListItem::ListItem(std::string input) {
     textToRender = input.substr(1);
@@ -11,7 +12,7 @@ std::string ListItem::textToDraw() {
     return textToRender + "\n";
 }
 
-int ListItem::getColor() {
+uint8_t ListItem::getColor() {
     return 15;
 }
 

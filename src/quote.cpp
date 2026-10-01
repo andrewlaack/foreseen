@@ -1,5 +1,6 @@
 #include "../include/quote.hpp"
 #include "../include/utils.hpp"
+#include <cstdint>
 #include <ncurses.h>
 
 Quote::Quote(std::string input) {
@@ -12,7 +13,7 @@ std::string Quote::textToDraw() {
     return textToRender + "\n";
 }
 
-int Quote::getColor() {
+uint8_t Quote::getColor() {
     return COLOR_MAGENTA;
 }
 

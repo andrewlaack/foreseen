@@ -1,5 +1,6 @@
 #pragma once
 #include "line.hpp"
+#include <cstdint>
 
 class Quote : public Line {
     private:
@@ -7,7 +8,7 @@ class Quote : public Line {
     public:
         Quote(std::string text);
         std::string textToDraw() override;
-        int getColor() override;
+        uint8_t getColor() override;
         LineType type() override;
         bool isBold() override;
 };

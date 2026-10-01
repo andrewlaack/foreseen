@@ -309,7 +309,10 @@ Site* Browser::getCurrentSite() {
 }
 
 std::vector<std::pair<std::string, TextRender>> Browser::renderSite() {
+
     std::vector<std::pair<std::string, TextRender>> res{};
+    res.reserve(lines.size());
+
     for(auto* line: lines) {
         // TODO: Don't special case this; define an interface.
         if(line->type() == PREFORMATTED) {

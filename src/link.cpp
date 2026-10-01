@@ -1,4 +1,5 @@
 #include "../include/link.hpp"
+#include <cstdint>
 #include <optional>
 #include <string>
 #include "../include/utils.hpp"
@@ -105,7 +106,7 @@ std::string Link::textToDraw() {
     return renderedText + "\n";
 }
 
-int Link::getColor() {
+uint8_t Link::getColor() {
     return COLOR_LINK;
 }
 

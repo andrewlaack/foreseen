@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include "../vendor/uri.hpp"
@@ -12,7 +13,7 @@ class Heading : public Line {
     public:
         Heading(std::string text);
         std::string textToDraw() override;
-        int getColor() override;
+        uint8_t getColor() override;
         LineType type() override;
         bool isBold() override;
 };

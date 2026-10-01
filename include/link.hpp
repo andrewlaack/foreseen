@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include "../vendor/uri.hpp"
@@ -18,7 +19,7 @@ class Link : public Line {
         uri getLinkDestination();
         std::optional<std::string> getLinkText();
         std::string textToDraw() override;
-        int getColor() override;
+        uint8_t getColor() override;
         bool isBold() override;
         LineType type() override;
 };

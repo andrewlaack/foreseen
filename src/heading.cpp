@@ -1,6 +1,7 @@
 #include "../include/heading.hpp"
 #include "../include/errors.hpp"
 #include "../include/utils.hpp"
+#include <cstdint>
 #include <ncurses.h>
 
 Heading::Heading(std::string text) : actualText(text) {
@@ -34,7 +35,7 @@ std::string Heading::textToDraw() {
     }
     throw NotImplemented();
 }
-int Heading::getColor() {
+uint8_t Heading::getColor() {
     switch (headingLevel) {
         case 3:
             return COLOR_CYAN;

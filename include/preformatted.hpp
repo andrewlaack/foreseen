@@ -1,5 +1,6 @@
 #pragma once
 #include "line.hpp"
+#include <cstdint>
 
 class Preformatted : public Line {
     private:
@@ -7,7 +8,7 @@ class Preformatted : public Line {
     public:
         Preformatted(std::string text);
         std::string textToDraw() override;
-        int getColor() override;
+        uint8_t getColor() override;
         LineType type() override;
         bool isBold() override;
 };

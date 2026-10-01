@@ -8,6 +8,8 @@
 #include "../include/errors.hpp"
 #include "../include/plaintext.hpp"
 #include "../include/preformatted.hpp"
+#include <thread>
+#include <threads.h>
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -211,21 +213,18 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
  
     std::vector<std::pair<std::string, TextRender>> res {};
  
-    // DO NOT CHANGE THIS CODE.
-    // If this code is changed the entire JS ecosystem will crash.
-    // This is "load-bearing" code. Only the most sophisticated can implement this from
-    // scratch, hence why it's left to the professionals.
- 
     int leftPadAmount = std::max(0, (cols - width) / 2);
     std::string leftPadStr (leftPadAmount, ' ');
  
     if(width <= 0) {
         return res;
     }
- 
+
+    res.reserve(strLs.size());
+
     for(std::size_t i = 0;  i < strLs.size(); ++i) {
  
-        std::string cstr = strLs[i].first;
+        const std::string& cstr = strLs[i].first;
  
         if(!strLs[i].second.shouldFold) {
             int limit = cols - leftPadAmount;
@@ -240,8 +239,8 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
                 w += cw;
                 end += len;
             }
-            cstr = cstr.substr(0, end); // otherwise there's some funkiness at the end due to how ncurses renders stuff.
-            res.push_back(std::pair<std::string,TextRender> {leftPadStr + cstr, strLs[i].second});
+            std::string rs = cstr.substr(0, end); // otherwise there's some funkiness at the end due to how ncurses renders stuff.
+            res.push_back(std::pair<std::string,TextRender> {leftPadStr + rs, strLs[i].second});
             continue;
         }
  
@@ -280,7 +279,8 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
                 lastSpace = -1;
             }
  
-            current.append(cstr, x, len);
+            std::string cp = cstr;
+            current.append(cp, x, len);
             curWidth += w;
             if(cstr[x] == ' ') {
                 lastSpace = current.size() - 1;
@@ -397,12 +397,15 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
 }
 
 void sanitizeCharactersToDraw(std::vector<std::pair<std::string, TextRender>>& strLs) {
+    std::vector<std::thread> threads{};
+
     for(std::size_t i = 0; i < strLs.size(); ++i) {
 
         std::string& s = strLs[i].first;
-
         std::string out;
-        for (int c: s)
+        out.reserve(s.size());
+
+        for (int c : s)
             if (c == '\r' || c  == '\v' || c == '\b' || c == '\f' || c == '\a' || c == '\0') {
                 continue;
             } else if (c == '\t') {

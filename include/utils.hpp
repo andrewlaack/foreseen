@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <optional>
 #include <filesystem>
 #include <string>
@@ -7,9 +8,9 @@
 #include "../vendor/uri.hpp"
 
 struct TextRender {
-    int color;
-    bool isBold;
-    bool shouldFold = true; // preformatted text doesn't need to be folded.
+    uint8_t color;
+    bool isBold:1;
+    bool shouldFold:1 = true; // preformatted text doesn't need to be folded.
 };
 
 bool isPrefixed(std::string input, std::string prefix);
