@@ -42,11 +42,6 @@ mem-leak-test:
 	valgrind --tool=memcheck ./test4.out
 	rm test4.out
 
-crash-test:
-	${STCOMMAND_P} tests/mem-leak-test.cpp ${COMMAND_S} -o test5.out
-	./test5.out
-	rm test5.out
-
 benchmark:
 	${BCOMMAND_P} benchmarking/render-bench.cpp ${BCOMMAND_S} -o bench1.out
 	perf record -g ./bench1.out
