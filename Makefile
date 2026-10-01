@@ -1,5 +1,9 @@
 include config.mk
 
+# this must be started and running before running tests that do network connections
+server:
+	python3 -m jetforce --dir tests
+
 debug:
 	${DCOMMAND_P} src/main.cpp ${DCOMMAND_S} -o foreseen.out
 

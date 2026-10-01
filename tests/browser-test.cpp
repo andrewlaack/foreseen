@@ -27,7 +27,6 @@ std::string genRandom(const int len) {
 }
 
 
-// TODO: Refactor this to use $HOME
 TEST_CASE( "Basic rendering of all line types" ) {
     Browser b{};
     std::string cwd = std::filesystem::current_path();
@@ -93,7 +92,7 @@ TEST_CASE("Test browser doesn't crash on invalid sites.") {
 
 TEST_CASE("Test browser doesn't crash when accessing sites with specified port number that is not responsive.") {
     Browser b{};
-    bool res = b.goToSite("gemini://laack.co:3847");
+    bool res = b.goToSite("gemini://localhost:3847");
     REQUIRE(!res);
     b.goForward();
     b.goBack();
@@ -103,17 +102,17 @@ TEST_CASE("Test browser doesn't crash when accessing sites with specified port n
 
 TEST_CASE("Test browser can access sites with specified (default) port number.") {
     Browser b{};
-    b.goToSite("gemini://laack.co:1965");
-    REQUIRE(b.getCurrentSite()->getMeta() == "text/gemini;lang=en-US");
+    b.goToSite("gemini://localhost:1965");
+    REQUIRE(b.getCurrentSite()->getMeta() == "text/gemini");
 }
 
 
 // TODO:  Test invalid meta lines (like the case where weird stuff is sent from server)
 TEST_CASE("Test browser returns proper meta for visited sites.") {
     Browser b{};
-    b.goToSite("gemini://laack.co");
+    b.goToSite("gemini://localhost");
     // meta strips status.
-    REQUIRE(b.getCurrentSite()->getMeta() == "text/gemini;lang=en-US");
+    REQUIRE(b.getCurrentSite()->getMeta() == "text/gemini");
 }
 
 

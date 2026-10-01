@@ -172,3 +172,9 @@
     - imports
     - tests
         - remove useless ones
+
+---
+
+Bug:
+
+- can't open localhost from the 'o' menu

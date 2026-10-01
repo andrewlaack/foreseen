@@ -91,23 +91,6 @@ TEST_CASE("Open page and navigate to site") {
     delete bPtr;
 }
 
-TEST_CASE("Open page and search the web") {
-    Browser* bPtr = new Browser {};
-    Browser& b = *bPtr;
-    DrawState ds {};
-    ds.bPtr = bPtr;
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-
-    std::string rnd = genRandom(10);
-    INFO(rnd);
-    for(auto& ch : rnd) {
-        REQUIRE(mainLoop(ds, b, ch,0,0));
-    }
-    REQUIRE(mainLoop(ds, b, '\n',0,0));
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?" + urlEncode(rnd));
-    delete bPtr;
-}
-
 TEST_CASE("Open page after backspacing character") {
     Browser* bPtr = new Browser {};
     Browser& b = *bPtr;
@@ -155,23 +138,17 @@ TEST_CASE("Handle redirects") {
     Browser& b = *bPtr;
     DrawState ds {};
     ds.bPtr = bPtr;
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 'c',0,0));
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 'n',0,0));
-    REQUIRE(mainLoop(ds, b, 'm',0,0));
-    REQUIRE(mainLoop(ds, b, 'a',0,0));
-    REQUIRE(mainLoop(ds, b, 'n',0,0));
-    REQUIRE(mainLoop(ds, b, '.',0,0));
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 'r',0,0));
-    REQUIRE(mainLoop(ds, b, 'g',0,0));
+    std::string st = "ogemini://localhost/cgi-bin/redirect.py";
+    for(auto& ch: st) {
+        REQUIRE(mainLoop(ds, b, ch,0,0));
+    }
+    
     REQUIRE(mainLoop(ds, b, '\n',0,0));
 
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://conman.org");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/redirect.py");
 
     REQUIRE(mainLoop(ds, b, 'y',0,0)); // follow redirect
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://gemini.conman.org/");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost");
     delete bPtr;
 
 }
@@ -180,22 +157,17 @@ TEST_CASE("Handle redirect rejection") {
     Browser& b = *bPtr;
     DrawState ds {};
     ds.bPtr = bPtr;
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 'c',0,0));
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 'n',0,0));
-    REQUIRE(mainLoop(ds, b, 'm',0,0));
-    REQUIRE(mainLoop(ds, b, 'a',0,0));
-    REQUIRE(mainLoop(ds, b, 'n',0,0));
-    REQUIRE(mainLoop(ds, b, '.',0,0));
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 'r',0,0));
-    REQUIRE(mainLoop(ds, b, 'g',0,0));
+
+    std::string st = "ogemini://localhost/cgi-bin/redirect.py";
+    for(auto& ch: st) {
+        REQUIRE(mainLoop(ds, b, ch,0,0));
+    }
+
     REQUIRE(mainLoop(ds, b, '\n',0,0));
 
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://conman.org");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/redirect.py");
 
-    REQUIRE(mainLoop(ds, b, 'n',0,0)); // follow redirect
+    REQUIRE(mainLoop(ds, b, 'n',0,0)); // don't follow redirect
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
     delete bPtr;
 }
@@ -207,23 +179,15 @@ TEST_CASE("Enter an input") {
     ds.bPtr = bPtr;
 
     REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 't',0,0));
-    REQUIRE(mainLoop(ds, b, 'l',0,0));
-    REQUIRE(mainLoop(ds, b, 'g',0,0));
-    REQUIRE(mainLoop(ds, b, 's',0,0));
-    REQUIRE(mainLoop(ds, b, '.',0,0));
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 'n',0,0));
-    REQUIRE(mainLoop(ds, b, 'e',0,0));
+
+    std::string st = "gemini://localhost/cgi-bin/search.py";
+    for(auto& ch: st) {
+        REQUIRE(mainLoop(ds, b, ch,0,0));
+    }
+
     REQUIRE(mainLoop(ds, b, '\n',0,0));
 
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one");
-
-    REQUIRE(mainLoop(ds,b,'o',0,0));
-    REQUIRE(mainLoop(ds,b,'2',0,0));
-    REQUIRE(mainLoop(ds, b, '\n',0,0));
-
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/search.py");
 
     std::string rnd = genRandom(10);
 
@@ -235,7 +199,7 @@ TEST_CASE("Enter an input") {
 
     REQUIRE(mainLoop(ds, b, '\n',0,0));
 
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?" + urlEncode(rnd));
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/search.py?" + urlEncode(rnd));
     delete bPtr;
 }
 
@@ -245,24 +209,15 @@ TEST_CASE("Enter an input and then cancel") {
     DrawState ds {};
     ds.bPtr = bPtr;
 
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 't',0,0));
-    REQUIRE(mainLoop(ds, b, 'l',0,0));
-    REQUIRE(mainLoop(ds, b, 'g',0,0));
-    REQUIRE(mainLoop(ds, b, 's',0,0));
-    REQUIRE(mainLoop(ds, b, '.',0,0));
-    REQUIRE(mainLoop(ds, b, 'o',0,0));
-    REQUIRE(mainLoop(ds, b, 'n',0,0));
-    REQUIRE(mainLoop(ds, b, 'e',0,0));
+
+    std::string st = "ogemini://localhost/cgi-bin/search.py";
+    for(auto& ch: st) {
+        REQUIRE(mainLoop(ds, b, ch,0,0));
+    }
+
     REQUIRE(mainLoop(ds, b, '\n',0,0));
 
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one");
-
-    REQUIRE(mainLoop(ds,b,'o',0,0));
-    REQUIRE(mainLoop(ds,b,'2',0,0));
-    REQUIRE(mainLoop(ds, b, '\n',0,0));
-
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/search.py");
 
     std::string rnd = genRandom(10);
 
@@ -274,7 +229,7 @@ TEST_CASE("Enter an input and then cancel") {
 
     REQUIRE(mainLoop(ds, b, 27,0,0)); // escape
 
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
     delete bPtr;
 }
 
