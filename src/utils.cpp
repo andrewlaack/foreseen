@@ -106,23 +106,23 @@ Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, boo
     }
 
     if(!isPreformatted) {
-        if(input.substr(0,2) == "=>" && isWhiteSpace(input,2)) {
+        if(input.substr(0,2) == "=>") {
             Link* ln = new Link{input, prior, linkCount};
             return ln;
         }
-        if( (input.substr(0,1) == "#" &&      isWhiteSpace(input,1)) ||
-            (input.substr(0,2) == "##" &&    isWhiteSpace(input,2)) ||
-            (input.substr(0,3) == "###" &&   isWhiteSpace(input,3))) {
+        if( (input.substr(0,1) == "#" ) ||
+            (input.substr(0,2) == "##") ||
+            (input.substr(0,3) == "###")) {
 
             Heading* hd = new Heading{input};
             return hd;
         }
 
-        if(input.substr(0,1) == ">" && isWhiteSpace(input,1)) {
+        if(input.substr(0,1) == ">") {
             Quote* qt= new Quote{input};
             return qt;
         }
-        if(input.substr(0,1) == "*" && isWhiteSpace(input,1)) {
+        if(input.substr(0,1) == "*") {
             ListItem* li= new ListItem{input};
             return li;
         }

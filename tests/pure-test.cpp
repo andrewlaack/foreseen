@@ -322,27 +322,27 @@ TEST_CASE("Test line parsing handles whitespace correctly") {
 
 
 TEST_CASE("Proper whitespace compliance") {
-    SECTION("Line types become plaintext when missing proper spacing") {
+    SECTION("Line types without white spacing") {
         auto res1 = lineToLine("",  std::nullopt, -1, false);
         REQUIRE(res1->type() == PLAINTEXT);
 
         auto res3 = lineToLine("=>gemini://laack.co",  std::nullopt, 1, false);
-        REQUIRE(res3->type() == PLAINTEXT);
+        REQUIRE(res3->type() == LINK);
 
         auto res5 = lineToLine("#H1 Heading",  std::nullopt, 1, false);
-        REQUIRE(res5->type() == PLAINTEXT);
+        REQUIRE(res5->type() == H1);
 
         auto res6 = lineToLine("##H2 Heading",  std::nullopt, 1, false);
-        REQUIRE(res6->type() == PLAINTEXT);
+        REQUIRE(res6->type() == H2);
 
         auto res7 = lineToLine("###H3 Heading",  std::nullopt, 1, false);
-        REQUIRE(res7->type() == PLAINTEXT);
+        REQUIRE(res7->type() == H3);
 
         auto res8 = lineToLine(">test quote",  std::nullopt, 1, false);
-        REQUIRE(res8->type() == PLAINTEXT);
+        REQUIRE(res8->type() == QUOTE);
 
         auto res9 = lineToLine("*test li",  std::nullopt, 1, false);
-        REQUIRE(res9->type() == PLAINTEXT);
+        REQUIRE(res9->type() == LIST_ITEM);
     }
 
     SECTION("Non-whitespace based line types don't require whitespace") {
@@ -386,7 +386,7 @@ TEST_CASE("Line parser handles lines that are only format characters with whites
     REQUIRE(res9->type() == LIST_ITEM);
 }
 
-
+// I was wrong on this originally bc the spec states whitespaces are optional.
 TEST_CASE("Line parser handles lines that are only format characters without whitespaces") {
     auto res1 = lineToLine("",  std::nullopt, -1, false);
     REQUIRE(res1->type() == PLAINTEXT);
@@ -395,25 +395,25 @@ TEST_CASE("Line parser handles lines that are only format characters without whi
     REQUIRE(res2->type() == PREFORMATTED);
 
     auto res3 = lineToLine("=>",  std::nullopt, 1, false);
-    REQUIRE(res3->type() == PLAINTEXT);
+    REQUIRE(res3->type() == LINK);
 
     auto res4 = lineToLine("```",  std::nullopt, 1, false);
     REQUIRE(res4->type() == FORMAT_SWITCH);
 
     auto res5 = lineToLine("#",  std::nullopt, 1, false);
-    REQUIRE(res5->type() == PLAINTEXT);
+    REQUIRE(res5->type() == H1);
 
     auto res6 = lineToLine("##",  std::nullopt, 1, false);
-    REQUIRE(res6->type() == PLAINTEXT);
+    REQUIRE(res6->type() == H2);
 
     auto res7 = lineToLine("###",  std::nullopt, 1, false);
-    REQUIRE(res7->type() == PLAINTEXT);
+    REQUIRE(res7->type() == H3);
 
     auto res8 = lineToLine(">",  std::nullopt, 1, false);
-    REQUIRE(res8->type() == PLAINTEXT);
+    REQUIRE(res8->type() == QUOTE);
 
     auto res9 = lineToLine("*",  std::nullopt, 1, false);
-    REQUIRE(res9->type() == PLAINTEXT);
+    REQUIRE(res9->type() == LIST_ITEM);
 }
 
 static std::string linecharset = "#>=abc##  de_-><0193248$#)(&@)(*&$#^*&#^%^&*&fghijklmnopqrstuvwxyz #````ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
