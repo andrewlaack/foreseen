@@ -4,3 +4,6 @@ vgcore*
 *.gcda
 coverage-html/
 *.info
+*.folded
+*.data
+*.svg

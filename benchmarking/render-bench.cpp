@@ -21,8 +21,30 @@ std::string genAlNumNlSp(const int len) {
     
     return tmp_s;
 }
+TEST_CASE("Benchmark web browsing") {
+    setenv("EDITOR", "test" , 1);
 
-TEST_CASE("Benchmarking huge file scrolling") {
+    BENCHMARK("Access my website") {
+        Browser* bPtr = new Browser {};
+        Browser& b = *bPtr;
+        DrawState ds {};
+        ds.bPtr = bPtr;
+        REQUIRE(mainLoop(ds, b, 'o',0,0));
+        REQUIRE(mainLoop(ds, b, 'l',0,0));
+        REQUIRE(mainLoop(ds, b, 'a',0,0));
+        REQUIRE(mainLoop(ds, b, 'a',0,0));
+        REQUIRE(mainLoop(ds, b, 'c',0,0));
+        REQUIRE(mainLoop(ds, b, 'k',0,0));
+        REQUIRE(mainLoop(ds, b, '.',0,0));
+        REQUIRE(mainLoop(ds, b, 'c',0,0));
+        REQUIRE(mainLoop(ds, b, 'o',0,0));
+        REQUIRE(mainLoop(ds, b, '\n',0,0));
+        REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://laack.co");
+        delete bPtr;
+    };
+}
+
+TEST_CASE("Benchmarking huge file scrolling", "[.]") {
     setenv("EDITOR", "test" , 1);
     writeStringToFile(genAlNumNlSp(10000000), "tests/example.out");
     BENCHMARK("5 passes per iteration, 10m character file, load, scroll down 1000x, scroll up 1000x with 100x100 emulated terminal size") {

@@ -49,7 +49,12 @@ crash-test:
 
 benchmark:
 	${BCOMMAND_P} benchmarking/render-bench.cpp ${BCOMMAND_S} -o bench1.out
-	./bench1.out
+	perf record -g ./bench1.out
+	rm bench1.out
+
+flamegraph:
+	perf script | ~/gitRepos/FlameGraph/stackcollapse-perf.pl > out.folded
+	~/gitRepos/FlameGraph/flamegraph.pl out.folded > flamegraph.svg
 
 test: pure-test browser-test fetch-test puppet-test
 	lcov --capture --directory . --output-file coverage.info \
