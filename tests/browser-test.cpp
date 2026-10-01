@@ -178,10 +178,10 @@ TEST_CASE("Test going backwards doesn't break when accessing an invalid site pri
 
 TEST_CASE("Test encoding allows relative linking with : in parameter") {
     Browser b{};
-    b.goToSite("gemini://tlgs.one/search");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search");
+    b.goToSite("gemini://localhost/cgi-bin/search.py");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/search.py");
     b.goToSite("?https://test.com");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://tlgs.one/search?https%3A%2F%2Ftest.com");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/search.py?https%3A%2F%2Ftest.com");
 }
 
 TEST_CASE("Sanitize characters to draw  tests") {
