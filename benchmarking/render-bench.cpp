@@ -95,7 +95,7 @@ TEST_CASE("Benchmarking small file") {
                 DrawState ds {};
                 ds.bPtr = bPtr;
                 std::string cwd = std::filesystem::current_path();
-                std::string st = "file://" + cwd + "/tests/all_line_types.gmi";
+                std::string st = "file://" + cwd + "/tests/sites/all_line_types.gmi";
 
 
                 REQUIRE(mainLoop(ds, b, 'o',x,y));
