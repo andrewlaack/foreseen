@@ -161,3 +161,14 @@
 
 - if I enter some large fucking number like 120349871023948712304987 it searches because stoi probably fails, or our check does. 
 - would be better to hash the rendered site and then do it that way if possible?
+
+- prefetch prefetch (configurable lookahead)
+    - it's fucking annoying that it only looks ahead one step, like why?
+
+- cleanups
+    - function signatures (const, noexcept)
+    - types
+        - ints
+    - imports
+    - tests
+        - remove useless ones

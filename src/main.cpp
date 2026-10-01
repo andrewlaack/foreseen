@@ -1,17 +1,12 @@
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
 #include "../include/render.hpp"
-#include <algorithm>
 #include <cassert>
-#include <chrono>
 #include <csignal>
-#include <cstdint>
 #include <ncurses.h>
 #include <locale.h>
 #include <string>
 #include <unctrl.h>
-#include <utility>
-#include <vector>
 
 int main(int argc, char** argv) {
 
