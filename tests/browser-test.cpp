@@ -30,7 +30,10 @@ std::string genRandom(const int len) {
 // TODO: Refactor this to use $HOME
 TEST_CASE( "Basic rendering of all line types" ) {
     Browser b{};
-    b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/all_line_types.gmi", true);
+    std::string cwd = std::filesystem::current_path();
+    std::string st = "file://" + cwd + "/tests/sites/all_line_types.gmi";
+
+    b.goToSite(st, true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/all_line_types.gmi"));
     auto strLs = b.renderSite();
     auto res = breakLines(strLs, 80,200);
@@ -45,9 +48,13 @@ TEST_CASE( "Basic rendering of all line types" ) {
 
 TEST_CASE( "Basic navigation" ) {
     Browser b{};
-    b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/basic.gmi", true);
+    std::string cwd = std::filesystem::current_path();
+    std::string st = "file://" + cwd + "/tests/sites/basic.gmi";
+    std::string st2 = "file://" + cwd + "/tests/sites/basic_2.gmi";
+
+    b.goToSite(st, true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
-    b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/basic_2.gmi", true);
+    b.goToSite(st2, true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
 }
 
@@ -55,7 +62,10 @@ TEST_CASE( "Basic navigation" ) {
 TEST_CASE( "Local filesystem relative navigation" ) {
 
     Browser b{};
-    b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/basic.gmi", true);
+    std::string cwd = std::filesystem::current_path();
+    std::string st = "file://" + cwd + "/tests/sites/basic.gmi";
+
+    b.goToSite(st, true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
     b.goToSite("basic_2.gmi", true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
@@ -63,7 +73,10 @@ TEST_CASE( "Local filesystem relative navigation" ) {
 
 TEST_CASE ("Local filesystems navigation via links") {
     Browser b{};
-    b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/basic.gmi", true);
+    std::string cwd = std::filesystem::current_path();
+    std::string st = "file://" + cwd + "/tests/sites/basic.gmi";
+
+    b.goToSite(st, true);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
     b.followLinkNumber(1);
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
@@ -174,7 +187,9 @@ TEST_CASE("Test encoding allows relative linking with : in parameter") {
 
 TEST_CASE("Sanitize characters to draw  tests") {
     Browser b {};
-    bool res = b.goToSite("file:///home/andrew/gitRepos/gemini-browser/tests/sites/line-return.gmi");
+    std::string cwd = std::filesystem::current_path();
+    std::string st = "file://" + cwd + "/tests/sites/line-return.gmi";
+    bool res = b.goToSite(st);
 
     REQUIRE(res);
     REQUIRE(b.getCurrentSite()->getStatusCode() >= 20);

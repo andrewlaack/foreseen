@@ -514,8 +514,9 @@ TEST_CASE("Basic usage with small screen sizes") {
         Browser& b = *bPtr;
         DrawState ds {};
         ds.bPtr = bPtr;
-        std::string st = "file:///home/andrew/gitRepos/gemini-browser/tests/sites/all_line_types.gmi";
 
+        std::string cwd = std::filesystem::current_path();
+        std::string st = "file://" + cwd + "/tests/sites/all_line_types.gmi";
 
         REQUIRE(mainLoop(ds, b, 'o',x,y));
 
@@ -525,7 +526,7 @@ TEST_CASE("Basic usage with small screen sizes") {
 
         REQUIRE(mainLoop(ds, b, '\n',x,y));
 
-        REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "file:///home/andrew/gitRepos/gemini-browser/tests/sites/all_line_types.gmi");
+        REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == st);
         delete bPtr;
     }
 }
