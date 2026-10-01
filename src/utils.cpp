@@ -192,6 +192,12 @@ int u8len(unsigned char c) {
 }
  
 int u8width(const std::string& s, std::size_t i, int len) {
+
+    unsigned char c = static_cast<unsigned char>(s[i]);
+    if (len == 1 && c < 0x80) {
+        return (c >= 0x20 && c != 0x7F) ? 1 : 0;
+    }
+
     std::mbstate_t st {};
     wchar_t wc;
     if (std::mbrtowc(&wc, s.data() + i, len, &st) != (std::size_t)len) {
