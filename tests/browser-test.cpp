@@ -1,15 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
-#include <experimental/filesystem>
 #include <rapidcheck.h>
 #include <cstdlib>
-#include <ctime>
-#include <iostream>
 #include <filesystem>
 #include <rapidcheck/Assertions.h>
 #include <utility>
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
-
 
 std::string genRandom(const int len) {
     static const char alphanum[] =
@@ -36,7 +32,6 @@ TEST_CASE( "Basic rendering of all line types" ) {
     REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/all_line_types.gmi"));
     auto strLs = b.renderSite();
     auto res = breakLines(strLs, 80,200);
-    // TODO: Make this bound tighter by computing left pad amount. 
     for(auto& st: res) {
         if(st.second.shouldFold) {
             REQUIRE(st.first.size() <= 200);
@@ -119,28 +114,28 @@ TEST_CASE("Test browser returns proper meta for visited sites.") {
 TEST_CASE("Test browser doesn't crash on invalid link number following, excessive back, and excessive forwards.") {
 
     Browser b{};
-    b.goToSite("gemini://blog.laack.co/feed.xml");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://blog.laack.co/feed.xml");
+    b.goToSite("gemini://localhost/sites/feed.xml");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/feed.xml");
     for(int i = 0; i < 1000; ++i) {
         b.followLinkNumber(i);
     }
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://blog.laack.co/feed.xml");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/feed.xml");
     b.goBack();
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
     b.goForward();
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://blog.laack.co/feed.xml");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/feed.xml");
     b.goBack();
     b.goBack();
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
     b.goForward();
     b.goForward();
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://blog.laack.co/feed.xml");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/feed.xml");
 }
 
 TEST_CASE("Test page downloading.") {
     Browser b{};
-    b.goToSite("gemini://blog.laack.co");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://blog.laack.co");
+    b.goToSite("gemini://localhost/sites/");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/");
     std::string destination = b.tryDownloadPage();
     std::string out = readFileToString(destination);
     REQUIRE(out == b.getCurrentSite()->getBody());
@@ -152,12 +147,12 @@ TEST_CASE("Test downloading to specific directory") {
     std::filesystem::path cwd = std::filesystem::current_path();
 
     Browser b{};
-    b.goToSite("gemini://blog.laack.co");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://blog.laack.co");
+    b.goToSite("gemini://localhost/sites/");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/");
     std::string destination = b.tryDownloadPage(cwd);
     std::string out = readFileToString(destination);
     REQUIRE(out == b.getCurrentSite()->getBody());
-    REQUIRE(destination == cwd / "blog.laack.co");
+    REQUIRE(destination == cwd / "localhost_sites_");
     REQUIRE(std::filesystem::remove(destination));
 }
 

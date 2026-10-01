@@ -73,10 +73,10 @@ TEST_CASE("Match status code on missing .gmi files") {
 
 TEST_CASE("Send basic gemini requests") {
     auto client = GeminiClient {};
-    auto ln = Link{"=> gemini://laack.co"};
+    auto ln = Link{"=> gemini://localhost"};
     Site* s = client.fetchSite(ln);
     REQUIRE(s->getStatusCode() == 20);
-    REQUIRE(s->getHeader() == "20 text/gemini;lang=en-US");
+    REQUIRE(s->getHeader() == "20 text/gemini");
     delete s;
 }
 

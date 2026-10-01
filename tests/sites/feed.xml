@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+<title>Andrew's Blog</title>
+<link>https://blog.laack.co</link>
+<description>Latest posts from Andrew's blog</description>
+<language>en-us</language>
+<managingEditor>andrew@laack.co</managingEditor>
+<webMaster>andrew@laack.co</webMaster>
+<lastBuildDate>Sun, 20 Sep 2026 21:56:48 -0500</lastBuildDate>
+<atom:link href="https://blog.laack.co/feed.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title><![CDATA[PyGame vs. Raylib]]></title>
+<link>https://blog.laack.co/pygame-vs-raylib.html</link>
+<description><![CDATA[<p>I implemented <a href="https://cp-algorithms.com/graph/mst_prim.html">Prim’s algorithm</a> to create a MST of a graph in Python. I also created a visualization of it, shown below.</p>
+<p><video src="videos/prim.mkv" controls=""><a href="videos/prim.mkv">Video</a></video></p>
+<p>(This graph has 250 vertices and 1,000 edges. The source code used to generate this visualization can be found <a href="https://git.laack.co/blog/file/python/pygame-vs-raylib/prim.py.html">here</a>)</p>
+<p>Prim’s algorithm is worth understanding (albeit out of scope), and the problem it solves is finding the set of edges that minimizes the sum of their weights while guaranteeing there is exactly one path between any two vertices in the connected, weighted, undirected graph. In the case of my implementation, the weight of each edge was its length.</p>
+<p>As it relates to the animation, the following two things should be apparent:</p>
+<ol type="1">
+<li>The first frame must draw every edge and vertex of the graph in a greyed-out color.</li>
+<li>Each subsequent frame only has to draw one additional edge, the newly traversed edge, and one additional vertex, the vertex we are visiting.</li>
+</ol>
+<p>While we could render each frame from scratch based on the graph’s state, any reasonable rendering program has the ability to additively draw geometries to avoid this re-computation, and I care a bit about performance (even though this is written in Python*). Since PyGame and Raylib both support this, I’ll be using additive rendering in both of my implementations.</p>
+<p>* I did rewrite the animation in C++ using Raylib so I could make it <a href="https://git.laack.co/abg/">my X11 wallpaper</a>, but that’s for another blog post.</p>
+<h2 id="raylib">Raylib</h2>
+<h3 id="implementation">Implementation</h3>
+<p>Raylib has 2D rendered textures that can persist across frames. Here’s some Python code that makes use of them to visualize Prim’s algorithm:</p>
+<pre class="python"><code>import pyray as pr
+
+# ... (other imports, Vertex class definition, Edge class definition)
+
+pr.init_window(screen_width, screen_height, &quot;prim&quot;)
+
+# ... (other initialization)
+
+texture = pr.load_render_texture(screen_width,screen_height)
+
+while !done:
+    if first:
+        start = time.monotonic_ns()
+
+        # After calling begin_texture_mode(texture) all writes will be 
+        # sent to the texture without having to specify we&#39;re writing to the 
+        # texture. This is also how begin_drawing() works, but for frames.
+
+        pr.begin_texture_mode(texture)
+        pr.clear_background(pr.BLACK)
+
+        for edge in edge_list:
+            edge.draw_edge(pr.DARKGRAY)
+        for vertex in graph:
+            vertex.draw_vertex(pr.DARKGRAY)
+
+        pr.end_texture_mode()
+
+        source_rec = pr.Rectangle(0, 0, screen_width, screen_height)
+        dest_rec = pr.Rectangle(0, 0, screen_width, screen_height)
+
+        pr.begin_drawing()
+        pr.draw_texture_pro(texture.texture, source_rec, dest_rec, pr.Vector2(0, 0), 0, pr.WHITE)
+        pr.end_drawing()
+
+        first = False
+
+        end = time.monotonic_ns()
+        first_times.append(end - start)
+
+        continue
+
+    # ... (perform one step of Prim&#39;s algorithm)
+
+    if len(to_draw_edge) != 0 or len(to_draw_vert) != 0:
+        start = time.monotonic_ns()
+
+        pr.begin_texture_mode(texture)
+
+        for edge in to_draw_edge:
+            edge.draw_edge(pr.WHITE)
+        for vert in to_draw_vert:
+            vert.draw_vertex(pr.WHITE)
+
+        pr.end_texture_mode()
+
+        source_rec = pr.Rectangle(0, 0, screen_width, screen_height)
+        dest_rec = pr.Rectangle(0, 0, screen_width, screen_height)
+
+        pr.begin_drawing()
+        pr.draw_texture_pro(texture.texture, source_rec, dest_rec, pr.Vector2(0, 0), 0, pr.WHITE)
+        pr.end_drawing()
+
+        end = time.monotonic_ns()
+        redraw_times.append(end - start)
+
+        to_draw_vert = []
+        to_draw_edge = []</code></pre>
+<p>Before our main iteration loop we initialize our texture. Then on our first iteration of the loop we draw each of the edges and vertices in our graph. On each subsequent iteration we only draw vertices added to <code>to_draw_vert</code> and edges added to <code>to_draw_edge</code>. Both lists are populated with edges and vertices that were visited since the last frame was rendered.</p>
+<p>This code is also instrumented to track the amount of time the first frame takes to render, and the amount of time each subsequent frame takes to render as well.</p>
+<p>Not included above are our Vertex and Edge classes which both implement draw functions. These functions have the following lines to draw geometries with Raylib:</p>
+<pre class="python"><code>pr.draw_circle(int(self.x),int(self.y), RADIUS, c) # vertex
+pr.draw_line(int(self.v1.x), int(self.v1.y), int(self.v2.x), int(self.v2.y), c) # edge</code></pre>
+<p>Per the code comment in the larger code snippet, Raylib uses global state to track which canvas is being drawn to, so these functions can be called in texture mode or drawing mode with a similar effect.</p>
+<h2 id="pygame">PyGame</h2>
+<h3 id="implementation-1">Implementation</h3>
+<p>PyGame persists frame state across frames by default so we don’t have to mess with rendered textures like we did with Raylib! Here’s a some code that does the PyGame rendering:</p>
+<pre class="python"><code>
+# ... (imports and such)
+
+pygame.init()
+display = pygame.display.set_mode((screen_width,screen_height))
+
+# ... (other initialization)
+
+while !done:
+    if first:
+        start = time.monotonic_ns()
+
+        display.fill(BLACK)
+
+        for edge in edge_list:
+            edge.draw_edge(display, LIGHT_GREY)
+        for vertex in graph:
+            vertex.draw_vertex(display, LIGHT_GREY)
+
+        pygame.display.update()
+
+        end = time.monotonic_ns()
+        first_time.append(end - start)
+
+        first = False
+        continue
+
+    # ... (perform one step of Prim&#39;s algorithm)
+
+    start = time.monotonic_ns()
+
+    for edge in to_draw_edge:
+        edge.draw_edge(display, white)
+    for vert in to_draw_vert:
+        vert.draw_vertex(display, white)
+
+    pygame.display.update()
+    end = time.monotonic_ns()
+
+    to_draw_vert = []
+    to_draw_edge = []</code></pre>
+<p>I find this code to be more readable than the Raylib code because we don’t have to maintain a standalone texture, and I also like how writing to a display is more explicit in PyGame:</p>
+<pre class="python"><code>pygame.draw.circle(display, WHITE, (self.x,self.y), RADIUS)
+pygame.draw.line(display, WHITE, (self.v1.x,self.v1.y), (self.v2.x,self.v2.y), LINE_WIDTH)</code></pre>
+<p>(notice the first parameter is the surface to write to)</p>
+<p>Despite this, the final <code>pygame.display.update()</code> is still using global state, which feels a bit strange given we have to specify which surface we are drawing to.</p>
+<h2 id="benchmarking">Benchmarking</h2>
+<p>The benchmarks were executed under the following conditions:</p>
+<ul>
+<li>Vertex count: 2,500</li>
+<li>Edge count: 25,000</li>
+<li>Screen dimensions: 5120x1440</li>
+<li>CPU: 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz (4 cores, 8 threads)</li>
+<li>iGPU: Intel Corporation TigerLake-LP GT2 [Iris Xe Graphics]</li>
+<li>OS: Arch Linux</li>
+</ul>
+<p>Additionally, the metrics are all <strong>averages</strong> across 10 full runs.</p>
+<table>
+<thead>
+<tr>
+<th>Library</th>
+<th>First frame time (ms)</th>
+<th>Incremental frame time (ms)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Raylib</td>
+<td>29.87 ± 0.74</td>
+<td>2.88 ± 1.11</td>
+</tr>
+<tr>
+<td>PyGame</td>
+<td>323.39 ± 44.60</td>
+<td>5.59 ± 0.65</td>
+</tr>
+</tbody>
+</table>
+<p>In this benchmark Raylib’s average incremental frame render time was ~2x faster than PyGame’s, and its first frame render time was ~11x faster.</p>
+<h3 id="why-is-pygame-so-slow">Why Is PyGame So Slow?</h3>
+<p>Let’s instrument our code to dig deeper:</p>
+<pre class="python"><code>if first:
+    start = time.monotonic_ns()
+    display.fill(BLACK)
+
+    edge_times = [] # new
+    vertex_times = [] # new
+
+    for edge in edge_list:
+        se = time.monotonic_ns() # new
+        edge.draw_edge(display, LIGHT_GREY)
+        ee = time.monotonic_ns() # new
+        edge_times.append(ee - se) # new
+
+    for vertex in graph:
+        sv = time.monotonic_ns() # new
+        vertex.draw_vertex(display, LIGHT_GREY)
+        ev = time.monotonic_ns() # new
+        vertex_times.append(ev - sv) # new
+
+    pygame.display.update()
+    end = time.monotonic_ns()
+    first_time.append(end - start)
+
+    first = False
+
+    print(&quot;Edge time avg: &quot; + str(sum(edge_times) / len(edge_times))) # new 
+    print(&quot;Vertex time avg: &quot; + str(sum(vertex_times) / len(vertex_times))) # new
+
+    continue</code></pre>
+<p>(Notice the addition of timing for individual edge and vertex draw times for the first frame)</p>
+<p>Let’s also update our Raylib code to do the same:</p>
+<pre class="python"><code>if first:
+    start = time.monotonic_ns()
+    pr.begin_texture_mode(texture)
+    pr.clear_background(pr.BLACK)
+
+    edge_times = [] # new
+    vertex_times = [] # new
+
+    for edge in edge_list:
+        es = time.monotonic_ns() # new
+        edge.draw_edge(pr.DARKGRAY)
+        ee = time.monotonic_ns() # new
+        edge_times.append(ee - es) # new
+    for vertex in graph:
+        vs = time.monotonic_ns() # new
+        vertex.draw_vertex(pr.DARKGRAY)
+        ve = time.monotonic_ns() # new
+        vertex_times.append(ve - vs) # new
+
+    pr.end_texture_mode()
+
+    source_rec = pr.Rectangle(0, 0, screen_width, screen_height)
+    dest_rec = pr.Rectangle(0, 0, screen_width, screen_height)
+
+    pr.begin_drawing()
+    pr.draw_texture_pro(texture.texture, source_rec, dest_rec, pr.Vector2(0, 0), 0, pr.WHITE)
+    pr.end_drawing()
+
+    end = time.monotonic_ns()
+    first_time.append(end - start)
+
+    first = False
+
+    print(&quot;Edge time avg: &quot; + str(sum(edge_times) / len(edge_times))) # new
+    print(&quot;Vertex time avg: &quot; + str(sum(vertex_times) / len(vertex_times))) # new
+
+    continue</code></pre>
+<p>Running this updated code once we find:</p>
+<table>
+<thead>
+<tr>
+<th>Library</th>
+<th>Avg. Edge Draw Time (ns)</th>
+<th>Avg. Vertex Draw Time (ns)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PyGame</td>
+<td>9504.15048</td>
+<td>686.6508</td>
+</tr>
+<tr>
+<td>Raylib</td>
+<td>944.15884</td>
+<td>3016.1852</td>
+</tr>
+</tbody>
+</table>
+<p>PyGame is faster at drawing vertices (circles), but slower at drawing edges (lines). Since we are drawing many more edges than we are vertices, this contributes to making PyGame slower.</p>
+<p>PyGame is slower at drawing lines because it uses SDL which computes lines pixel by pixel on the CPU*, while Raylib appends the line ends to a queue for batch processing, to be asynchronously processed by the GPU.</p>
+<p>In the case of vertices, Raylib calls <code>DrawCircleSector()</code>, and this in turn appends geometries to the GPU drawing queue, but each circle is made of many discrete geometries which are each appended to the queue, costing cycles. Contrasting this with the PyGame approach where PyGame only has to draw a few pixels onto the surface.</p>
+<p>* There are ways to change the rendering pipeline for PyGame to make better use of GPUs, but these approaches are either complex or experimental.</p>
+<h4 id="is-that-why-pygame-is-slower">Is that why PyGame is slower?</h4>
+<p>That’s not the fully story. Let’s consider what the numbers above mean. The first frame renders 2,500 vertices, 25,000 edges. Each subsequent frame renders 1 vertex and 1 edge. If we multiply these numbers with the values we calculated for the amount of time each draw takes, we get the following expected frame times:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Library</th>
+<th>Expected First Frame Draw Time (ms)</th>
+<th>Expected Subsequent Frame Draw Time (ms)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PyGame</td>
+<td>239.3204</td>
+<td>0.0101908</td>
+</tr>
+<tr>
+<td>Raylib</td>
+<td>31.14443</td>
+<td>0.003960344</td>
+</tr>
+</tbody>
+</table>
+<p>Based on this, we see the first frame times are on par with what we actually saw in our benchmarking, but the subsequent frame draw times are orders of magnitude faster than what we benchmarked, and since most frames are subsequent frames, they are severely impacting performance. Let’s see if we can figure out why this disparity exists.</p>
+<h5 id="pygame-flamegraph">PyGame Flamegraph</h5>
+<p><img src="images/pygame-flamegraph.svg" /></p>
+<h5 id="raylib-flamegraph">Raylib Flamegraph</h5>
+<p><img src="images/rlib-flamegraph.svg" /></p>
+<p>We see most of our time is being spent in <code>EndDrawing()</code> for Raylib and <code>pygame.display.update()</code> for Pygame. After instrumenting these calls we find the following times per invocation:</p>
+<table>
+<thead>
+<tr>
+<th>Library</th>
+<th>Function</th>
+<th>Average Call Time (ms)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PyGame</td>
+<td><code>EndDrawing()</code></td>
+<td>5.677199</td>
+</tr>
+<tr>
+<td>Raylib</td>
+<td><code>pygame.display.update()</code></td>
+<td>2.680623</td>
+</tr>
+</tbody>
+</table>
+<p>Based on our original frame time benchmarks, these calls make up almost all of the time spent rendering subsequent frames.</p>
+<h4 id="what-are-these-functions-doing">What Are These Functions Doing?</h4>
+<p>In the case of Raylib, EndDrawing does a few things:</p>
+<ol type="1">
+<li>Calls <code>rlDrawRenderBatchActive()</code>
+<ul>
+<li>This clears the batched geometries queue, issuing the OpenGL calls</li>
+</ul></li>
+<li>Calls <code>SwapScreenBuffer()</code>
+<ul>
+<li>This swaps the buffer the display scans out. In effect, this ensures the frame we just drew becomes visible.</li>
+<li>This is done by with <code>glfwSwapBuffers()</code>, but this is beyond scope as it requires an understanding of OpenGL and double buffering.</li>
+<li>In the normal case (which is how our code uses it), this function returns after the instructions have been issued, not once the frame has been rendered.</li>
+</ul></li>
+<li>Optionally waits to hit the target framerate in cases where rendering is happening faster than the target</li>
+</ol>
+<p>Most of the time spent here is on the second step. This is because issuing the instructions to swap will flush the driver’s command stream, and once a few frames are in flight, this will block until the GPU retires one.</p>
+<p>Let’s step through the PyGame <code>update()</code> function too:</p>
+<ol type="1">
+<li>Calls <code>pg_update()</code> in <code>src_c/display.c</code>
+<ul>
+<li>This performs some basic checks to make sure a display is set</li>
+</ul></li>
+<li><code>pg_update()</code> calls <code>SDL_UpdateWindowSurfaceRects</code>
+<ul>
+<li>This copies the buffer into a buffer owned by the windowing system (X11 in my case)</li>
+</ul></li>
+</ol>
+<p>The main reason this is slower is PyGame copies the whole frame on the CPU for each frame while Raylib’s frame is already in VRAM and the swap doesn’t <a href="https://en.wikipedia.org/wiki/Bit_blit">blit</a>.</p>
+<h2 id="takeaways">Takeaways</h2>
+<p>Out of the box Raylib has better performance because it performs hardware accelerated rendering. In terms of ergonomics, they both have their own quirks. Raylib feels like a C library with Python bindings (because it is!), while PyGame feels inconsistent, mixing both explicit surface drawing, and global state for frame updates.</p>
+<p>Personally, I’m not keen on using PyGame again because I enjoy writing performant software, and the reality of Python is it can’t be performant. This doesn’t mean I won’t ever write Python code again, it’s useful for first passes at a problem, but if I want to productionize that software I’ll have to rewrite it in a sensible programming language. The nice thing about doing a first pass on a project in Raylib is you can then rewrite it in C using Raylib directly, but the same isn’t true for PyGame.</p>]]></description>
+<pubDate>Sun, 20 Sep 2026 00:00:00 -0500</pubDate>
+<guid>https://blog.laack.co/pygame-vs-raylib.html</guid>
+</item>
+<item>
+<title><![CDATA[Easily Hostable Protocols Over Applications]]></title>
+<link>https://blog.laack.co/easily-hostable-protocols-over-applications.html</link>
+<description><![CDATA[<p>Motivated by Joshua Blais’ blog post about using the internet like it’s 1999 [1] I wanted to discuss an application and a protocol with characteristics that make them bad from a user freedom perspective. I also want to discuss solutions.</p>
+<h2 id="zulip">Zulip</h2>
+<p>Zulip [2] is an instant messaging program that looks like a bastion of freedom. I thought it was because it is free software which ought to be the epitome of user freedom, but it is not that simple. Free software is necessary but not sufficient for appropriate user freedom.</p>
+<p>Try to find a third party Zulip client for GNU/Linux. You will not. This frequently happens when you use applications and not protocols. Let’s consider three alternative protocols that facilitate instant messaging:</p>
+<ol type="1">
+<li>IRC</li>
+<li>XMPP</li>
+<li>Matrix</li>
+</ol>
+<p>Look for third party clients for any of these and they will abound. These protocols were sensibly designed to give users the freedom to decide how they interact with their data and the data others show them.</p>
+<p>Nothing is stopping you from creating a third-party client for Zulip. The problem is applications aren’t designed with this in mind, but protocols are. The main reason applications generally have so few clients is they frequently change their interfaces in breaking ways. Quality protocols are designed from the ground up to ensure consistent interfaces, often with backwards compatibility in mind.</p>
+<h2 id="at-protocol">AT Protocol</h2>
+<p>The AT Protocol [3] is used by the social network Bluesky. This is a common way people introduce the protocol, and it should give you pause that a protocol is frequently associated with a singular company and social network.</p>
+<p>Choices in the design of the AT Protocol have led to it being too costly for individuals to run full-fledged servers (see [4] for details). This results in most AT Protocol users being entirely dependent on the Bluesky organization [5] (this link is worth following). Having a strong reliance on a VC backed social media company [6] is a good way to become the product when investors demand returns. This also limits freedom by having a centralized authority with the ability to censor speech [7].</p>
+<p>An alternative to the AT Protocol is ActivityPub. Mastodon [8] uses ActivityPub to facilitate microblogging, and the software can be hosted on cheap hardware without a reliance on a third-party. Proponents of the AT Protocol may claim the two perform different functions, and I agree, but the centralized feed functionality the AT Protocol can provide but ActivityPub can’t is something I consider to be deeply problematic from a human psychology perspective. As such, while ActivityPub can’t directly replace “your” BlueSky feed, it will give you a healthier microblogging experience. With that said, I think the case for microblogging is lacking, and individuals should consider if microblogs, both their own and those of others, are worthwhile (my answer is emphatically no).</p>
+<h2 id="proposition">Proposition</h2>
+<p>Host your own services for the dissemination of information, ensuring the services you host implement protocols designed for the type of information you are disseminating.</p>
+<p>I use Git (not GitHub) for software distribution, RSS, Gemini [9], and HTTP for broadcasted textual information, email for bidirectional individual or small group communication, and XMPP or IRC for larger group communication. These are the protocols built for these use cases, and they should be used as such.</p>
+<h2 id="citations">Citations</h2>
+<p>[1] - <a href="https://joshblais.com/blog/using-the-internet-like-its-1999/">https://joshblais.com/blog/using-the-internet-like-its-1999/</a></p>
+<p>[2] - <a href="https://zulip.com">https://zulip.com</a></p>
+<p>[3] - <a href="https://en.wikipedia.org/wiki/AT_Protocol">https://en.wikipedia.org/wiki/AT_Protocol</a></p>
+<p>[4] - <a href="https://dustycloud.org/blog/how-decentralized-is-bluesky/">https://dustycloud.org/blog/how-decentralized-is-bluesky/</a></p>
+<p>[5] - <a href="https://arewedecentralizedyet.online/">https://arewedecentralizedyet.online/</a></p>
+<p>[6] - <a href="https://bsky.social/about/blog/03-19-2026-series-b">https://bsky.social/about/blog/03-19-2026-series-b</a></p>
+<p>[7] - <a href="https://bsky.social/about/support/community-guidelines">https://bsky.social/about/support/community-guidelines</a></p>
+<p>[8] - <a href="https://joinmastodon.org/">https://joinmastodon.org/</a></p>
+<p>[9] - <a href="http://geminiprotocol.net/">http://geminiprotocol.net/</a></p>]]></description>
+<pubDate>Sat, 25 Apr 2026 00:00:00 -0500</pubDate>
+<guid>https://blog.laack.co/easily-hostable-protocols-over-applications.html</guid>
+</item>
+<item>
+<title><![CDATA[Config Files Suck]]></title>
+<link>https://blog.laack.co/config-files-suck.html</link>
+<description><![CDATA[<p>Config files suck for three main reasons.</p>
+<h2 id="reasons">Reasons</h2>
+<ol type="1">
+<li>They often require learning an idiosyncratic way of defining things that doesn’t generalize across programs</li>
+<li>They are annoying to version and track</li>
+<li>They limit the configurability of software</li>
+</ol>
+<h2 id="explanation">Explanation</h2>
+<h3 id="learning-useless-things-sucks">Learning Useless Things Sucks</h3>
+<p>Config files suck because learning useless things sucks. Most config files follow their own definition format. This results in ephemeral information being learned and very quickly forgotten. Often this process repeats a few times for pieces of software that require reconfiguration to meet the expectations of the user.</p>
+<p>The time spent understanding the DSL of the config file would likely be better spent writing code in a proper programming language. There are two primary benefits to this. First, it builds on prior experience. If you are skilled at writing C code your ability to understand and configure software that is configured in C is improved by this prior knowledge. Second, by doing this process of configuration you are learning information that is likely less ephemeral. There are only a few good programming languages and by programming in them your proficiency in using them increases.</p>
+<h3 id="the-disconnect-between-configuration-and-source-code-sucks">The Disconnect Between Configuration and Source Code Sucks</h3>
+<p>Consider my dotfiles [1]. There are three files in my dotfiles that don’t reside in the XDG_CONFIG_HOME directory. These three files are my .bashrc, my .Xresources, and my .xinitrc files. I have these in my XDG_CONFIG_HOME directory and symlink to them from their expected locations because the programs don’t respect the XDG_CONFIG_HOME directory specification. This is annoying to setup on each system I use. A simple solution to this is to not use software that doesn’t respect the spec, but when Xorg and Bash don’t respect the spec, it becomes a bit more difficult to do so.</p>
+<p>The bigger issue is that the disconnect between the configuration of software and source code results in multiple sources of information contributing to the configuration of a software program. This is annoying because to achieve the same program configuration across systems one must ensure two different locations are synchronized instead of one.</p>
+<h3 id="being-limited-in-what-you-can-change-about-programs-sucks">Being Limited in What You Can Change About Programs Sucks</h3>
+<p>Config files often don’t allow for large changes to be made to programs. The changes that can be made are constrained to what is deemed reasonable by the developers of the software. This is not similar to proprietary software where the developers actively hinder the freedom of users, but by having the source code and the configuration done in the same location, you can fundamentally change the operation of the program without jumping between different locations.</p>
+<h2 id="the-redeeming-factor">The Redeeming Factor</h2>
+<p>As I see it, config files are worthwhile if users are expected not to build from source. This may be the case for many open source projects, but I personally dislike using software in this way. This is a matter of opinion, but I think one of the most valuable parts free software is the freedom to change the source code as I see fit. By distributing software with config files, this sends an implicit message to users that they are expected to use the software as is, without modifying the source code.</p>
+<p>If you don’t see a reason to build from source, it is your right to continue using config files. If you are building a project where you want users to configure, extend, and customize their computing experience to the fullest extent, consider doing away with config files as it forces users to directly manipulate your codebase, giving them more autonomy and flexibility. This may hinder mass adoption, but is that why you build software? It’s not why I do.</p>
+<h2 id="citations">Citations</h2>
+<p>[1] - <a href="https://git.laack.co/dotfiles">https://git.laack.co/dotfiles</a></p>]]></description>
+<pubDate>Wed, 19 Nov 2025 00:00:00 -0600</pubDate>
+<guid>https://blog.laack.co/config-files-suck.html</guid>
+</item>
+<item>
+<title><![CDATA[You Don't Need Anything]]></title>
+<link>https://blog.laack.co/you-dont-need-anything.html</link>
+<description><![CDATA[<h2 id="context">Context</h2>
+<p>The words we say have an impact on how we think. A word I find problematic is the word need.</p>
+<h2 id="definition">Definition</h2>
+<p>Need: a requirement, necessary duty, or obligation [1].</p>
+<h2 id="my-thoughts">My Thoughts</h2>
+<p><strong>Do You Really <em>need</em> Anything?</strong></p>
+<p>I often say this when people use an unqualified need. An unqualified need is as follows:</p>
+<p><strong>I <em>need</em> to eat food, I’m starving!</strong></p>
+<p>Aside from the fact that they likely aren’t starving, they don’t <em>need</em> food. This can be thought of in a similar way as the is-ought problem [2]. If someone says they <em>need</em> something, you can ask them, “Why do you <em>need</em> it?”. In the case of food they may say, “I <em>need</em> food to survive”, and to this you may say, “Why do you <em>need</em> to survive”, and this can continue indefinitely as needs are predicated upon something. Often need has an implicit qualification as is the case of, “I <em>need</em> food” implying that it is needed to survive, but you don’t <em>need</em> to survive. I don’t want you to die, but it is not necessary for you to live. Tying this to the definition of need, there is no requirement, duty, or obligation for someone to be alive. There are no universal requirements to do things, no one has a universal duty to do things, and no one has a universal obligation to do anything. You may <em>need</em> to complete a project at work to not get fired, but you don’t <em>need</em> to complete the project, you can just get fired, you are not obligated to not be fired.</p>
+<p>The danger in statements like, “I <em>need</em> to eat food”, is they create a dependence upon something. By saying you <em>need</em> something you are telling yourself that without it you are incomplete. You are beholden unto this thing. This is dangerous because it leads to acts of immorality because of the perception that something must be done. I believe this is what has led to mass surveillance. People think they <em>need</em> to do what their boss tells them to do even when they know it’s wrong.</p>
+<p>YOU DON’T NEED ANYTHING. You want it because you perceive the consequences of not having it are worse than having it. This is not a need. This is a want. Understand the difference.</p>
+<p>You don’t need to live. You don’t need food. You don’t need water.</p>
+<h2 id="citations">Citations</h2>
+<p>[1] - <a href="https://www.dictionary.com/browse/need">https://www.dictionary.com/browse/need</a></p>
+<p>[2] - <a href="https://en.wikipedia.org/wiki/Is%E2%80%93ought_problem">https://en.wikipedia.org/wiki/Is%E2%80%93ought_problem</a></p>]]></description>
+<pubDate>Fri, 17 Oct 2025 00:00:00 -0500</pubDate>
+<guid>https://blog.laack.co/you-dont-need-anything.html</guid>
+</item>
+<item>
+<title><![CDATA[Stop Collecting User Data]]></title>
+<link>https://blog.laack.co/stop-collecting-user-data.html</link>
+<description><![CDATA[<h2 id="problem-statement">Problem Statement</h2>
+<p>Sending the data of people who use applications you built, by default, for any purpose that is not strictly required for the application to function is morally wrong.</p>
+<h2 id="why-does-this-matter">Why Does This Matter</h2>
+<p>This matters because humans are trusting. It abuses this trust by tracking unnecessary data about application usage because most humans implicitly assume this is not being done, and they often don’t understand what the consequences of this tracking can be [1][2]. Additionally, it is unreasonable to expect users to look through your source code, all of your settings, and your docs to understand what data is being collected. If data is being collected, it should be obvious based on the purpose of the application, and if it is not obvious that it must be collected for the application to work, this should be made explicitly clear to users in the most obvious way possible.</p>
+<h2 id="counter-arguments">Counter Arguments</h2>
+<p><strong>But it is necessary to track errors so we can fix bugs and improve UX</strong></p>
+<p>Yes, this is often the case. Does the Linux kernel collect logs? Yes! Do they upload them to a server for aggregation? No! This is how error logging should be done. Write your logs to a log file, but don’t automatically upload them to your servers. If a user has an issue that they would like addressed, they will let you know about it. If they don’t notice or don’t mind the issue, it’s their right to not report it. Some users may not want to deal with the hassle of uploading logs when things break, so they may prefer to have an option to automatically upload their logs. This is totally fine, but only if they are informed about what is being logged and it is an opt-in.</p>
+<p><strong>But it is necessary to track usage to understand what users want</strong></p>
+<p>No, it isn’t. GitHub (bleh) issues exists, Discord (ick) exists, Matrix exists, email exists, there are countless ways software projects crowd source improvements to their applications, but it should not be done using mass surveillance. I would argue it is acceptable to have an opt-in option to collect usage data, but I do wonder about the soundness of the minds of people who choose to opt-in to such surveillance.</p>
+<h2 id="towards-a-solution">Towards a Solution</h2>
+<p>Use applications that respect your privacy. If an application you are using collects your data and is not proprietary, it is quite likely there is a fork of it that strips out the data collection, see ungoogled-chromium [3] and LibreWolf [4] as examples. If one doesn’t exist, consider making one.</p>
+<p>If user-respecting alternatives don’t exist and the application is proprietary, consider using WireShark [5] to see what domains the application is resolving. Once you find the data collection domains, add these domains to your /etc/hosts file or self-hosted DNS server (like a Pi-hole), and have them resolve to 0.0.0.0. This doesn’t always work because the domain that is collecting data is sometimes used for to support the core functionallity of the application, but in an ideal world this should not be necessary as you shouldn’t be using proprietary software to begin with.</p>
+<h2 id="citations">Citations</h2>
+<p>[1] - <a href="https://en.wikipedia.org/wiki/Cambridge_Analytica">https://en.wikipedia.org/wiki/Cambridge_Analytica</a></p>
+<p>[2] - <a href="https://www.forbes.com/sites/kashmirhill/2012/02/16/how-target-figured-out-a-teen-girl-was-pregnant-before-her-father-did/">https://www.forbes.com/sites/kashmirhill/2012/02/16/how-target-figured-out-a-teen-girl-was-pregnant-before-her-father-did/</a></p>
+<p>[3] - <a href="https://github.com/ungoogled-software/ungoogled-chromium">https://github.com/ungoogled-software/ungoogled-chromium</a></p>
+<p>[4] - <a href="https://librewolf.net/">https://librewolf.net/</a></p>
+<p>[5] - <a href="https://www.wireshark.org/download.html">https://www.wireshark.org/download.html</a></p>]]></description>
+<pubDate>Sun, 12 Oct 2025 00:00:00 -0500</pubDate>
+<guid>https://blog.laack.co/stop-collecting-user-data.html</guid>
+</item>
+<item>
+<title><![CDATA[AdNauseum, Track Me Not, and Privacy Through Obscurity]]></title>
+<link>https://blog.laack.co/adnauseum-track-me-not-and-privacy-through-obscurity.html</link>
+<description><![CDATA[<h2 id="context">Context</h2>
+<p>AdNauseum [1] is a fork of uBlock Origin [2] that hides ads, clicks them in the background, and aggregates the clicked ads in an easy to view interface. The key difference between UBlock Origin and AdNauseum is AdNauseum both hides and clicks ads.</p>
+<p>Track Me Not [3] is a browser extension that mimics human search queries to obscure real queries in the noise.</p>
+<h2 id="usability">Usability</h2>
+<p>AdNauseum is as effective as uBlock Origin at hiding advertisements. For a user, there is no trade off in the usability of the web when compared with uBlock Origin. This is nice because more restrictive approaches to privacy, like GNU IceCat [4] and Tor [5], hinder modern web usage.</p>
+<p>Similarly, Track Me Not has almost no impact on the usability of the web. I say almost no because the traffic it generates likely increases the probability of being shown CAPTCHAs, given that the traffic it generates is likely distributionally different than normal traffic.</p>
+<h2 id="effectiveness-at-improving-privacy">Effectiveness at Improving Privacy</h2>
+<p>AdNauseum is likely worse at protecting your privacy than UBlock Origin. By clicking ads in the background, there is an inherent trail of where you have been. In some ways this trail exists the moment the ad network sells the ad you are shown, but by using a more obscure technology than UBlock Origin, you are more likely to be fingerprinted. Despite this, AdNauseum makes the modern web a better experience to use than not having an ad blocker.</p>
+<p>Track Me Not may also hinder privacy, depending on your privacy goals. The inherent problem is it is phoning home to search engines over time, giving them information about where you are. Search providers are also likely to fingerprint you on the basis of these strange searches. The possible saving grace is that by having so much noise in your search history, it could difficult to figure out what you are interested in. I am uncertain about the value of this though as there are likely going to be two search distributions; Track Me Not’s, and yours. This allows sophisticated search providers to ignore the synthetic requests and track your real requests while also gaining real time IP information.</p>
+<p>In short, I find the idea that these tools improve privacy to be dubious.</p>
+<h2 id="why-you-still-might-want-to-use-them">Why You Still Might Want to Use Them</h2>
+<p>The value of these tools is they are a form of active resistance against ads and tracking. While your privacy is likely hindered by them, you are sending a message. That message costs ad networks and search providers money. In the case of AdNauseum, clicks are expensive for advertisers because most people ignore ads, and Track Me Not imposes computational costs on search providers. Even so, by clicking on so many ads ad networks may catch on and stop charging as much per click. Similarly, search providers may block you or start giving CAPTCHAs which likely impose less computational costs on them than running a query.</p>
+<h2 id="my-thoughts">My Thoughts</h2>
+<p>You probably shouldn’t be using them. While I enjoy active resistance, this is unlikely to be the right way to do it. It may mess with their knowledge about you if they are not sophisticated, but any sophisticated search provider or ad network, which I think most of them are, will easily sus out inauthentic traffic and gain more information about you as a result.</p>
+<p>Instead of using these tools, I recommend doing the following to improve privacy:</p>
+<ul>
+<li>Use Tor when possible</li>
+<li>Avoid sites that require signing in</li>
+<li>Don’t use social media</li>
+<li>Use a privacy respecting browser</li>
+<li>Use UBlock Origin</li>
+<li>Use a Pi-hole [6] and privacy respecting DNS servers</li>
+<li>Minimize your usage of search engines</li>
+<li>Use a variety of privacy respecting search engines</li>
+<li>Use local AI tools (if you must use any at all)</li>
+<li>Use E2EE messaging when possible</li>
+<li>Minimize the trackability of financial transactions</li>
+<li>Don’t carry a phone and minimize your usage of it</li>
+<li>Avoid proprietary software and software that collects data</li>
+</ul>
+<p>This results in me doing the following:</p>
+<ul>
+<li>Using Tor for most of my traffic</li>
+<li>Avoiding sites that require signing in</li>
+<li>Not using social media sites</li>
+<li>Using LibreWolf [7] as my default non-Tor browser</li>
+<li>Routing all non-Tor DNS requests through a self-hosted Pi-hole with additional domain filtering</li>
+<li>Using DuckDuckGo and a variety of public SearX instances for search</li>
+<li>Running Ollama [8] models locally</li>
+<li>Preferring communication with PGP encrypted emails, Matrix, or Signal</li>
+<li>Using cash or Monero when possible for transactions</li>
+<li>Not carrying my phone with me and only using it when it is the only means of achieving a specific goal (ie. SMS 2FA, communication with certain individuals, etc.)</li>
+<li>Only using Libre software that doesn’t collect data</li>
+</ul>
+<p>Unfortunately there are sometimes exceptions to the above for the purpose of completing my work in an efficient manner, but in my personal life, I am unwilling to compromise on these things.</p>
+<h2 id="citations">Citations</h2>
+<p>[1] - <a href="https://github.com/dhowe/AdNauseam">https://github.com/dhowe/AdNauseam</a></p>
+<p>[2] - <a href="https://github.com/gorhill/uBlock">https://github.com/gorhill/uBlock</a></p>
+<p>[3] - <a href="https://github.com/vtoubiana/TrackMeNot">https://github.com/vtoubiana/TrackMeNot</a></p>
+<p>[4] - <a href="https://www.gnu.org/software/gnuzilla/">https://www.gnu.org/software/gnuzilla/</a></p>
+<p>[5] - <a href="https://www.torproject.org/about/history/">https://www.torproject.org/about/history/</a></p>
+<p>[6] - <a href="https://pi-hole.net/">https://pi-hole.net/</a></p>
+<p>[7] - <a href="https://librewolf.net/">https://librewolf.net/</a></p>
+<p>[8] - <a href="https://ollama.com/">https://ollama.com/</a></p>]]></description>
+<pubDate>Sat, 04 Oct 2025 00:00:00 -0500</pubDate>
+<guid>https://blog.laack.co/adnauseum-track-me-not-and-privacy-through-obscurity.html</guid>
+</item>
+<item>
+<title><![CDATA[The Sustainability of YouTube]]></title>
+<link>https://blog.laack.co/the-sustainability-of-youtube.html</link>
+<description><![CDATA[<h2 id="context">Context</h2>
+<p>I dislike using cloud services because they may discontinue my service [1] or they may do something stupid [2] that negatively impacts me. These concerns, along with concerns about privacy [3], have led me to keep information and content I care about away from cloud services. This does make me wonder, how many people would be distraught about the loss of their content if YouTube terminated their accounts? This is not the topic today, nor is it something I can easily answer, but it is something I wonder about and would like others to consider.</p>
+<p>Similarly, I am skeptical of “free” services. It’s incorrect to say “if something is free, you are the product” because charity does exist, but when it comes to Google, they aren’t a charity. Their current model with YouTube is to have people upload videos to their site and show ads to some users when they watch said videos. There are also paid subscriptions, but their primary monetization comes from ads. An important point is they don’t purge content on a regular basis, except in cases of ToS violations. As such, there is a (nearly) monotonically increasing function that describes the storage requirements of YouTube. This motivates my question below.</p>
+<h2 id="question">Question</h2>
+<p>When will YouTube’s storage costs exceed their revenue if they don’t start purging old content, assuming their revenue does not increase over time?</p>
+<h2 id="how-to-answer-this-question">How to Answer This Question</h2>
+<p>We need the following information to answer this question:</p>
+<ul>
+<li>What is YouTube’s annual net profit?</li>
+<li>How much data does YouTube store?</li>
+<li>How much does data storage cost?</li>
+</ul>
+<h2 id="youtubes-profit">YouTube’s Profit</h2>
+<p>According to Alphabet’s 2025 Q2 earnings release [4], YouTube ads made a revenue of $9.769 billion. Annualized, this is $39.076 billion, but this is only revenue, not net profit. If we assume the operating margin across Alphabet matches the operating margin of YouTube (32%), we find an approximate net profit of $12.50432 billion / year. Actual net profit could differ from this, but since we are concerned with how much data storage this could support, we don’t need to factor in how this would be taxed.</p>
+<h2 id="storage-needs">Storage Needs</h2>
+<h3 id="total-videos">Total Videos</h3>
+<p>YouTube states on their official blog there are over 20 million videos uploaded per day [5]. While I don’t trust YouTube very much, and they don’t have many incentives to be honest on this topic, they seem more trustworthy in this context than the slop factory sites as they are, in fact, the ones who are hosting the content. As such, I will accept this metric.</p>
+<h3 id="average-video-size">Average Video Size</h3>
+<p>I wrote a python script that uses a curated list of popular Google Trends searches over the past few decades [6] to search YouTube for recently uploaded videos. I ran this script and compiled a list of ~7.65 million YouTube videos.</p>
+<p>Before continuing, I will list a few limitations of this approach:</p>
+<ul>
+<li>YouTube likely imposes some amount of algorithmic filtering when sorting by ‘recently uploaded’</li>
+<li>The videos in question are all public (not inclusive of private/unlisted videos)</li>
+<li>Less popular search terms may have a different distribution of video sizes</li>
+</ul>
+<p>These are the main flaws in my methodology, but any approach will be imperfect without being able to get the data directly from YouTube.</p>
+<p>Of these 7.65 million videos, I sampled 615,222 of them and queried YouTube using <code>yt-dlp</code> [7] to find all video resolutions and formats YouTube will serve. It seems unlikely to me that YouTube stores each of these resolutions on their servers, but I think it is very likely that YouTube is storing the highest resolution version they are willing to serve to users.</p>
+<p>Based on my findings, I propose a lower bound of ~396.17 MB / video, which assumes they are only storing the highest resolution version and all other versions are generated in real time via transcoding (I am confident this isn’t the case, but it provides a nice lower bound). I also propose an upper bound of ~1.44 GB / video, which assumes they are storing every resolution and format for each video they are serving.</p>
+<p>All of the code used for this is available on my git server [8].</p>
+<h3 id="annual-storage-increase">Annual Storage Increase</h3>
+<p>Using my findings above about video size and YouTube’s stated video upload rate, we find:</p>
+<p>Lower bound:</p>
+<ul>
+<li>7.923 PB / Day</li>
+<li>2.89 EB / Year</li>
+</ul>
+<p>Upper bound:</p>
+<ul>
+<li>28.895 PB / Day</li>
+<li>10.547 EB / Year</li>
+</ul>
+<p>Note: These values may vary depending on rounding, but they should be similar to what anyone else would find.</p>
+<h2 id="storage-cost-by-volume">Storage Cost by Volume</h2>
+<p>GCP currently charges $26 / month for 1 TB of standard multi-region, US based, cloud storage [9]. If we assume the same 32% profit margin as before, this would cost ~$17.68 / TB / month or $212.16 / TB / year. I don’t know if this is high or low relative to what they actually pay. YouTube requires quick access to many of their videos, but many of their videos are likely retrieved infrequently. Additionally, it seems likely Alphabet’s cloud storage margins are higher than the average margins across the organization. Additionally, these are only US storage prices so this could vary depending on the regions this data is being hosted in. In any case, I think this is a fair estimate.</p>
+<h2 id="answer-to-the-question">Answer to the Question</h2>
+<p>Given YouTube’s approximated net profit of $12.50432 billion / year and an estimated cost of $212.16 / TB / year for cloud storage, we find their profits can support an additional ~58.94 EB of data.</p>
+<p>At the lower bound of 2.89 EB / year we find YouTube’s storage costs will surpass their current profits in ~20.39 years.</p>
+<p>If we assume our upper bound of 10.547 EB / year we find YouTube’s storage costs will surpass their current profits in ~5.59 years.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>These are very rough bounds, especially given how difficult it is to estimate the cost per TB / year for storage of this data given their retrieval needs, but we find that in ~5.59 - ~20.39 years, YouTube will be forced to start purging old content to remain profitable at their current profit rate.</p>
+<h2 id="citations">Citations</h2>
+<p>[1] - <a href="https://killedbygoogle.com/">https://killedbygoogle.com/</a></p>
+<p>[2] - <a href="https://arstechnica.com/gadgets/2024/05/google-cloud-accidentally-nukes-customer-account-causes-two-weeks-of-downtime/">https://arstechnica.com/gadgets/2024/05/google-cloud-accidentally-nukes-customer-account-causes-two-weeks-of-downtime/</a></p>
+<p>[3] - <a href="https://www.gnu.org/proprietary/proprietary-surveillance.html">https://www.gnu.org/proprietary/proprietary-surveillance.html</a></p>
+<p>[4] - <a href="https://www.sec.gov/Archives/edgar/data/1652044/000165204425000056/googexhibit991q22025.htm.md">https://www.sec.gov/Archives/edgar/data/1652044/000165204425000056/googexhibit991q22025.htm</a></p>
+<p>[5] - <a href="https://web.archive.org/web/20250911091711/https://blog.youtube/press/">https://web.archive.org/web/20250911091711/https://blog.youtube/press/</a></p>
+<p>[6] - <a href="https://www.kaggle.com/datasets/dhruvildave/google-trends-dataset">https://www.kaggle.com/datasets/dhruvildave/google-trends-dataset</a></p>
+<p>[7] - <a href="https://github.com/yt-dlp/yt-dlp">https://github.com/yt-dlp/yt-dlp</a></p>
+<p>[8] - <a href="http://git.laack.co/blog/log.html">http://git.laack.co/blog/log.html</a></p>
+<p>[9] - <a href="https://cloud.google.com/storage/pricing#multi-regions">https://cloud.google.com/storage/pricing#multi-regions</a></p>]]></description>
+<pubDate>Sun, 28 Sep 2025 00:00:00 -0500</pubDate>
+<guid>https://blog.laack.co/the-sustainability-of-youtube.html</guid>
+</item>
+</channel>
+</rss>

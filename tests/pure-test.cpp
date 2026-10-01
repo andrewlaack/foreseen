@@ -67,6 +67,7 @@ TEST_CASE("Inputs with spaces outside of the cli are always searched") {
                 auto dest = handleDestinationResolution(st, false);
                 if(st.find(' ') != std::string::npos) {
                     RC_ASSERT(dest.destination.find("tlgs.one") != std::string::npos);
+                    REQUIRE(dest.destination.find("tlgs.one") != std::string::npos);
                 }
             });
 }
@@ -110,6 +111,7 @@ TEST_CASE("Test user input handling for destinations") {
                 [](const std::string& st) {
                     auto dest = handleDestinationResolution(st, true);
                     RC_ASSERT(dest.t != NUMBER_DESTINATION);
+                    REQUIRE(dest.t != NUMBER_DESTINATION);
                     switch (dest.t) {
                         case NO_DESTINATION:
                             break;
@@ -128,6 +130,7 @@ TEST_CASE("Test user input handling for destinations") {
 
                     if(dest.t == STRING_DESTINATION) {
                         RC_ASSERT(dest.destination != "");
+                        REQUIRE(dest.destination != "");
                     }
                 });
     }

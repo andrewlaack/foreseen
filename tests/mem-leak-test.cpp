@@ -24,7 +24,7 @@ std::string genRandom(const int len) {
 
 void traversal() {
     Browser b{};
-    b.goToSite("gemini://laack.co/known-hosts", true);
+    b.goToSite("gemini://localhost", true);
 
     for(int i = 0; i < 100; ++i) {
 
@@ -54,23 +54,6 @@ void traversal() {
                 std::string dst = std::string{"gemini://"} + genRandom(rand() % 15) + ".com";
                 std::cout << "TRAVELLING TO: " << dst << std::endl;
                 b.goToSite(dst);
-            }
-        } else if (rand() % 20 == 0) {
-            Destination destination = handleDestinationResolution(genRandom(rand() % 50), false); 
-            if(rand() % 2 == 0) {
-                destination = handleDestinationResolution(genRandom(rand() % 5), false);
-            }
-            switch (destination.t) {
-                case NO_DESTINATION:
-                    break;
-                case NUMBER_DESTINATION:
-                    std::cout << "LINK NUMBER: " << destination.linkNumber << std::endl;
-                    b.followLinkNumber(destination.linkNumber);
-                    break;
-                case STRING_DESTINATION:
-                    std::cout << "DESTINATION: " << destination.destination << std::endl;
-                    b.goToSite(destination.destination);
-                    break;
             }
         }
         else {
