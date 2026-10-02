@@ -18,16 +18,25 @@ Then run the following command to build and install foreseen:
 
 Usage
 =====
-Open a specific site:
-    foreseen {url}
+foreseen [--help] [--version] [--cache-pages VAR] [--prefetch-links VAR] \
+            [--search-engine VAR] destination
 
-(gemini:// is optional)
+Positional arguments:
+  destination           page to open [nargs=0..1]
 
-Open a local gemtext file:
-    foreseen {path}
+Optional arguments:
+  -h, --help            shows help message and exits
 
-Start foreseen:
-    foreseen
+  -v, --version         prints version information and exits
+
+  -c, --cache-pages     max number of pages for each cache (history, prefetch) \
+                        [nargs=0..1] [default: 500]
+
+  -p, --prefetch-links  max number of links to prefetch per page (0 disables \ 
+                        prefetching) [nargs=0..1] [default: 10]
+
+  -e, --search-engine   default search engine [nargs=0..1] \
+                        [default: "gemini://tlgs.one/search"]
 
 
 Identities
