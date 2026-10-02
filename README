@@ -14,7 +14,7 @@ will be installed into /usr/local/bin by default).
 Then run the following command to build and install foreseen:
     make install
 
-(the above command may require root, depending on the installation location)
+(the above command may require root depending on the installation location)
 
 Usage
 =====
@@ -38,29 +38,6 @@ Optional arguments:
   -e, --search-engine   default search engine [nargs=0..1] \
                         [default: "gemini://tlgs.one/search"]
 
-
-Identities
-==========
-These are specified in:
-    $HOME/.gmi/{hostname}/client.crt
-    $HOME/.gmi/{hostname}/client.key
-
-Or for a non-standard port (port != 1965):
-    $HOME/.foreseen/{hostname}:{port}/client.crt
-    $HOME/.foreseen/{hostname}:{port}/client.key
-
-Example:
-    > tree .foreseen
-    .foreseen
-    └── bbs.geminispace.org
-        ├── client.crt
-        └── client.key
-
-(I recommend symlinking ~/.foreseen to somewhere you backup regularly)
-
-Example command to generate keys:
-    openssl req -x509 -newkey rsa:2048 -nodes -days 3650 -keyout client.key \
-    -out client.crt -subj "/CN=localhost"
 
 Caching
 =======
@@ -94,3 +71,24 @@ requests to hosts you'd use an identity for.
     If the page was in the prefetch cache before, it will be upgraded to the
     history cache. This is because visited pages are more important than
     prefetched ones. History caching is disabled when using an identity.
+
+Identities
+==========
+These are specified in:
+    $HOME/.gmi/{hostname}/client.crt
+    $HOME/.gmi/{hostname}/client.key
+
+Or for a non-standard port (port != 1965):
+    $HOME/.foreseen/{hostname}:{port}/client.crt
+    $HOME/.foreseen/{hostname}:{port}/client.key
+
+Example:
+    > tree .foreseen
+    .foreseen
+    └── bbs.geminispace.org
+        ├── client.crt
+        └── client.key
+
+Example command to generate keys:
+    openssl req -x509 -newkey rsa:2048 -nodes -days 3650 -keyout client.key \
+    -out client.crt -subj "/CN=localhost"
