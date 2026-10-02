@@ -75,8 +75,8 @@ requests to hosts you'd use an identity for.
 Identities
 ==========
 These are specified in:
-    $HOME/.gmi/{hostname}/client.crt
-    $HOME/.gmi/{hostname}/client.key
+    $HOME/.foreseen/{hostname}/client.crt
+    $HOME/.foreseen/{hostname}/client.key
 
 Or for a non-standard port (port != 1965):
     $HOME/.foreseen/{hostname}:{port}/client.crt
