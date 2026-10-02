@@ -75,6 +75,10 @@ TEST_CASE("Inputs with spaces outside of the cli are always searched") {
 
 TEST_CASE("Test user input handling for destinations") {
 
+    if(DEFAULT_SEARCH_ENGINE.substr(DEFAULT_SEARCH_ENGINE.size()-1) != "?") {
+        DEFAULT_SEARCH_ENGINE += "?";
+    }
+
     SECTION("Convert numbers to link numbers") {
         for(int i = 0; i < 10000; ++i) {
             REQUIRE(handleDestinationResolution(std::to_string(i), false).linkNumber == i);

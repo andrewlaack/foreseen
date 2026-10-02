@@ -190,13 +190,7 @@ Bug:
 
 ---
 
-- cli arguments with editable source code for defaults
-- add phony file
-
-
----
-
-- cli args:
-    --cache-pages
-    --prefetch-links
-    --search-engine
+- detect if a file is not a normal text file
+    - source code, txt, md, gmi, stuff like that
+    - if not, give option to download site
+        - this seems involved, but useful.

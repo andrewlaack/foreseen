@@ -30,7 +30,7 @@ void Cache::addSite(std::string address, Site site) {
     cache.emplace(address, std::move(site));
 
     evictionQueue.push_front(address);
-    if (evictionQueue.size() > CACHE_SIZE) {
+    if ((int)evictionQueue.size() > CACHE_SIZE) {
         cache.erase(evictionQueue.back());
         evictionQueue.pop_back();
     }

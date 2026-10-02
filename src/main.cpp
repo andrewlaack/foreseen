@@ -41,7 +41,12 @@ int main(int argc, char** argv) {
 
     SITE_CACHE_LIMIT = program.get<int>("--prefetch-links");
     CACHE_SIZE = program.get<int>("--cache-pages");
-    DEFAULT_SEARCH_ENGINE = program.get<std::string>("--search-engine") + "?";
+    DEFAULT_SEARCH_ENGINE = program.get<std::string>("--search-engine");
+
+    if(DEFAULT_SEARCH_ENGINE.substr(DEFAULT_SEARCH_ENGINE.size()-1) != "?") {
+        DEFAULT_SEARCH_ENGINE += "?";
+    }
+
     std::string destination = program.present<std::string>("destination").value_or("");
 
     std::signal(SIGPIPE, SIG_IGN); // need this in case of swapping network connections bc that shouldn't kill the whole process.
