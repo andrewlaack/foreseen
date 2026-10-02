@@ -83,7 +83,7 @@ TEST_CASE("Benchmarking large file scrolling", "[.]") {
 }
 
 
-TEST_CASE("Benchmarking small file") {
+TEST_CASE("Benchmarking small file", "[.]") {
 
     setenv("EDITOR", "test" , 1);
 

@@ -172,9 +172,23 @@
     - imports
     - tests
         - remove useless ones
+- resetting y value on screen moves
 
 ---
 
 Bug:
 
 - can't open localhost from the 'o' menu
+
+---
+
+- most pressing: cli argument for configuration
+    - should be able to disable prefetching, set cache size, set defaults, stuff like that. 
+- put all colors into shared.hpp
+    - what should be the approach for configuration?
+        - should I just say update the shared.hpp file?
+
+---
+
+- cli arguments with editable source code for defaults
+- add phony file

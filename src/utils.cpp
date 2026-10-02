@@ -285,8 +285,7 @@ std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair
                 lastSpace = -1;
             }
  
-            std::string cp = cstr;
-            current.append(cp, x, len);
+            current.append(cstr, x, len);
             curWidth += w;
             if(cstr[x] == ' ') {
                 lastSpace = current.size() - 1;
