@@ -3,20 +3,19 @@
 #include <cstdint>
 #include <string>
 
-const std::string DEFAULT_SEARCH_ENGINE = "gemini://tlgs.one/search?";
-const int SITE_CACHE_LIMIT = 10;    // number of links to prefetch per page
-const int THREAD_NUM = 4;           // thread count in thread pool for pre-fetching
-const int maxWidth = 80;            // max text width (left and right will be padded if COLS > maxWidth)
-const int CACHE_SIZE = 500;         // max number of elements in history cache and prefetch cache (500 for both)
-const uint8_t COLOR_LINK = 159;         // color used for links
-const uint8_t COLOR_PREFORMATTED = 201; // color used for preformatted text regions
+extern std::string DEFAULT_SEARCH_ENGINE;   // default search option when search is inferred
+extern int SITE_CACHE_LIMIT;                // number of links to prefetch per page
+extern int THREAD_NUM;                      // thread count in thread pool for pre-fetching
+extern int maxWidth;                        // max text width
+extern int CACHE_SIZE;                      // max elements in history cache and max in prefetch cache
+extern uint8_t COLOR_LINK;                  // color used for links
+extern uint8_t COLOR_PREFORMATTED;          // color used for preformatted text regions
 
  // We guarantee responses can be at least the size limit, and at most 4096 additional bytes
-const int RESPONSE_SIZE_LIMIT_MB = 5;
+extern int RESPONSE_SIZE_LIMIT_MB;
 
 // since the xdg-open stuff is in a seperate process nothing will go to stdout
 // even in the echo case.
-
 #ifdef DEBUG_MODE
     const char openUnknownScheme[] = "echo";
 #else

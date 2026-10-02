@@ -192,3 +192,11 @@ Bug:
 
 - cli arguments with editable source code for defaults
 - add phony file
+
+
+---
+
+- cli args:
+    --cache-pages
+    --prefetch-links
+    --search-engine
