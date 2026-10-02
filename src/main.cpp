@@ -7,6 +7,7 @@
 #include <locale.h>
 #include <string>
 #include <unctrl.h>
+#include "../vendor/argparse.hpp"
 
 int main(int argc, char** argv) {
 
