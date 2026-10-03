@@ -1,6 +1,7 @@
 #include "../include/browser.hpp"
 #include <cassert>
 #include <filesystem>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <unistd.h>
@@ -273,7 +274,7 @@ Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM){
     // this ensures some nice invariants about the browser, like always having at least one valid page.
     bool start = goToSite("about://newtab");
     if(!start) {
-        throw BrowserStartError{};
+        throw std::runtime_error("Browser unexpectedly failed to start.");
     }
 }
 

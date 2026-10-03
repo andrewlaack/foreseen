@@ -166,8 +166,6 @@ Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPat
     } else if(isPrefixed(destination, "about://")){
         return new Site {"20 text/gemini", getNewTab()};
     } else {
-        throw NotImplemented();
+        throw std::runtime_error("An invalid argument was passed to fetchsite, " + destination);
     }
-
-    throw NotImplemented();
 }

@@ -60,6 +60,11 @@ flamegraph:
 	perf script | ~/gitRepos/FlameGraph/stackcollapse-perf.pl > out.folded
 	~/gitRepos/FlameGraph/flamegraph.pl out.folded > flamegraph.svg
 
+run-graph: build
+	perf record -g ./foreseen.out
+	perf script | ~/gitRepos/FlameGraph/stackcollapse-perf.pl > out.folded
+	~/gitRepos/FlameGraph/flamegraph.pl out.folded > flamegraph.svg
+
 test: pure-test browser-test fetch-test puppet-test
 	lcov --capture --directory . --output-file coverage.info \
 		--no-external \

@@ -3,6 +3,7 @@
 #include "../include/utils.hpp"
 #include <cstdint>
 #include <ncurses.h>
+#include <stdexcept>
 
 Heading::Heading(std::string text) : actualText(text) {
 
@@ -33,7 +34,7 @@ std::string Heading::textToDraw() {
         case 1:
             return "# " + toDraw + "\n";
     }
-    throw NotImplemented();
+    throw std::runtime_error("This is an invalid program state.");
 }
 uint8_t Heading::getColor() {
     switch (headingLevel) {
@@ -44,7 +45,7 @@ uint8_t Heading::getColor() {
         case 1:
             return COLOR_RED;
     }
-    throw NotImplemented();
+    throw std::runtime_error("This is an invalid program state.");
 }
 LineType Heading::type() {
     switch (headingLevel) {
@@ -55,7 +56,7 @@ LineType Heading::type() {
         case 1:
             return H1;
     }
-    throw NotImplemented();
+    throw std::runtime_error("This is an invalid program state.");
 }
 bool Heading::isBold() {
     return true;

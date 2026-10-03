@@ -6,4 +6,5 @@ coverage-html/
 *.info
 *.folded
 *.data
+*.data.old
 *.svg
