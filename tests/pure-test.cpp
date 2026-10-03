@@ -60,6 +60,11 @@ TEST_CASE("Verify urls with numeric prefix are resolved correctly") {
 }
 
 TEST_CASE("Inputs with spaces outside of the cli are always searched") {
+
+    if(DEFAULT_SEARCH_ENGINE.substr(DEFAULT_SEARCH_ENGINE.size()-1) != "?") {
+        DEFAULT_SEARCH_ENGINE += "?";
+    }
+
     auto d1 = handleDestinationResolution("what :// :// test", false);
     REQUIRE(d1.destination == "gemini://tlgs.one/search?what%20%3A%2F%2F%20%3A%2F%2F%20test");
     rc::check("Inputs with spaces outside of the cli are always searched",
