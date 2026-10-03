@@ -65,3 +65,6 @@ test: pure-test browser-test fetch-test puppet-test
 		--ignore-errors inconsistent,inconsistent
 	rm -rf *.gcda *.gcno
 	rm -rf coverage.info
+
+.PHONY: test pure-test browser-test fetch-test puppet-test benchmark mem-leak-test clean install build debug server
+
