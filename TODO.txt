@@ -24,8 +24,6 @@
 ---
 
 - add site history.
-- different color lines
-    - would be nice for link lines to vary depending on if they've been visited in history
 - horizontal scroll when lines are too long?
 - make unordered list items indent correctly
     - first line is normal, subsequent lines should have 2 spaces prefixing them
@@ -194,3 +192,7 @@ Bug:
     - source code, txt, md, gmi, stuff like that
     - if not, give option to download site
         - this seems involved, but useful.
+
+---
+
+- could I add fulltext search, but it just finds the string in lines and then jumps to them if relevant, without changing coloring? Or perhaps just changing the color on the basis of the line?

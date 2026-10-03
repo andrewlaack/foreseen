@@ -19,7 +19,7 @@ Then run the following command to build and install foreseen:
 Usage
 =====
 foreseen [--help] [--version] [--cache-pages VAR] [--prefetch-links VAR] \
-            [--search-engine VAR] destination
+         [--search-engine VAR] destination
 
 Positional arguments:
   destination           page to open [nargs=0..1]
