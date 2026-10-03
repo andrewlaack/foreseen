@@ -4,13 +4,9 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <csignal>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
-#include <iostream>
 #include <ncurses.h>
-#include <locale.h>
 #include <string>
 #include <unctrl.h>
 #include <utility>
@@ -100,11 +96,13 @@ void draw(DrawState& ds) {
     if(ds.columns < 20) {
         erase();
         addstr("Screen width too small.");
+        refresh();
         return;
     }
     if(ds.lines < 3) {
         erase();
         addstr("Screen height too small.");
+        refresh();
         return;
     }
 
@@ -198,11 +196,10 @@ void draw(DrawState& ds) {
 
 void openPageHandler(DrawState& ds, int sel) {
 
-    if(sel == KEY_BACKSPACE) {
+    if(sel == KEY_BACKSPACE || sel == 127 || sel == 8) {
         if(ds.openOtherInput.size() > 0) {
             ds.openOtherInput = ds.openOtherInput.substr(0,ds.openOtherInput.size() - 1);
         }
-        draw(ds);
     }
 
     if(sel ==  27) {
@@ -220,7 +217,6 @@ void openPageHandler(DrawState& ds, int sel) {
         ds.openOtherInput += std::string {(char)sel};
     }
 
-    draw(ds);
 }
 
 void handleRedir(DrawState& ds, int input, Browser& b) {
@@ -238,15 +234,12 @@ void handleRedir(DrawState& ds, int input, Browser& b) {
         b.goBack();
         ds.mustReRender = true;
     }
-    draw(ds);
 }
 
 void handleUserInput(DrawState& ds, Browser& b, int sel) {
-    draw(ds);
     if(sel == '\n' || sel == KEY_ENTER) {
 
         ds.handleInput = false;
-        draw(ds);
 
         if(ds.userInput != "") {
             tryVisitSite(ds, b, "?"+ds.userInput);
@@ -254,32 +247,27 @@ void handleUserInput(DrawState& ds, Browser& b, int sel) {
             b.goBack();
             ds.mustReRender = true;
         }
-
-        ds.handleInput = false;
-        draw(ds);
         return;
     }
     if(sel == 27) {
         ds.handleInput = false;
-        draw(ds);
+        draw(ds); // this might not be totally necessary because back is generally fast, but it's not strictly
+                  // guaranteed.
         b.goBack();
         ds.mustReRender = true;
-        draw(ds);
         return;
     }
 
-    if(sel == KEY_BACKSPACE) {
+    if(sel == KEY_BACKSPACE || sel == 127 || sel == 8) {
         if(ds.userInput.size() > 0) {
             ds.userInput = ds.userInput.substr(0,ds.userInput.size() - 1);
         }
-        draw(ds);
         return;
     }
 
     if(isValidUserInput(sel)) {
         ds.userInput += std::string {(char)sel};
     }
-    draw(ds);
 }
 
 void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
@@ -329,25 +317,26 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
             }
             mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
         } else {
-            auto* clk = b.getCurrentLink();
-            ds.header = clk->getLinkDestination().to_string();
             draw(ds);
-            return true;
         }
-        auto* clk = b.getCurrentLink();
-        ds.header = clk->getLinkDestination().to_string();
-        draw(ds);
         return true;
     } else if (ds.handleRedirect) {
+
         handleRedir(ds, input, b);
+
         if(!ds.handleRedirect) {
             mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
+        }  else {
+            draw(ds);
         }
+
         return true;
     } else if (ds.handleInput) {
         handleUserInput(ds, b, input);
         if(!ds.handleInput) {
             mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
+        } else {
+            draw(ds);
         }
         return true;
     }
@@ -385,14 +374,22 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
         ds.y = 0; // todo: make this part of state somewhere.
     } else if(input == 'o') {
         ds.handleOpenOther = true;
-        mainLoop(ds, b, KEY_RESIZE,ds.columns, ds.lines);
     } else if (input == 'e'){
         std::string editor = getEditor();
         std::string dl = b.tryDownloadPage(OUT_LOCATION);
         if(dl != "") {
             def_prog_mode();
             endwin();
-            system((editor + " " + dl).c_str());
+            std::string quoted = "'";
+            for (char c : dl) {
+                if(c == '\'') {
+                    quoted += std::string("'\\''");
+                } else {
+                    quoted +=  std::string(1, c);
+                }
+            }
+            quoted += "'";
+            system((editor + " " + quoted).c_str());
             refresh();
         }
     }
@@ -404,14 +401,13 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
 
     if( (b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) && !ds.handleRedirect && !ds.handleInput) {
         if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
+
             auto* st = b.getCurrentSite();
-            if(st != nullptr) {
-                ds.metaLine = st->getMeta();
-            }
+            assert(st != nullptr);
+            ds.metaLine = st->getMeta();
 
             ds.handleInput = true;
             ds.userInput = "";
-            mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
 
         } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39 && !ds.handleRedirect){
             auto* st = b.getCurrentSite();
@@ -421,21 +417,17 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
 
             ds.redirInput = "";
             ds.handleRedirect = true;
-            mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
         }
     }
 
     auto* clk = b.getCurrentLink();
-    if(clk != nullptr) {
-        ds.header = clk->getLinkDestination().to_string();
-    } else {
-        ds.header = "foreseen";
-    }
+    assert(clk != nullptr);
+    ds.header = clk->getLinkDestination().to_string();
 
     auto* st = b.getCurrentSite();
-    if(st != nullptr) {
-        ds.metaLine = st->getMeta();
-    }
+    assert(st != nullptr);
+    ds.metaLine = st->getMeta();
+    
 
     draw(ds);
     return true;

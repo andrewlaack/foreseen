@@ -192,7 +192,3 @@ Bug:
     - source code, txt, md, gmi, stuff like that
     - if not, give option to download site
         - this seems involved, but useful.
-
----
-
-- could I add fulltext search, but it just finds the string in lines and then jumps to them if relevant, without changing coloring? Or perhaps just changing the color on the basis of the line?
