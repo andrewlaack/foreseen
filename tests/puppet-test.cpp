@@ -62,6 +62,28 @@ TEST_CASE("RESIZE falls through and returns") {
     delete bPtr;
 }
 
+TEST_CASE("Redirect to broken doesn't deadlock") {
+    Browser* bPtr = new Browser {};
+    Browser& b = *bPtr;
+    DrawState ds {};
+    ds.bPtr = bPtr;
+    std::string  dest = "ogemini://localhost/cgi-bin/redirect-to-broken.py";
+    for(auto& ch : dest) {
+        REQUIRE(mainLoop(ds, b, ch,100,100));
+    }
+
+    for(int i = 0; i < 100; ++i) {
+        REQUIRE(mainLoop(ds, b, 'y',100,100));
+    }
+
+    REQUIRE(mainLoop(ds, b, 'n',100,100));
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+    delete bPtr;
+}
+
+
+
+
 TEST_CASE("Open page handler returns") {
     Browser* bPtr = new Browser {};
     Browser& b = *bPtr;
