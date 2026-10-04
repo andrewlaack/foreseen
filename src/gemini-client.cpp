@@ -104,9 +104,6 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
         end -= 1;
     }
 
-    // TODO: should we track when these are truncated? We have a variable for that
-    // but nothign about it in our site. 
-
     std::string status = response.substr(0, end);
     std::string body   = response.substr(nl + 1);
 

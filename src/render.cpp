@@ -1,8 +1,10 @@
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
 #include "../include/render.hpp"
+#include "../include/shared.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -17,7 +19,7 @@
 #endif
 
 #ifdef DEBUG_MODE
-    const char* OUT_LOCATION = "/tmp/foreseen"; // TODO: This is bad. Pass these into fn
+    const char* OUT_LOCATION = "/tmp/foreseen";
 #else
     const char* OUT_LOCATION = "";
 #endif
@@ -119,7 +121,7 @@ void draw(DrawState& ds) {
     }
 
     if(ds.reBreak) {
-        ds.broken  = breakLines(ds.prior, std::min(ds.columns, maxWidth), ds.columns);
+        ds.broken  = breakLines(ds.prior, std::min(ds.columns, MAX_WIDTH), ds.columns);
         ds.reBreak = false;
     }
     if(ds.toLowest) {
@@ -185,7 +187,19 @@ void draw(DrawState& ds) {
             move(0,0);
             attron(A_BOLD);
             attron(COLOR_PAIR(COLOR_RED+1));
-            addstr(ds.issueText.c_str());
+
+            std::string tr = ds.issueText;
+            std::string truncated;
+
+            for(auto& ch : tr) {
+                truncated += (char)toascii(ch);
+            }
+
+            if(ds.issueText.size() > ds.columns) {
+                truncated = truncated.substr(0,ds.columns - 3) + "...";
+            }
+
+            addstr(truncated.c_str());
             attroff(COLOR_PAIR(COLOR_RED+1));
             attroff(A_BOLD);
         }
@@ -269,18 +283,69 @@ void handleUserInput(DrawState& ds, Browser& b, int sel) {
         ds.userInput += std::string {(char)sel};
     }
 }
+void handleResult(DrawState& ds, SiteLoadPair result) {
+    switch (result.result) {
+        case SITE_LOADED:
+            if(result.metaLine != OPENED_EXT_TXT) {
+                ds.y = 0;
+                ds.mustReRender = true;
+            }
+            break;
+        case SITE_TEMPORARY_FAILURE:
+            if(result.metaLine != "") {
+                ds.issueText = "Temporary site failure: " + result.metaLine;
+            } else {
+                ds.issueText = "Temporary site failure";
+            }
+            break;
+        case SITE_PERMANENT_FAILURE:
+            if(result.metaLine != "") {
+                ds.issueText = "Permanent site failure: " + result.metaLine;
+            } else {
+                ds.issueText = "Permanent site failure";
+            }
+
+            break;
+        case SITE_REQUIRES_CERTIFICATE:
+            if(result.metaLine != "") {
+                ds.issueText = "Site requires a certificate: " + result.metaLine;
+            } else {
+                ds.issueText = "Site requires a certificate";
+            }
+
+            break;
+        case SITE_REJECTED_CERTIFICATE:
+            if(result.metaLine != "") {
+                ds.issueText = "Your certificate is not authorized: " + result.metaLine;
+            }
+            else {
+                ds.issueText = "Your certificate is not authorized";
+            }
+
+            break;
+        case SITE_INVALID_CERTIFICATE:
+
+            if(result.metaLine != "") {
+                ds.issueText = "Your certificate has been rejected as invalid: " + result.metaLine;
+            } else {
+                ds.issueText = "Your certificate has been rejected as invalid";
+            }
+
+            break;
+        case SITE_UNEXPECTED_STATUS_CODE:
+            ds.issueText = "The server replied with an invalid status code";
+            break;
+        case LINK_DOES_NOT_EXIST:
+            ds.issueText = "Link not found";
+            break;
+    }
+    ds.timeToClearIssueText = getCurrentTime() + 1000;
+}
+
 
 void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
-    bool visitSuccess = b.goToSite(site);
-    if(visitSuccess) {
-        ds.mustReRender = true;
-    }
-    if(!visitSuccess) {
-        ds.issueText = "Unable to access the requested site.";
-        ds.timeToClearIssueText = getCurrentTime() + 1000;
-    } else {
-        ds.y = 0; 
-    }
+    SiteLoadPair result = b.goToSite(site);
+    handleResult(ds,result);
 }
 
 bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
@@ -298,14 +363,11 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
             draw(ds);
             if(ds.openOtherInput != "") {
                 Destination destination = handleDestinationResolution(ds.openOtherInput , false); 
-                bool res;
+                SiteLoadPair res;
                 switch(destination.t) {
                     case NUMBER_DESTINATION:
                         res = b.followLinkNumber(destination.linkNumber);
-                        if(res) {
-                            ds.y = 0;
-                        }
-                        ds.mustReRender = true;
+                        handleResult(ds,res);
                         break;
                     case STRING_DESTINATION:
                         tryVisitSite(ds, b, destination.destination);
@@ -364,14 +426,20 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
     } else if(input == 'f') {
         b.goForward();
         ds.mustReRender = true;
-        ds.y = 0; // todo: make this part of state somewhere.
+        ds.y = 0;
     } else if(input == 'd') {
-        // TODO: Handle outLocation == "" meaning failed
         std::string outLocation = b.tryDownloadPage(OUT_LOCATION);
+        if(outLocation == "") {
+            ds.issueText = "Failed to download file";
+            ds.timeToClearIssueText = getCurrentTime() + 1000;
+        } else {
+            ds.issueText = "File downloaded to " + outLocation;
+            ds.timeToClearIssueText = getCurrentTime() + 1000;
+        }
     } else if(input == 'b') {
         b.goBack();
         ds.mustReRender = true;
-        ds.y = 0; // todo: make this part of state somewhere.
+        ds.y = 0;
     } else if(input == 'o') {
         ds.handleOpenOther = true;
     } else if (input == 'e'){
@@ -391,13 +459,11 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
             quoted += "'";
             system((editor + " " + quoted).c_str());
             refresh();
+        } else {
+            ds.issueText = "Failed to download file";
+            ds.timeToClearIssueText = getCurrentTime() + 1000;
         }
     }
-
-    // this is the loop where we deal with redirects and stuff like that. 
-    // TODO: I don't think this has to still be a loop?
-    // Broadly, we are moving away from a loop based approach, sequestering them to either browser with forward / backward
-    // or main.cpp / tests.
 
     if( (b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) && !ds.handleRedirect && !ds.handleInput) {
         if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {

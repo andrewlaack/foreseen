@@ -10,6 +10,7 @@
 #include <rapidcheck/Check.h>
 #include <utility>
 #include "../include/browser.hpp"
+#include "../include/shared.hpp"
 #include "../include/utils.hpp"
 
 TEST_CASE("Test cli input handling") {

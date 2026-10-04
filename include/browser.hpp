@@ -11,7 +11,24 @@
 #include "cache.hpp"
 #include "link.hpp"
 #include "utils.hpp"
-#include "shared.hpp"
+
+const std::string OPENED_EXT_TXT = "Externally opened";
+
+enum SiteLoadResult {
+    SITE_LOADED, // These are valid status codes so 1X, 2X, and 3e
+    SITE_TEMPORARY_FAILURE,
+    SITE_PERMANENT_FAILURE,
+    SITE_REQUIRES_CERTIFICATE,
+    SITE_REJECTED_CERTIFICATE,
+    SITE_INVALID_CERTIFICATE,
+    SITE_UNEXPECTED_STATUS_CODE,
+    LINK_DOES_NOT_EXIST // only for link following
+};
+
+struct SiteLoadPair { // TODO: Set this up.
+    SiteLoadResult result;
+    std::string metaLine;
+};
 
 class Browser {
     private:
@@ -33,7 +50,7 @@ class Browser {
         Browser();
         void setLinksOfCurrentLines();
         ~Browser();
-        bool goToSite(std::string url, bool addToHistory = true, bool refresh = false);
+        SiteLoadPair   goToSite(std::string url, bool addToHistory = true, bool refresh = false);
         void setDone(int threadIdx);
         void refresh();
         Site* getCurrentSite();
@@ -42,7 +59,7 @@ class Browser {
         std::optional<uri> getPriorUri();
         std::vector<std::pair<std::string, TextRender>> renderSite();
         std::vector<Line*> toLines(Site* site);
-        bool followLinkNumber(int linkToFollow);
+        SiteLoadPair followLinkNumber(int linkToFollow);
         std::vector<Link>* getLinkLines();
         Identity getIdentity(uri uriInput);
         void justCacheSite(Link link);

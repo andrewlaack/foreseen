@@ -1,22 +1,7 @@
-- way to show where links go
-- consideration for y-value memory in f/b history
-- horizontal scroll when lines are too long?
-- ability to go left / right in input box.
-- auto-follow redirects based on domain?
-    - A/y/n -- always, no, yes
-- downloading and interactions broadly should show more information
-    - reloading should have progress / indication
-    - perhaps I should just re-use the entry box for download (specify a file) / success type stuff?
-        - I'm wary to make it too interactive as that might draw focus away from the text being read. 
-- gotosite should return status code on failure to be shown to users
-    - this will aid in understanding:
-        - server unreachable
-        - request rejected
-        - cert issues
-        - ...
 - man pages
 - if I enter some large fucking number like 120349871023948712304987 it searches because stoi probably fails, or our check does. 
 - localhost access
+    - localhost:1965 broken
 - cleanups
     - function signatures (const, noexcept)
     - types
@@ -24,8 +9,5 @@
     - imports
     - tests
         - remove useless ones
+    - formatter
 - put all colors into shared.hpp
-- detect if a file is not a normal text file
-    - source code, txt, md, gmi, stuff like that
-    - if not, give option to download site
-        - this seems involved, but useful.

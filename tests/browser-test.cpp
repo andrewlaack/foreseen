@@ -87,8 +87,8 @@ TEST_CASE("Test browser doesn't crash on invalid sites.") {
 
 TEST_CASE("Test browser doesn't crash when accessing sites with specified port number that is not responsive.") {
     Browser b{};
-    bool res = b.goToSite("gemini://localhost:3847");
-    REQUIRE(!res);
+    SiteLoadPair res = b.goToSite("gemini://localhost:3847");
+    REQUIRE(res.result == SITE_PERMANENT_FAILURE);
     b.goForward();
     b.goBack();
     REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
@@ -159,15 +159,15 @@ TEST_CASE("Test downloading to specific directory") {
 
 TEST_CASE("Test going forwards doesn't break when accessing an invalid site prior.") {
     Browser b{};
-    bool res = b.goToSite("gemini://aroisetnatsr.aoirseaorstie");
-    REQUIRE(!res);
+    SiteLoadPair res = b.goToSite("gemini://aroisetnatsr.aoirseaorstie");
+    REQUIRE(res.result == SITE_PERMANENT_FAILURE);
     b.goForward();
 }
 
 TEST_CASE("Test going backwards doesn't break when accessing an invalid site prior.") {
     Browser b{};
-    bool res = b.goToSite("gemini://aroisetnatsr.aoirseaorstie");
-    REQUIRE(!res);
+    SiteLoadPair res = b.goToSite("gemini://aroisetnatsr.aoirseaorstie");
+    REQUIRE(res.result == SITE_PERMANENT_FAILURE);
     b.goBack();
 }
 
@@ -183,9 +183,9 @@ TEST_CASE("Sanitize characters to draw  tests") {
     Browser b {};
     std::string cwd = std::filesystem::current_path();
     std::string st = "file://" + cwd + "/tests/sites/line-return.gmi";
-    bool res = b.goToSite(st);
+    SiteLoadPair res = b.goToSite(st);
 
-    REQUIRE(res);
+    REQUIRE(res.result == SITE_LOADED);
     REQUIRE(b.getCurrentSite()->getStatusCode() >= 20);
     REQUIRE(b.getCurrentSite()->getStatusCode() <= 29);
 

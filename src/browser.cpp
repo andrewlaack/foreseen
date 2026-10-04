@@ -6,6 +6,7 @@
 #include <thread>
 #include <unistd.h>
 #include "../include/site.hpp"
+#include "../include/shared.hpp"
 #include "../include/errors.hpp"
 #include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
@@ -94,7 +95,7 @@ void Browser::refresh() {
     goToSite(getPriorUri().value().to_string(), false, true);
 }
 
-bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
+SiteLoadPair Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     Link* prior = nullptr;
 
@@ -124,7 +125,7 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
         openThread = std::thread(openUrl,  urlString);
 
         delete destination;
-        return true;
+        return SiteLoadPair{SITE_LOADED, OPENED_EXT_TXT};
     }
 
 
@@ -151,14 +152,42 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
             delete site;
         }
         delete destination;
-        return false;
+        if(site == nullptr) {
+            return SiteLoadPair{SITE_PERMANENT_FAILURE, "Connection error"};
+        }
+        return SiteLoadPair{SITE_PERMANENT_FAILURE, site->getMeta()};
     }
 
     int sc = site->getStatusCode();
+    std::string meta = site->getMeta();
     if (sc < 10 || sc >= 40) {
         delete site;
         delete destination;
-        return false;
+
+        if(sc < 10 || sc > 69) {
+            return SiteLoadPair{SITE_UNEXPECTED_STATUS_CODE, meta};
+        }
+
+        if(sc < 50) { // 40 -> 49
+            return SiteLoadPair{SITE_TEMPORARY_FAILURE, meta};
+        }
+        if(sc < 60) { // 50 -> 59
+            return SiteLoadPair{SITE_PERMANENT_FAILURE, meta};
+        }
+
+        if(sc == 60) {
+            return SiteLoadPair{SITE_REQUIRES_CERTIFICATE, meta};
+        }
+        
+        if(sc == 61) {
+            return SiteLoadPair{SITE_REJECTED_CERTIFICATE, meta};
+        }
+        if(sc == 62) {
+            return SiteLoadPair{SITE_INVALID_CERTIFICATE, meta};
+        }
+
+        return SiteLoadPair{SITE_REQUIRES_CERTIFICATE, meta};
+        
     }
 
     if(addToHistory) {
@@ -195,7 +224,7 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     }
 
     tryCacheTargets();
-    return true;
+    return SiteLoadPair{SITE_LOADED, meta};
 }
 
 Identity Browser::getIdentity(uri uriInput) {
@@ -272,8 +301,8 @@ Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM){
     }
 
     // this ensures some nice invariants about the browser, like always having at least one valid page.
-    bool start = goToSite("about://newtab");
-    if(!start) {
+    SiteLoadPair start = goToSite("about://newtab");
+    if(start.result != SITE_LOADED) {
         throw std::runtime_error("Browser unexpectedly failed to start.");
     }
 }
@@ -345,17 +374,17 @@ std::vector<Link>* Browser::getLinkLines() {
 }
 
 
-bool Browser::followLinkNumber(int linkToFollow) {
+SiteLoadPair Browser::followLinkNumber(int linkToFollow) {
     if((int)links.size() > linkToFollow-1 && linkToFollow-1 >= 0) {
         std::size_t pos = links[linkToFollow-1];
         if(lines.size() > pos) {
             Line* ptr = lines[pos];
             Link* ptrLnk = dynamic_cast<Link*>(ptr);
-            bool res = goToSite(ptrLnk->getLinkDestination().to_string(), true);
+            SiteLoadPair res = goToSite(ptrLnk->getLinkDestination().to_string(), true);
             return res;
         }
     }
-    return false;
+    return SiteLoadPair{LINK_DOES_NOT_EXIST, "Link not found"};
 }
 
 void Browser::goBack() {
@@ -388,7 +417,7 @@ void Browser::goBack() {
                 return; // safely fail with rollback
             }
         }
-        if(!goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false)) {
+        if(!(goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false).result == SITE_LOADED)) {
             previousIdx = original;
         }
 
@@ -421,7 +450,7 @@ void Browser::goForward() {
             }
         }
 
-        if(!goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false)) {
+        if(!(goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false).result == SITE_LOADED)) {
             previousIdx = original;
         }
     } else {
