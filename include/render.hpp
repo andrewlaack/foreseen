@@ -25,6 +25,8 @@ struct DrawState {
     bool reBreak = true;
     std::string issueText;
     uint64_t timeToClearIssueText;
+    uint64_t timeToClearBottomText;
+    std::string bottomText;
     std::string redirInput;
     std::string openOtherInput;
     std::string userInput;

@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cctype>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -200,6 +199,29 @@ void draw(DrawState& ds) {
             attroff(A_BOLD);
         }
     }
+
+    if(ds.bottomText != "") {
+        uint64_t now = getCurrentTime();
+        if (ds.timeToClearBottomText <= now) {
+            ds.bottomText = "";
+        } else {
+            move(ds.lines-1,(ds.columns / 2) - ((int)ds.bottomText.size() / 2));
+            attron(A_BOLD);
+
+            std::string tr = ds.bottomText;
+            std::string truncated;
+            for (auto& ch : tr) {
+                truncated += (char)toascii(ch);
+            }
+            if ((int)ds.bottomText.size() > ds.columns) {
+                truncated = truncated.substr(0, ds.columns - 3) + "...";
+            }
+            addstr(truncated.c_str());
+            attroff(A_BOLD);
+        }
+
+    }
+
     refresh();
 }
 
@@ -339,7 +361,12 @@ void handleResult(DrawState& ds, SiteLoadPair result) {
 }
 
 void tryVisitSite(DrawState& ds, Browser& b, std::string site) {
+
+    ds.bottomText = "Loading: " + site;
+    ds.timeToClearBottomText = getCurrentTime() + 5000;
+    draw(ds);
     SiteLoadPair result = b.goToSite(site);
+    ds.bottomText = "";
     handleResult(ds, result);
 }
 
@@ -361,8 +388,12 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines) {
                 SiteLoadPair res;
                 switch (destination.t) {
                     case NUMBER_DESTINATION:
+                            ds.bottomText = "Following link: " + std::to_string(destination.linkNumber);
+                            ds.timeToClearBottomText = getCurrentTime() + 5000;
+                            draw(ds);
                         res = b.followLinkNumber(destination.linkNumber);
                         handleResult(ds, res);
+                        ds.bottomText = "";
                         break;
                     case STRING_DESTINATION:
                         tryVisitSite(ds, b, destination.destination);
@@ -414,10 +445,16 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines) {
     } else if (input == CTRL('u')) {
         ds.y -= ds.lines / 2;
     } else if (input == 'r' || input == CTRL('r')) {
+        ds.bottomText = "Refreshing " + b.getCurrentLink()->getLinkDestination().to_string();
+        ds.timeToClearBottomText = getCurrentTime() + 5000;
+        draw(ds);
         b.refresh();
         ds.mustReRender = true;
+        ds.bottomText = "";
     } else if (input == 'f') {
-        b.goForward();
+        b.goForward(); // TODO: it's possible this might not be in 
+                       // cache, but probably not worth bothering with rendering
+                       // loading text.
         ds.mustReRender = true;
         ds.y = 0;
     } else if (input == 'd') {
@@ -426,8 +463,8 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines) {
             ds.issueText = "Failed to download file";
             ds.timeToClearIssueText = getCurrentTime() + 1000;
         } else {
-            ds.issueText = "File downloaded to " + outLocation;
-            ds.timeToClearIssueText = getCurrentTime() + 1000;
+            ds.bottomText = "File downloaded to " + outLocation;
+            ds.timeToClearBottomText = getCurrentTime() + 1000;
         }
     } else if (input == 'b') {
         b.goBack();

@@ -5,3 +5,7 @@
     - imports
     - tests
         - remove useless ones
+
+---
+
+- bottom loading text / downloaded text -- not red like heading.
