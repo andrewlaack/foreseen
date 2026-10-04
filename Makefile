@@ -67,4 +67,3 @@ test: pure-test browser-test fetch-test puppet-test
 	rm -rf coverage.info
 
 .PHONY: test pure-test browser-test fetch-test puppet-test benchmark mem-leak-test clean install build debug server
-
