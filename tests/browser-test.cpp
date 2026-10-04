@@ -1,10 +1,13 @@
-#include <catch2/catch_test_macros.hpp>
+#include "../include/browser.hpp"
+
 #include <rapidcheck.h>
+#include <rapidcheck/Assertions.h>
+
+#include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <filesystem>
-#include <rapidcheck/Assertions.h>
 #include <utility>
-#include "../include/browser.hpp"
+
 #include "../include/utils.hpp"
 
 std::string genRandom(const int len) {
@@ -18,91 +21,98 @@ std::string genRandom(const int len) {
     for (int i = 0; i < len; ++i) {
         tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
     }
-    
+
     return tmp_s;
 }
 
-
-TEST_CASE( "Basic rendering of all line types" ) {
+TEST_CASE("Basic rendering of all line types") {
     Browser b{};
     std::string cwd = std::filesystem::current_path();
     std::string st = "file://" + cwd + "/tests/sites/all_line_types.gmi";
 
     b.goToSite(st, true);
-    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/all_line_types.gmi"));
+    REQUIRE(b.getCurrentSite()->getBody() ==
+            readFileToString("tests/sites/all_line_types.gmi"));
     auto strLs = b.renderSite();
-    auto res = breakLines(strLs, 80,200);
-    for(auto& st: res) {
-        if(st.second.shouldFold) {
+    auto res = breakLines(strLs, 80, 200);
+    for (auto& st : res) {
+        if (st.second.shouldFold) {
             REQUIRE(st.first.size() <= 200);
         }
     }
 }
 
-
-TEST_CASE( "Basic navigation" ) {
+TEST_CASE("Basic navigation") {
     Browser b{};
     std::string cwd = std::filesystem::current_path();
     std::string st = "file://" + cwd + "/tests/sites/basic.gmi";
     std::string st2 = "file://" + cwd + "/tests/sites/basic_2.gmi";
 
     b.goToSite(st, true);
-    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
+    REQUIRE(b.getCurrentSite()->getBody() ==
+            readFileToString("tests/sites/basic.gmi"));
     b.goToSite(st2, true);
-    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
+    REQUIRE(b.getCurrentSite()->getBody() ==
+            readFileToString("tests/sites/basic_2.gmi"));
 }
 
-
-TEST_CASE( "Local filesystem relative navigation" ) {
-
+TEST_CASE("Local filesystem relative navigation") {
     Browser b{};
     std::string cwd = std::filesystem::current_path();
     std::string st = "file://" + cwd + "/tests/sites/basic.gmi";
 
     b.goToSite(st, true);
-    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
+    REQUIRE(b.getCurrentSite()->getBody() ==
+            readFileToString("tests/sites/basic.gmi"));
     b.goToSite("basic_2.gmi", true);
-    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
+    REQUIRE(b.getCurrentSite()->getBody() ==
+            readFileToString("tests/sites/basic_2.gmi"));
 }
 
-TEST_CASE ("Local filesystems navigation via links") {
+TEST_CASE("Local filesystems navigation via links") {
     Browser b{};
     std::string cwd = std::filesystem::current_path();
     std::string st = "file://" + cwd + "/tests/sites/basic.gmi";
 
     b.goToSite(st, true);
-    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic.gmi"));
+    REQUIRE(b.getCurrentSite()->getBody() ==
+            readFileToString("tests/sites/basic.gmi"));
     b.followLinkNumber(1);
-    REQUIRE(b.getCurrentSite()->getBody() == readFileToString("tests/sites/basic_2.gmi"));
+    REQUIRE(b.getCurrentSite()->getBody() ==
+            readFileToString("tests/sites/basic_2.gmi"));
 }
 
 TEST_CASE("Test browser doesn't crash on invalid sites.") {
     Browser b{};
     b.goToSite("gemini://this_site_doesn_t_exsist");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "about://newtab");
     b.goBack();
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "about://newtab");
 }
 
-
-TEST_CASE("Test browser doesn't crash when accessing sites with specified port number that is not responsive.") {
+TEST_CASE(
+    "Test browser doesn't crash when accessing sites with specified port "
+    "number that is not responsive.") {
     Browser b{};
     SiteLoadPair res = b.goToSite("gemini://localhost:3847");
     REQUIRE(res.result == SITE_PERMANENT_FAILURE);
     b.goForward();
     b.goBack();
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "about://newtab");
 }
 
-
-TEST_CASE("Test browser can access sites with specified (default) port number.") {
+TEST_CASE(
+    "Test browser can access sites with specified (default) port number.") {
     Browser b{};
     b.goToSite("gemini://localhost:1965");
     REQUIRE(b.getCurrentSite()->getMeta() == "text/gemini");
 }
 
-
-// TODO:  Test invalid meta lines (like the case where weird stuff is sent from server)
+// TODO:  Test invalid meta lines (like the case where weird stuff is sent from
+// server)
 TEST_CASE("Test browser returns proper meta for visited sites.") {
     Browser b{};
     b.goToSite("gemini://localhost");
@@ -110,45 +120,52 @@ TEST_CASE("Test browser returns proper meta for visited sites.") {
     REQUIRE(b.getCurrentSite()->getMeta() == "text/gemini");
 }
 
-
-TEST_CASE("Test browser doesn't crash on invalid link number following, excessive back, and excessive forwards.") {
-
+TEST_CASE(
+    "Test browser doesn't crash on invalid link number following, excessive "
+    "back, and excessive forwards.") {
     Browser b{};
     b.goToSite("gemini://localhost/sites/feed.xml");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/feed.xml");
-    for(int i = 0; i < 1000; ++i) {
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "gemini://localhost/sites/feed.xml");
+    for (int i = 0; i < 1000; ++i) {
         b.followLinkNumber(i);
     }
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/feed.xml");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "gemini://localhost/sites/feed.xml");
     b.goBack();
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "about://newtab");
     b.goForward();
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/feed.xml");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "gemini://localhost/sites/feed.xml");
     b.goBack();
     b.goBack();
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "about://newtab");
     b.goForward();
     b.goForward();
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/feed.xml");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "gemini://localhost/sites/feed.xml");
 }
 
 TEST_CASE("Test page downloading.") {
     Browser b{};
     b.goToSite("gemini://localhost/sites/");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "gemini://localhost/sites/");
     std::string destination = b.tryDownloadPage();
     std::string out = readFileToString(destination);
     REQUIRE(out == b.getCurrentSite()->getBody());
     REQUIRE(std::filesystem::remove(destination));
 }
 
-
 TEST_CASE("Test downloading to specific directory") {
     std::filesystem::path cwd = std::filesystem::current_path();
 
     Browser b{};
     b.goToSite("gemini://localhost/sites/");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/sites/");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "gemini://localhost/sites/");
     std::string destination = b.tryDownloadPage(cwd);
     std::string out = readFileToString(destination);
     REQUIRE(out == b.getCurrentSite()->getBody());
@@ -156,15 +173,17 @@ TEST_CASE("Test downloading to specific directory") {
     REQUIRE(std::filesystem::remove(destination));
 }
 
-
-TEST_CASE("Test going forwards doesn't break when accessing an invalid site prior.") {
+TEST_CASE(
+    "Test going forwards doesn't break when accessing an invalid site prior.") {
     Browser b{};
     SiteLoadPair res = b.goToSite("gemini://aroisetnatsr.aoirseaorstie");
     REQUIRE(res.result == SITE_PERMANENT_FAILURE);
     b.goForward();
 }
 
-TEST_CASE("Test going backwards doesn't break when accessing an invalid site prior.") {
+TEST_CASE(
+    "Test going backwards doesn't break when accessing an invalid site "
+    "prior.") {
     Browser b{};
     SiteLoadPair res = b.goToSite("gemini://aroisetnatsr.aoirseaorstie");
     REQUIRE(res.result == SITE_PERMANENT_FAILURE);
@@ -174,13 +193,15 @@ TEST_CASE("Test going backwards doesn't break when accessing an invalid site pri
 TEST_CASE("Test encoding allows relative linking with : in parameter") {
     Browser b{};
     b.goToSite("gemini://localhost/cgi-bin/search.py");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/search.py");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "gemini://localhost/cgi-bin/search.py");
     b.goToSite("?https://test.com");
-    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "gemini://localhost/cgi-bin/search.py?https%3A%2F%2Ftest.com");
+    REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+            "gemini://localhost/cgi-bin/search.py?https%3A%2F%2Ftest.com");
 }
 
 TEST_CASE("Sanitize characters to draw  tests") {
-    Browser b {};
+    Browser b{};
     std::string cwd = std::filesystem::current_path();
     std::string st = "file://" + cwd + "/tests/sites/line-return.gmi";
     SiteLoadPair res = b.goToSite(st);
@@ -191,30 +212,31 @@ TEST_CASE("Sanitize characters to draw  tests") {
 
     auto ls = b.renderSite();
     sanitizeCharactersToDraw(ls);
-    for(auto& line : ls) {
+    for (auto& line : ls) {
         REQUIRE(line.first.find('\r') == std::string::npos);
     }
 }
 
 TEST_CASE("Never crash from weird user inputs") {
-    for(int i  =  0; i < 5; ++i) {
-        Browser b {};
+    for (int i = 0; i < 5; ++i) {
+        Browser b{};
 
-        std::vector<std::string> ls {};
-        for(int x = 0; x < 10; ++x) {
+        std::vector<std::string> ls{};
+        for (int x = 0; x < 10; ++x) {
             ls.push_back(genRandom(rand() % 5000));
         }
 
-        for(auto& str : ls) {
+        for (auto& str : ls) {
             auto res = handleDestinationResolution("?" + str, false);
-            if(res.t == STRING_DESTINATION) {
+            if (res.t == STRING_DESTINATION) {
                 b.goToSite(res.destination);
             } else if (res.t == NUMBER_DESTINATION) {
                 b.followLinkNumber(res.linkNumber);
             }
             b.refresh();
             b.goBack();
-            REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() == "about://newtab");
+            REQUIRE(b.getCurrentLink()->getLinkDestination().to_string() ==
+                    "about://newtab");
         }
     }
 }

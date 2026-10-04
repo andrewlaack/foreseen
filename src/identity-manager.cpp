@@ -1,17 +1,19 @@
+#include "../include/identity-manager.hpp"
+
+#include <unistd.h>
+
 #include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <unistd.h>
-#include "../vendor/uri.hpp"
-#include "../include/identity-manager.hpp"
+
 #include "../include/utils.hpp"
+#include "../vendor/uri.hpp"
 
 Identity IdentityManager::getIdentityForURI(uri destination) {
-
-    if(destination.get_scheme() != "gemini") {
+    if (destination.get_scheme() != "gemini") {
         return Identity{"", ""};
     }
 
@@ -26,10 +28,10 @@ Identity IdentityManager::getIdentityForURI(uri destination) {
 
     try {
         if (fs::exists(dir / "client.crt") && fs::exists(dir / "client.key")) {
-            return Identity{(dir / "client.key").string(), (dir / "client.crt").string()};
+            return Identity{(dir / "client.key").string(),
+                            (dir / "client.crt").string()};
         }
-    }
-    catch (const fs::filesystem_error& e){
+    } catch (const fs::filesystem_error& e) {
         // this can happen if the domain is stupidly long.
         // in such cases, there are bigger issues.
     }

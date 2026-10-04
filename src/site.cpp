@@ -1,23 +1,20 @@
 #include "../include/site.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <string>
 
 Site::Site(std::string h, std::string b) : body(b), header(h) {}
 
-std::string Site::getHeader() {
-    return header;
-}
+std::string Site::getHeader() { return header; }
 
-std::string Site::getBody() {
-    return body;
-}
+std::string Site::getBody() { return body; }
 uint32_t Site::getStatusCode() {
     try {
-        uint32_t statusCode = std::stoi(header.substr(0,2));
+        uint32_t statusCode = std::stoi(header.substr(0, 2));
         return statusCode;
     } catch (...) {
-        return uint32_t {41};
+        return uint32_t{41};
     }
 }
 
@@ -27,11 +24,6 @@ std::string Site::getMeta() {
     return meta;
 }
 
+void Site::setUnreachable() { unreachable = true; }
 
-void Site::setUnreachable() {
-    unreachable = true;
-}
-
-bool Site::getUnreachable() {
-    return unreachable;
-}
+bool Site::getUnreachable() { return unreachable; }

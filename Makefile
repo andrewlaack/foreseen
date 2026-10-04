@@ -16,6 +16,11 @@ install: build
 	cp docs/foreseen.1 ${MANPREFIX}/man1/foreseen.1
 	chmod 644 ${MANPREFIX}/man1/foreseen.1
 
+format:
+	clang-format -i include/*.hpp
+	clang-format -i src/*.cpp
+	clang-format -i tests/*.cpp
+
 clean:
 	rm -rf test*.out foreseen.out
 	rm -rf bench*.out
@@ -59,7 +64,7 @@ benchmark:
 	perf record -g ./bench1.out
 	rm bench1.out
 
-test: pure-test browser-test fetch-test puppet-test
+test: format pure-test browser-test fetch-test puppet-test
 	lcov --capture --directory . --output-file coverage.info \
 		--no-external \
 		--rc geninfo_unexecuted_blocks=1 \
@@ -69,4 +74,4 @@ test: pure-test browser-test fetch-test puppet-test
 	rm -rf *.gcda *.gcno
 	rm -rf coverage.info
 
-.PHONY: test pure-test browser-test fetch-test puppet-test benchmark mem-leak-test clean install build debug server
+.PHONY: test pure-test browser-test fetch-test puppet-test benchmark mem-leak-test clean install build debug server format

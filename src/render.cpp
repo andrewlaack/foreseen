@@ -1,33 +1,37 @@
-#include "../include/browser.hpp"
-#include "../include/utils.hpp"
 #include "../include/render.hpp"
-#include "../include/shared.hpp"
+
+#include <ncurses.h>
+#include <unctrl.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cctype>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
-#include <ncurses.h>
 #include <string>
-#include <unctrl.h>
 #include <utility>
 #include <vector>
+
+#include "../include/browser.hpp"
+#include "../include/shared.hpp"
+#include "../include/utils.hpp"
 
 #ifndef CTRL
 #define CTRL(c) ((c) & 037)
 #endif
 
 #ifdef DEBUG_MODE
-    const char* OUT_LOCATION = "/tmp/foreseen";
+const char* OUT_LOCATION = "/tmp/foreseen";
 #else
-    const char* OUT_LOCATION = "";
+const char* OUT_LOCATION = "";
 #endif
 
-
-
-int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs, DrawState& ds) {
-    return (strLs.size() - (ds.lines - 2)) + 1; // this gives us two new lines at the end because the last line should contain a \n.
+int lowestPos(std::vector<std::pair<std::string, TextRender>>& strLs,
+              DrawState& ds) {
+    return (strLs.size() - (ds.lines - 2)) +
+           1;  // this gives us two new lines at the end because the last line
+               // should contain a \n.
 }
 
 bool isValidUserInput(int uinput) {
@@ -37,25 +41,24 @@ bool isValidUserInput(int uinput) {
     return false;
 }
 void drawInputBox(std::string text, std::string userInput, DrawState& ds) {
+    move(ds.lines / 2 - 1, ds.columns / 4);
 
-    move(ds.lines/2-1, ds.columns/4);
-
-    attron(COLOR_PAIR(COLOR_CYAN+1));
-    for(int i = 0; i < ds.columns/2; ++i) {
+    attron(COLOR_PAIR(COLOR_CYAN + 1));
+    for (int i = 0; i < ds.columns / 2; ++i) {
         addstr("-");
     }
 
-    move(ds.lines/2 + 1, ds.columns/4);
-    for(int i = 0; i < ds.columns/2; ++i) {
+    move(ds.lines / 2 + 1, ds.columns / 4);
+    for (int i = 0; i < ds.columns / 2; ++i) {
         addstr("-");
     }
-    attroff(COLOR_PAIR(COLOR_CYAN+1));
+    attroff(COLOR_PAIR(COLOR_CYAN + 1));
 
     int userInputSize = userInput.size();
-    int width = ds.columns/2;
+    int width = ds.columns / 2;
 
-    if((int)text.size() >= width) {
-        text = text.substr(0,width-6) + "...: ";
+    if ((int)text.size() >= width) {
+        text = text.substr(0, width - 6) + "...: ";
     }
 
     int textSize = text.size();
@@ -66,32 +69,34 @@ void drawInputBox(std::string text, std::string userInput, DrawState& ds) {
 
     int delta = width - (textSize + userInputSize);
 
-    if(delta < 0) {
-        userTextToRender = userInput.substr(delta*-1, userInput.size());
+    if (delta < 0) {
+        userTextToRender = userInput.substr(delta * -1, userInput.size());
     } else {
-        while(delta != 0) {
-            userTextToRender.append(" "); // this makes sure the background doesn't leak through.
+        while (delta != 0) {
+            userTextToRender.append(
+                " ");  // this makes sure the background doesn't leak through.
             delta -= 1;
         }
     }
 
-    move(ds.lines/2, ds.columns/4);
+    move(ds.lines / 2, ds.columns / 4);
     addstr(text.c_str());
     addstr(userTextToRender.c_str());
-
 }
 uint64_t getCurrentTime() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::steady_clock::now().time_since_epoch())
+        .count();
 }
 
 void draw(DrawState& ds) {
-    if(ds.columns < 20) {
+    if (ds.columns < 20) {
         erase();
         addstr("Screen width too small.");
         refresh();
         return;
     }
-    if(ds.lines < 3) {
+    if (ds.lines < 3) {
         erase();
         addstr("Screen height too small.");
         refresh();
@@ -101,8 +106,9 @@ void draw(DrawState& ds) {
     auto* cs = ds.bPtr->getCurrentSite();
 
     // CS is null or has status 2X
-    if (!(cs != nullptr && (cs->getStatusCode() < 20 || cs->getStatusCode() > 29))) {
-        if(ds.mustReRender) {
+    if (!(cs != nullptr &&
+          (cs->getStatusCode() < 20 || cs->getStatusCode() > 29))) {
+        if (ds.mustReRender) {
             ds.prior = ds.bPtr->renderSite();
             sanitizeCharactersToDraw(ds.prior);
             ds.mustReRender = false;
@@ -110,42 +116,43 @@ void draw(DrawState& ds) {
         }
     }
 
-    if(ds.reBreak) {
-        ds.broken  = breakLines(ds.prior, std::min(ds.columns, MAX_WIDTH), ds.columns);
+    if (ds.reBreak) {
+        ds.broken =
+            breakLines(ds.prior, std::min(ds.columns, MAX_WIDTH), ds.columns);
         ds.reBreak = false;
     }
-    if(ds.toLowest) {
+    if (ds.toLowest) {
         ds.y = lowestPos(ds.broken, ds);
         ds.toLowest = false;
     }
 
-    ds.y = std::max(0,std::min(ds.y,lowestPos(ds.broken,ds)));
+    ds.y = std::max(0, std::min(ds.y, lowestPos(ds.broken, ds)));
 
     erase();
-    move(0,(ds.columns / 2) - ((int)ds.header.size() / 2) );
+    move(0, (ds.columns / 2) - ((int)ds.header.size() / 2));
 
     attron(A_BOLD);
 
-    if((int)ds.header.size() < ds.columns) {
+    if ((int)ds.header.size() < ds.columns) {
         addstr(ds.header.c_str());
-    }  else {
-        addstr((ds.header.substr(0,ds.columns-3) + "...").c_str());
+    } else {
+        addstr((ds.header.substr(0, ds.columns - 3) + "...").c_str());
     }
 
     attroff(A_BOLD);
 
     addstr(std::string(ds.columns, ' ').c_str());
 
-    for(int i = ds.y; i - ds.y < ds.lines - 2 && i < (int)ds.broken.size(); ++i) {
+    for (int i = ds.y; i - ds.y < ds.lines - 2 && i < (int)ds.broken.size();
+         ++i) {
         move(i - ds.y + 2, 0);
 
         attron(COLOR_PAIR(ds.broken[i].second.color + 1));
-        if(ds.broken[i].second.isBold) {
+        if (ds.broken[i].second.isBold) {
             attron(A_BOLD);
             addstr(ds.broken[i].first.c_str());
             attroff(A_BOLD);
-        }
-        else {
+        } else {
             addstr(ds.broken[i].first.c_str());
         }
         attroff(COLOR_PAIR(ds.broken[i].second.color + 1));
@@ -156,12 +163,11 @@ void draw(DrawState& ds) {
         drawInputBox(toShow, ds.redirInput, ds);
     }
 
-    if(ds.handleInput) {
-        if(ds.metaLine != "") {
+    if (ds.handleInput) {
+        if (ds.metaLine != "") {
             drawInputBox(ds.metaLine + ": ", ds.userInput, ds);
         } else {
             drawInputBox("Input: ", ds.userInput, ds);
-
         }
     }
 
@@ -169,69 +175,67 @@ void draw(DrawState& ds) {
         drawInputBox("Destination / Link Number: ", ds.openOtherInput, ds);
     }
 
-    if(ds.issueText != "") {
+    if (ds.issueText != "") {
         uint64_t now = getCurrentTime();
-        if(ds.timeToClearIssueText <= now) {
+        if (ds.timeToClearIssueText <= now) {
             ds.issueText = "";
         } else {
-            move(0,0);
+            move(0, 0);
             attron(A_BOLD);
-            attron(COLOR_PAIR(COLOR_RED+1));
+            attron(COLOR_PAIR(COLOR_RED + 1));
 
             std::string tr = ds.issueText;
             std::string truncated;
 
-            for(auto& ch : tr) {
+            for (auto& ch : tr) {
                 truncated += (char)toascii(ch);
             }
 
-            if((int)ds.issueText.size() > ds.columns) {
-                truncated = truncated.substr(0,ds.columns - 3) + "...";
+            if ((int)ds.issueText.size() > ds.columns) {
+                truncated = truncated.substr(0, ds.columns - 3) + "...";
             }
 
             addstr(truncated.c_str());
-            attroff(COLOR_PAIR(COLOR_RED+1));
+            attroff(COLOR_PAIR(COLOR_RED + 1));
             attroff(A_BOLD);
         }
-
     }
     refresh();
 }
 
 void openPageHandler(DrawState& ds, int sel) {
-
-    if(sel == KEY_BACKSPACE || sel == 127 || sel == 8) {
-        if(ds.openOtherInput.size() > 0) {
-            ds.openOtherInput = ds.openOtherInput.substr(0,ds.openOtherInput.size() - 1);
+    if (sel == KEY_BACKSPACE || sel == 127 || sel == 8) {
+        if (ds.openOtherInput.size() > 0) {
+            ds.openOtherInput =
+                ds.openOtherInput.substr(0, ds.openOtherInput.size() - 1);
         }
     }
 
-    if(sel ==  27) {
+    if (sel == 27) {
         ds.openOtherInput = "";
         ds.handleOpenOther = false;
         return;
     }
 
-    if(sel == '\n' || sel == KEY_ENTER) {
+    if (sel == '\n' || sel == KEY_ENTER) {
         ds.handleOpenOther = false;
         return;
     }
 
-    if(isValidUserInput(sel)) {
-        ds.openOtherInput += std::string {(char)sel};
+    if (isValidUserInput(sel)) {
+        ds.openOtherInput += std::string{(char)sel};
     }
-
 }
 
 void handleRedir(DrawState& ds, int input, Browser& b) {
-    if(input == 'y') {
+    if (input == 'y') {
         ds.redirInput = "y";
         draw(ds);
         ds.handleRedirect = false;
         tryVisitSite(ds, b, b.getCurrentSite()->getMeta());
         ds.mustReRender = true;
     }
-    if(input == 'n') {
+    if (input == 'n') {
         ds.redirInput = "n";
         draw(ds);
         ds.handleRedirect = false;
@@ -241,55 +245,54 @@ void handleRedir(DrawState& ds, int input, Browser& b) {
 }
 
 void handleUserInput(DrawState& ds, Browser& b, int sel) {
-    if(sel == '\n' || sel == KEY_ENTER) {
-
+    if (sel == '\n' || sel == KEY_ENTER) {
         ds.handleInput = false;
 
-        if(ds.userInput != "") {
-            tryVisitSite(ds, b, "?"+ds.userInput);
+        if (ds.userInput != "") {
+            tryVisitSite(ds, b, "?" + ds.userInput);
         } else {
             b.goBack();
             ds.mustReRender = true;
         }
         return;
     }
-    if(sel == 27) {
+    if (sel == 27) {
         ds.handleInput = false;
-        draw(ds); // this might not be totally necessary because back is generally fast, but it's not strictly
-                  // guaranteed.
+        draw(ds);  // this might not be totally necessary because back is
+                   // generally fast, but it's not strictly guaranteed.
         b.goBack();
         ds.mustReRender = true;
         return;
     }
 
-    if(sel == KEY_BACKSPACE || sel == 127 || sel == 8) {
-        if(ds.userInput.size() > 0) {
-            ds.userInput = ds.userInput.substr(0,ds.userInput.size() - 1);
+    if (sel == KEY_BACKSPACE || sel == 127 || sel == 8) {
+        if (ds.userInput.size() > 0) {
+            ds.userInput = ds.userInput.substr(0, ds.userInput.size() - 1);
         }
         return;
     }
 
-    if(isValidUserInput(sel)) {
-        ds.userInput += std::string {(char)sel};
+    if (isValidUserInput(sel)) {
+        ds.userInput += std::string{(char)sel};
     }
 }
 void handleResult(DrawState& ds, SiteLoadPair result) {
     switch (result.result) {
         case SITE_LOADED:
-            if(result.metaLine != OPENED_EXT_TXT) {
+            if (result.metaLine != OPENED_EXT_TXT) {
                 ds.y = 0;
                 ds.mustReRender = true;
             }
             break;
         case SITE_TEMPORARY_FAILURE:
-            if(result.metaLine != "") {
+            if (result.metaLine != "") {
                 ds.issueText = "Temporary site failure: " + result.metaLine;
             } else {
                 ds.issueText = "Temporary site failure";
             }
             break;
         case SITE_PERMANENT_FAILURE:
-            if(result.metaLine != "") {
+            if (result.metaLine != "") {
                 ds.issueText = "Permanent site failure: " + result.metaLine;
             } else {
                 ds.issueText = "Permanent site failure";
@@ -297,26 +300,29 @@ void handleResult(DrawState& ds, SiteLoadPair result) {
 
             break;
         case SITE_REQUIRES_CERTIFICATE:
-            if(result.metaLine != "") {
-                ds.issueText = "Site requires a certificate: " + result.metaLine;
+            if (result.metaLine != "") {
+                ds.issueText =
+                    "Site requires a certificate: " + result.metaLine;
             } else {
                 ds.issueText = "Site requires a certificate";
             }
 
             break;
         case SITE_REJECTED_CERTIFICATE:
-            if(result.metaLine != "") {
-                ds.issueText = "Your certificate is not authorized: " + result.metaLine;
-            }
-            else {
+            if (result.metaLine != "") {
+                ds.issueText =
+                    "Your certificate is not authorized: " + result.metaLine;
+            } else {
                 ds.issueText = "Your certificate is not authorized";
             }
 
             break;
         case SITE_INVALID_CERTIFICATE:
 
-            if(result.metaLine != "") {
-                ds.issueText = "Your certificate has been rejected as invalid: " + result.metaLine;
+            if (result.metaLine != "") {
+                ds.issueText =
+                    "Your certificate has been rejected as invalid: " +
+                    result.metaLine;
             } else {
                 ds.issueText = "Your certificate has been rejected as invalid";
             }
@@ -332,32 +338,31 @@ void handleResult(DrawState& ds, SiteLoadPair result) {
     ds.timeToClearIssueText = getCurrentTime() + 1000;
 }
 
-
-void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
+void tryVisitSite(DrawState& ds, Browser& b, std::string site) {
     SiteLoadPair result = b.goToSite(site);
-    handleResult(ds,result);
+    handleResult(ds, result);
 }
 
-bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
-
-    if(lines != ds.lines || cols != ds.columns) {
+bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines) {
+    if (lines != ds.lines || cols != ds.columns) {
         ds.reBreak = true;
     }
 
     ds.lines = lines;
     ds.columns = cols;
 
-    if(ds.handleOpenOther) {
-        openPageHandler(ds,input);
-        if(!ds.handleOpenOther) {
+    if (ds.handleOpenOther) {
+        openPageHandler(ds, input);
+        if (!ds.handleOpenOther) {
             draw(ds);
-            if(ds.openOtherInput != "") {
-                Destination destination = handleDestinationResolution(ds.openOtherInput , false); 
+            if (ds.openOtherInput != "") {
+                Destination destination =
+                    handleDestinationResolution(ds.openOtherInput, false);
                 SiteLoadPair res;
-                switch(destination.t) {
+                switch (destination.t) {
                     case NUMBER_DESTINATION:
                         res = b.followLinkNumber(destination.linkNumber);
-                        handleResult(ds,res);
+                        handleResult(ds, res);
                         break;
                     case STRING_DESTINATION:
                         tryVisitSite(ds, b, destination.destination);
@@ -373,19 +378,18 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
         }
         return true;
     } else if (ds.handleRedirect) {
-
         handleRedir(ds, input, b);
 
-        if(!ds.handleRedirect) {
+        if (!ds.handleRedirect) {
             mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
-        }  else {
+        } else {
             draw(ds);
         }
 
         return true;
     } else if (ds.handleInput) {
         handleUserInput(ds, b, input);
-        if(!ds.handleInput) {
+        if (!ds.handleInput) {
             mainLoop(ds, b, KEY_RESIZE, ds.columns, ds.lines);
         } else {
             draw(ds);
@@ -393,57 +397,56 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
         return true;
     }
 
-
-    if(input == 'q') {
+    if (input == 'q') {
         return false;
     }
 
-    if(input == KEY_DOWN) {
+    if (input == KEY_DOWN) {
         ds.y += 1;
-    } else if (input == KEY_UP){
+    } else if (input == KEY_UP) {
         ds.y -= 1;
-    } else if (input == 'g'){
+    } else if (input == 'g') {
         ds.y = 0;
-    } else if (input == 'G'){
+    } else if (input == 'G') {
         ds.toLowest = true;
-    } else if (input == CTRL('d')){
+    } else if (input == CTRL('d')) {
         ds.y += ds.lines / 2;
     } else if (input == CTRL('u')) {
         ds.y -= ds.lines / 2;
-    } else if (input == 'r' || input == CTRL('r')){
+    } else if (input == 'r' || input == CTRL('r')) {
         b.refresh();
         ds.mustReRender = true;
-    } else if(input == 'f') {
+    } else if (input == 'f') {
         b.goForward();
         ds.mustReRender = true;
         ds.y = 0;
-    } else if(input == 'd') {
+    } else if (input == 'd') {
         std::string outLocation = b.tryDownloadPage(OUT_LOCATION);
-        if(outLocation == "") {
+        if (outLocation == "") {
             ds.issueText = "Failed to download file";
             ds.timeToClearIssueText = getCurrentTime() + 1000;
         } else {
             ds.issueText = "File downloaded to " + outLocation;
             ds.timeToClearIssueText = getCurrentTime() + 1000;
         }
-    } else if(input == 'b') {
+    } else if (input == 'b') {
         b.goBack();
         ds.mustReRender = true;
         ds.y = 0;
-    } else if(input == 'o') {
+    } else if (input == 'o') {
         ds.handleOpenOther = true;
-    } else if (input == 'e'){
+    } else if (input == 'e') {
         std::string editor = getEditor();
         std::string dl = b.tryDownloadPage(OUT_LOCATION);
-        if(dl != "") {
+        if (dl != "") {
             def_prog_mode();
             endwin();
             std::string quoted = "'";
             for (char c : dl) {
-                if(c == '\'') {
+                if (c == '\'') {
                     quoted += std::string("'\\''");
                 } else {
-                    quoted +=  std::string(1, c);
+                    quoted += std::string(1, c);
                 }
             }
             quoted += "'";
@@ -455,9 +458,11 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
         }
     }
 
-    if( (b.getCurrentSite()->getStatusCode() < 20 || b.getCurrentSite()->getStatusCode() > 29) && !ds.handleRedirect && !ds.handleInput) {
-        if(b.getCurrentSite()->getStatusCode() >= 10 && b.getCurrentSite()->getStatusCode() <= 19) {
-
+    if ((b.getCurrentSite()->getStatusCode() < 20 ||
+         b.getCurrentSite()->getStatusCode() > 29) &&
+        !ds.handleRedirect && !ds.handleInput) {
+        if (b.getCurrentSite()->getStatusCode() >= 10 &&
+            b.getCurrentSite()->getStatusCode() <= 19) {
             auto* st = b.getCurrentSite();
             assert(st != nullptr);
             ds.metaLine = st->getMeta();
@@ -465,9 +470,11 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
             ds.handleInput = true;
             ds.userInput = "";
 
-        } else if (b.getCurrentSite()->getStatusCode() >= 30 && b.getCurrentSite()->getStatusCode() <= 39 && !ds.handleRedirect){
+        } else if (b.getCurrentSite()->getStatusCode() >= 30 &&
+                   b.getCurrentSite()->getStatusCode() <= 39 &&
+                   !ds.handleRedirect) {
             auto* st = b.getCurrentSite();
-            if(st != nullptr) {
+            if (st != nullptr) {
                 ds.metaLine = st->getMeta();
             }
 
@@ -483,7 +490,6 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines)  {
     auto* st = b.getCurrentSite();
     assert(st != nullptr);
     ds.metaLine = st->getMeta();
-    
 
     draw(ds);
     return true;

@@ -1,8 +1,0 @@
-- cleanups
-    - function signatures (const, noexcept)
-    - types
-        - ints
-    - imports
-    - tests
-        - remove useless ones
-    - formatter

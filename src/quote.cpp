@@ -1,8 +1,11 @@
 #include "../include/quote.hpp"
+
+#include <ncurses.h>
+
+#include <cstdint>
+
 #include "../include/shared.hpp"
 #include "../include/utils.hpp"
-#include <cstdint>
-#include <ncurses.h>
 
 Quote::Quote(std::string input) {
     textToRender = input.substr(1);
@@ -10,18 +13,10 @@ Quote::Quote(std::string input) {
     textToRender = "> " + textToRender;
 }
 
-std::string Quote::textToDraw() {
-    return textToRender + "\n";
-}
+std::string Quote::textToDraw() { return textToRender + "\n"; }
 
-uint8_t Quote::getColor() {
-    return COLOR_QUOTE;
-}
+uint8_t Quote::getColor() { return COLOR_QUOTE; }
 
-LineType Quote::type() {
-    return QUOTE;
-}
+LineType Quote::type() { return QUOTE; }
 
-bool Quote::isBold() {
-    return false;
-}
+bool Quote::isBold() { return false; }

@@ -1,16 +1,16 @@
 #include "../include/cache.hpp"
-#include "../include/site.hpp"
-#include "../include/shared.hpp"
+
 #include <cassert>
 #include <mutex>
 #include <optional>
 
+#include "../include/shared.hpp"
+#include "../include/site.hpp"
 
 std::optional<Site> Cache::getSite(const std::string& site) {
-
     std::lock_guard<std::mutex> lock(mutex);
     auto it = cache.find(site);
-    
+
     if (it != cache.end()) {
         return it->second;
     }

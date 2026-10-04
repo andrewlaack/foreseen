@@ -1,40 +1,40 @@
 #pragma once
 #include <cstdint>
-#include <optional>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
-#include "line.hpp"
+
 #include "../vendor/uri.hpp"
+#include "line.hpp"
 
 struct TextRender {
     uint8_t color;
-    bool isBold:1;
-    bool shouldFold:1 = true; // preformatted text doesn't need to be folded.
+    bool isBold : 1;
+    bool shouldFold : 1 = true;  // preformatted text doesn't need to be folded.
 };
 
 bool isPrefixed(std::string input, std::string prefix);
 std::string readFileToString(std::string filePath);
 bool isWhiteSpace(std::string& line, int idx);
 std::vector<std::string> stringToList(std::string input);
-Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount, bool isPreformatted);
+Line* lineToLine(std::string input, std::optional<uri> prior, int linkCount,
+                 bool isPreformatted);
 std::string urlEncode(const std::string& value);
 std::string getNewTab();
 void openUrl(const std::string& url);
-std::vector<std::pair<std::string, TextRender>> breakLines(std::vector<std::pair<std::string, TextRender>>& strLs, int width, int cols);
+std::vector<std::pair<std::string, TextRender>> breakLines(
+    std::vector<std::pair<std::string, TextRender>>& strLs, int width,
+    int cols);
 std::string stripLeadingWhiteSpace(std::string& input);
 
-
-// This will over-write the existing file, if relevant. This will not create directories for you.
+// This will over-write the existing file, if relevant. This will not create
+// directories for you.
 void writeStringToFile(std::string toWrite, std::string filePath);
 std::string encodeAsFilename(uri link);
 std::filesystem::path getHome();
 
-enum ReturnType {
-    NUMBER_DESTINATION,
-    STRING_DESTINATION,
-    NO_DESTINATION
-};
+enum ReturnType { NUMBER_DESTINATION, STRING_DESTINATION, NO_DESTINATION };
 
 struct Destination {
     int linkNumber;
@@ -44,8 +44,8 @@ struct Destination {
 
 Destination handleDestinationResolution(std::string destination, bool isCli);
 
-
-void sanitizeCharactersToDraw(std::vector<std::pair<std::string, TextRender>>& strLs);
+void sanitizeCharactersToDraw(
+    std::vector<std::pair<std::string, TextRender>>& strLs);
 
 bool isSendableIfGeminiUrl(const uri& u);
 std::string getEditor();

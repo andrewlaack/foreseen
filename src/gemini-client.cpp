@@ -1,49 +1,59 @@
-#include <cassert>
-#include <cstddef>
-#include <stdexcept>
+#include "../include/gemini-client.hpp"
+
+#include <openssl/ssl.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#include "../include/gemini-client.hpp"
-#include "../include/site.hpp"
-#include "../include/shared.hpp"
+
+#include <cassert>
 #include <chrono>
-#include "../include/utils.hpp"
-#include "../include/errors.hpp"
-#include <openssl/ssl.h>
+#include <cstddef>
+#include <stdexcept>
 #include <string>
-#include <poll.h>
 
-Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string keyPath) {
+#include "../include/errors.hpp"
+#include "../include/shared.hpp"
+#include "../include/site.hpp"
+#include "../include/utils.hpp"
 
+Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath,
+                                     std::string keyPath) {
     if (!isSendableIfGeminiUrl(link.getLinkDestination())) {
         return nullptr;
     }
 
     std::string host = link.getLinkDestination().get_host();
-    std::string req  = link.getLinkDestination().to_string() + "\r\n";
+    std::string req = link.getLinkDestination().to_string() + "\r\n";
     std::string conn = host + ":1965";
 
-    if(link.getLinkDestination().get_port()) {
-        conn = host + ":"  + std::to_string(link.getLinkDestination().get_port());
+    if (link.getLinkDestination().get_port()) {
+        conn =
+            host + ":" + std::to_string(link.getLinkDestination().get_port());
     }
 
-    std::unique_ptr<SSL_CTX, decltype(&SSL_CTX_free)> ctx(SSL_CTX_new(TLS_client_method()), SSL_CTX_free);
+    std::unique_ptr<SSL_CTX, decltype(&SSL_CTX_free)> ctx(
+        SSL_CTX_new(TLS_client_method()), SSL_CTX_free);
 
     if (!ctx) {
         return nullptr;
     }
 
-    if(crtPath != "" && keyPath != "") {
-        if (SSL_CTX_use_certificate_file(ctx.get(), crtPath.c_str(), SSL_FILETYPE_PEM) <= 0 || SSL_CTX_use_PrivateKey_file(ctx.get(), keyPath.c_str(), SSL_FILETYPE_PEM) <= 0 || !SSL_CTX_check_private_key(ctx.get())) {
+    if (crtPath != "" && keyPath != "") {
+        if (SSL_CTX_use_certificate_file(ctx.get(), crtPath.c_str(),
+                                         SSL_FILETYPE_PEM) <= 0 ||
+            SSL_CTX_use_PrivateKey_file(ctx.get(), keyPath.c_str(),
+                                        SSL_FILETYPE_PEM) <= 0 ||
+            !SSL_CTX_check_private_key(ctx.get())) {
             return nullptr;
         }
     }
 
-    std::unique_ptr<BIO, decltype(&BIO_free_all)> bio(BIO_new_ssl_connect(ctx.get()), BIO_free_all);
+    std::unique_ptr<BIO, decltype(&BIO_free_all)> bio(
+        BIO_new_ssl_connect(ctx.get()), BIO_free_all);
 
     if (!bio) {
         return nullptr;
-    } 
+    }
 
     SSL* ssl;
     BIO_get_ssl(bio.get(), &ssl);
@@ -54,14 +64,18 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
     auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
 
     while (BIO_do_connect(bio.get()) <= 0) {
-
         int fd = -1;
 
-        long ms = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now()).count();
+        long ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      deadline - std::chrono::steady_clock::now())
+                      .count();
         pollfd p{};
 
         // yikes.
-        if (!BIO_should_retry(bio.get()) || BIO_get_fd(bio.get(), &fd) < 0 || fd < 0 || ms <= 0 || (p = {fd, short(BIO_should_read(bio.get()) ? POLLIN : POLLOUT), 0}, poll(&p, 1, int(ms)) <= 0)) {
+        if (!BIO_should_retry(bio.get()) || BIO_get_fd(bio.get(), &fd) < 0 ||
+            fd < 0 || ms <= 0 ||
+            (p = {fd, short(BIO_should_read(bio.get()) ? POLLIN : POLLOUT), 0},
+             poll(&p, 1, int(ms)) <= 0)) {
             return nullptr;
         }
     }
@@ -87,7 +101,7 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
         response.append(buf, n);
 
         sizeRemaining -= n;
-        if(sizeRemaining <= 0) {
+        if (sizeRemaining <= 0) {
             break;
         }
     }
@@ -105,16 +119,16 @@ Site* GeminiClient::getNetworkedSite(Link link, std::string crtPath, std::string
     }
 
     std::string status = response.substr(0, end);
-    std::string body   = response.substr(nl + 1);
+    std::string body = response.substr(nl + 1);
 
     return new Site(status, body);
 }
 
-
-Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPath) {
+Site* GeminiClient::fetchSite(Link link, std::string crtPath,
+                              std::string keyPath) {
     std::string destination = link.getLinkDestination().to_string();
 
-    if(isPrefixed(destination, "gemini://")) {
+    if (isPrefixed(destination, "gemini://")) {
         try {
             return getNetworkedSite(link, crtPath, keyPath);
         } catch (...) {
@@ -122,10 +136,13 @@ Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPat
             unreach->setUnreachable();
             return unreach;
         }
-    } else if (isPrefixed(destination, "file://")){ // TODO: This seems wrong; it should probably be fullpath with that prefix.
+    } else if (isPrefixed(
+                   destination,
+                   "file://")) {  // TODO: This seems wrong; it should probably
+                                  // be fullpath with that prefix.
 
         // TODO: this is messy and perhaps not necessary
-        
+
         std::string rest = destination.substr(7);
         std::string host;
         std::string path;
@@ -147,22 +164,24 @@ Site* GeminiClient::fetchSite(Link link, std::string crtPath, std::string keyPat
 
         std::string fsPath;
 
-        if(host == "localhost") {
+        if (host == "localhost") {
             fsPath = path;
-        }  else {
-            throw std::invalid_argument("The requested file appears to exist on another system.");
+        } else {
+            throw std::invalid_argument(
+                "The requested file appears to exist on another system.");
         }
 
         try {
             fileStr = readFileToString(fsPath);
-        } catch (FileReadError& e ) {
-            return new Site {"51 file not found", ""};
+        } catch (FileReadError& e) {
+            return new Site{"51 file not found", ""};
         }
         // TODO: how should I discern file types?
-        return new Site {"20 text/gemini", fileStr};
-    } else if(isPrefixed(destination, "about://")){
-        return new Site {"20 text/gemini", getNewTab()};
+        return new Site{"20 text/gemini", fileStr};
+    } else if (isPrefixed(destination, "about://")) {
+        return new Site{"20 text/gemini", getNewTab()};
     } else {
-        throw std::runtime_error("An invalid argument was passed to fetchsite, " + destination);
+        throw std::runtime_error(
+            "An invalid argument was passed to fetchsite, " + destination);
     }
 }

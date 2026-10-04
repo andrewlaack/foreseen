@@ -1,23 +1,24 @@
 #include "../include/heading.hpp"
-#include "../include/utils.hpp"
-#include "../include/shared.hpp"
-#include <cstdint>
+
 #include <ncurses.h>
+
+#include <cstdint>
 #include <stdexcept>
 
-Heading::Heading(std::string text) : actualText(text) {
+#include "../include/shared.hpp"
+#include "../include/utils.hpp"
 
+Heading::Heading(std::string text) : actualText(text) {
     // TODO: Actually handle whitespace correctly here.
-    if(text.substr(0,3) == "###") {
+    if (text.substr(0, 3) == "###") {
         headingLevel = 3;
         toDraw = actualText.substr(3);
     }
 
-    else if(text.substr(0,2) == "##") {
+    else if (text.substr(0, 2) == "##") {
         headingLevel = 2;
         toDraw = actualText.substr(2);
-    }
-    else if(text.substr(0,1) == "#") {
+    } else if (text.substr(0, 1) == "#") {
         headingLevel = 1;
         toDraw = actualText.substr(1);
     }
@@ -58,6 +59,4 @@ LineType Heading::type() {
     }
     throw std::runtime_error("This is an invalid program state.");
 }
-bool Heading::isBold() {
-    return true;
-}
+bool Heading::isBold() { return true; }

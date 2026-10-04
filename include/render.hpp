@@ -1,12 +1,14 @@
-#include "../include/browser.hpp"
-#include "../include/utils.hpp"
+#include <ncurses.h>
+#include <unctrl.h>
+
 #include <cassert>
 #include <cstdint>
-#include <ncurses.h>
 #include <string>
-#include <unctrl.h>
 #include <utility>
 #include <vector>
+
+#include "../include/browser.hpp"
+#include "../include/utils.hpp"
 
 #pragma once
 
@@ -33,4 +35,4 @@ struct DrawState {
 };
 
 bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines);
-void tryVisitSite(DrawState& ds , Browser& b, std::string site);
+void tryVisitSite(DrawState& ds, Browser& b, std::string site);

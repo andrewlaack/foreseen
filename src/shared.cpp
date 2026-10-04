@@ -18,4 +18,4 @@ uint8_t COLOR_LIST_ITEM = 15;
 uint8_t COLOR_FORMAT_SWITCH = 7;
 uint8_t COLOR_PLAINTEXT = 15;
 
-int RESPONSE_SIZE_LIMIT_MB = 5;     // This will truncate at the specified size.
+int RESPONSE_SIZE_LIMIT_MB = 5;  // This will truncate at the specified size.

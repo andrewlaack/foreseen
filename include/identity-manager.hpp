@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+
 #include "../vendor/uri.hpp"
 
 struct Identity {
@@ -10,6 +11,6 @@ struct Identity {
 };
 
 class IdentityManager {
-    public:
-        Identity getIdentityForURI(uri destination);
+   public:
+    Identity getIdentityForURI(uri destination);
 };

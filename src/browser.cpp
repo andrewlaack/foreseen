@@ -1,32 +1,36 @@
 #include "../include/browser.hpp"
+
+#include <unistd.h>
+
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
 #include <filesystem>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <thread>
-#include <unistd.h>
-#include "../include/site.hpp"
-#include "../include/shared.hpp"
-#include "../include/errors.hpp"
-#include "../include/gemini-client.hpp"
-#include "../include/utils.hpp"
-#include "../include/identity-manager.hpp"
-#include <cstddef>
-#include <cstdlib>
-#include <optional>
 #include <utility>
 #include <vector>
 
+#include "../include/errors.hpp"
+#include "../include/gemini-client.hpp"
+#include "../include/identity-manager.hpp"
+#include "../include/shared.hpp"
+#include "../include/site.hpp"
+#include "../include/utils.hpp"
 
 std::string Browser::tryDownloadPage(std::string downloadDir) noexcept {
     std::string body = currentSite->getBody();
     Link* current = getCurrentLink();
-    assert(current != nullptr); // calling download page should always happen from a page...
+    assert(
+        current !=
+        nullptr);  // calling download page should always happen from a page...
 
     std::string destination = encodeAsFilename(current->getLinkDestination());
 
     try {
-        if(downloadDir != "") {
+        if (downloadDir != "") {
             std::filesystem::path pth = std::filesystem::path(downloadDir);
             std::filesystem::create_directories(pth);
             destination = pth / destination;
@@ -41,12 +45,13 @@ std::string Browser::tryDownloadPage(std::string downloadDir) noexcept {
 
 void dispatch(std::vector<Link>* targets, Browser& b, int threadIdx) {
     std::vector<Link>& refT = *targets;
-    for(int i =  0 ; i < (int)refT.size() && i < SITE_CACHE_LIMIT; ++i) {
+    for (int i = 0; i < (int)refT.size() && i < SITE_CACHE_LIMIT; ++i) {
         auto& target = refT[i];
 
         auto id = b.getIdentity(target.getLinkDestination());
-        if(id.crtPath != "" || id.keyPath != "") {
-            continue; // don't try to prefetch for domains we normally pass a cert to.
+        if (id.crtPath != "" || id.keyPath != "") {
+            continue;  // don't try to prefetch for domains we normally pass a
+                       // cert to.
         }
         b.justCacheSite(target);
     }
@@ -54,15 +59,13 @@ void dispatch(std::vector<Link>* targets, Browser& b, int threadIdx) {
     delete targets;
 }
 
-void Browser::setDone(int threadIdx) {
-    done[threadIdx] = true;
-}
+void Browser::setDone(int threadIdx) { done[threadIdx] = true; }
 
 void Browser::tryCacheTargets() {
     bool dispatched = false;
-    for(int i = 0; i < THREAD_NUM && dispatched == false; ++i) {
-        if(done[i]) {
-            if(threads[i].joinable()) {
+    for (int i = 0; i < THREAD_NUM && dispatched == false; ++i) {
+        if (done[i]) {
+            if (threads[i].joinable()) {
                 threads[i].join();
             }
             auto* lls = getLinkLines();
@@ -71,35 +74,34 @@ void Browser::tryCacheTargets() {
             dispatched = true;
         }
     }
-
 }
 
 Site* Browser::findInCacheAndPromoteIfRelevant(std::string& urlString) {
-        Site*  site = nullptr;
-        std::optional<Site> cachedSite = visitedCache->getSite(urlString);
-        if(cachedSite != std::nullopt) {
-            site = new Site(*cachedSite);
+    Site* site = nullptr;
+    std::optional<Site> cachedSite = visitedCache->getSite(urlString);
+    if (cachedSite != std::nullopt) {
+        site = new Site(*cachedSite);
+    }
+    if (site == nullptr) {
+        std::optional<Site> cached = preFetchCache->getSite(urlString);
+        if (cached != std::nullopt) {
+            site = new Site(*cached);
+            visitedCache->addSite(urlString, *cached);
         }
-        if(site == nullptr) {
-            std::optional<Site> cached = preFetchCache->getSite(urlString);
-            if(cached != std::nullopt) {
-                site = new Site(*cached);
-                visitedCache->addSite(urlString, *cached);
-            }
-        }
+    }
 
-        return site;
+    return site;
 }
 
 void Browser::refresh() {
     goToSite(getPriorUri().value().to_string(), false, true);
 }
 
-SiteLoadPair Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
-
+SiteLoadPair Browser::goToSite(std::string url, bool addToHistory,
+                               bool refresh) {
     Link* prior = nullptr;
 
-    if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
+    if ((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
         prior = siteHistory[previousIdx];
     }
 
@@ -107,52 +109,53 @@ SiteLoadPair Browser::goToSite(std::string url, bool addToHistory, bool refresh)
 
     Link* destination = nullptr;
 
-    if(prior == nullptr) {
+    if (prior == nullptr) {
         destination = new Link{url};
     } else {
-        destination = new Link{url,prior->getLinkDestination()};
+        destination = new Link{url, prior->getLinkDestination()};
     }
 
     std::string urlString = destination->getLinkDestination().to_string();
-    std::string scheme  = destination->getLinkDestination().get_scheme();
-    if(scheme != "gemini" && scheme != "file" && scheme != "about") { //  TODO: Should  I use about or just a fs file?
-        if(openThread.joinable()) {
+    std::string scheme = destination->getLinkDestination().get_scheme();
+    if (scheme != "gemini" && scheme != "file" &&
+        scheme != "about") {  //  TODO: Should  I use about or just a fs file?
+        if (openThread.joinable()) {
             openThread.join();
         }
 
         // this doesn't have to be blocking...
         // my browser hangs very often so yea.
-        openThread = std::thread(openUrl,  urlString);
+        openThread = std::thread(openUrl, urlString);
 
         delete destination;
         return SiteLoadPair{SITE_LOADED, OPENED_EXT_TXT};
     }
 
-
     Site* site = nullptr;
 
-    Identity id = identityManager.getIdentityForURI(destination->getLinkDestination());
+    Identity id =
+        identityManager.getIdentityForURI(destination->getLinkDestination());
 
-    if(urlString.find("gemini://") != std::string::npos && !refresh) {
-        if(id.crtPath != "" && id.keyPath != "") {
-            if(!addToHistory) {
+    if (urlString.find("gemini://") != std::string::npos && !refresh) {
+        if (id.crtPath != "" && id.keyPath != "") {
+            if (!addToHistory) {
                 site = findInCacheAndPromoteIfRelevant(urlString);
             }
         } else {
             site = findInCacheAndPromoteIfRelevant(urlString);
         }
     }
-    
-    if(site == nullptr) {
+
+    if (site == nullptr) {
         site = client.fetchSite(*destination, id.crtPath, id.keyPath);
     }
 
-    if(site == nullptr || site->getUnreachable()) {
-        if(site != nullptr) {
+    if (site == nullptr || site->getUnreachable()) {
+        if (site != nullptr) {
             delete site;
         }
         delete destination;
-        if(site == nullptr) {
+        if (site == nullptr) {
             return SiteLoadPair{SITE_PERMANENT_FAILURE, "Connection error"};
         }
         return SiteLoadPair{SITE_PERMANENT_FAILURE, site->getMeta()};
@@ -164,61 +167,61 @@ SiteLoadPair Browser::goToSite(std::string url, bool addToHistory, bool refresh)
         delete site;
         delete destination;
 
-        if(sc < 10 || sc > 69) {
+        if (sc < 10 || sc > 69) {
             return SiteLoadPair{SITE_UNEXPECTED_STATUS_CODE, meta};
         }
 
-        if(sc < 50) { // 40 -> 49
+        if (sc < 50) {  // 40 -> 49
             return SiteLoadPair{SITE_TEMPORARY_FAILURE, meta};
         }
-        if(sc < 60) { // 50 -> 59
+        if (sc < 60) {  // 50 -> 59
             return SiteLoadPair{SITE_PERMANENT_FAILURE, meta};
         }
 
-        if(sc == 60) {
+        if (sc == 60) {
             return SiteLoadPair{SITE_REQUIRES_CERTIFICATE, meta};
         }
-        
-        if(sc == 61) {
+
+        if (sc == 61) {
             return SiteLoadPair{SITE_REJECTED_CERTIFICATE, meta};
         }
-        if(sc == 62) {
+        if (sc == 62) {
             return SiteLoadPair{SITE_INVALID_CERTIFICATE, meta};
         }
 
         return SiteLoadPair{SITE_REQUIRES_CERTIFICATE, meta};
-        
     }
 
-    if(addToHistory) {
-        while((int)siteHistory.size() > previousIdx + 1) {
-            delete siteHistory[siteHistory.size() -  1];
+    if (addToHistory) {
+        while ((int)siteHistory.size() > previousIdx + 1) {
+            delete siteHistory[siteHistory.size() - 1];
             siteHistory.pop_back();
         }
         siteHistory.push_back(destination);
         previousIdx = siteHistory.size() - 1;
     }
 
-    if(currentSite != nullptr) {
+    if (currentSite != nullptr) {
         delete currentSite;
     }
     currentSite = site;
 
-    if(urlString.find("gemini://") != std::string::npos) {
+    if (urlString.find("gemini://") != std::string::npos) {
         int sc = site->getStatusCode();
-        if(sc >= 20 && sc <= 29) {
+        if (sc >= 20 && sc <= 29) {
             visitedCache->addSite(urlString, *site);
         }
     }
 
-    for(auto* line: lines) {
+    for (auto* line : lines) {
         delete line;
     }
 
     lines = toLines(site);
 
     setLinksOfCurrentLines();
-    previousStatusCodes[destination->getLinkDestination().to_string()] = site->getStatusCode();
+    previousStatusCodes[destination->getLinkDestination().to_string()] =
+        site->getStatusCode();
     if (!addToHistory) {
         delete destination;
     }
@@ -231,7 +234,6 @@ Identity Browser::getIdentity(uri uriInput) {
     return this->identityManager.getIdentityForURI(uriInput);
 }
 
-
 void Browser::justCacheSite(Link link) {
     auto client = GeminiClient{};
 
@@ -243,13 +245,13 @@ void Browser::justCacheSite(Link link) {
 
     Site* site = nullptr;
 
-    if(urlString.find("gemini://") != std::string::npos) {
+    if (urlString.find("gemini://") != std::string::npos) {
         site = client.fetchSite(link);
-    } 
+    }
 
-    if(site != nullptr) {
+    if (site != nullptr) {
         int sc = site->getStatusCode();
-        if(sc >= 20 && sc <= 29) {
+        if (sc >= 20 && sc <= 29) {
             preFetchCache->addSite(urlString, *site);
         }
         delete site;
@@ -258,20 +260,17 @@ void Browser::justCacheSite(Link link) {
     return;
 }
 
-
 void Browser::setLinksOfCurrentLines() {
-    links = std::vector<std::size_t> {};
-    for(std::size_t i = 0; i < lines.size(); ++i) {
-        if(lines[i]->type() == LINK) {
+    links = std::vector<std::size_t>{};
+    for (std::size_t i = 0; i < lines.size(); ++i) {
+        if (lines[i]->type() == LINK) {
             links.push_back(i);
         }
     }
 }
 
-
 // TODO: This is a pure function.
 std::vector<Line*> Browser::toLines(Site* site) {
-
     auto lines = stringToList(site->getBody());
 
     std::vector<Line*> res{};
@@ -279,20 +278,19 @@ std::vector<Line*> Browser::toLines(Site* site) {
     int lc = 1;
 
     bool isPreformatted = false;
-    for(auto line: lines) {
+    for (auto line : lines) {
         res.push_back(lineToLine(line, getPriorUri(), lc, isPreformatted));
-        if (res[res.size()-1]->type() == FORMAT_SWITCH) {
+        if (res[res.size() - 1]->type() == FORMAT_SWITCH) {
             isPreformatted = !isPreformatted;
         }
-        if(res[res.size() - 1]->type() == LINK) {
+        if (res[res.size() - 1]->type() == LINK) {
             lc += 1;
         }
     }
     return res;
 }
 
-
-Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM){
+Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM) {
     currentSite = nullptr;
     visitedCache = new Cache{};
     preFetchCache = new Cache{};
@@ -300,16 +298,16 @@ Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM){
         d = true;
     }
 
-    // this ensures some nice invariants about the browser, like always having at least one valid page.
+    // this ensures some nice invariants about the browser, like always having
+    // at least one valid page.
     SiteLoadPair start = goToSite("about://newtab");
-    if(start.result != SITE_LOADED) {
+    if (start.result != SITE_LOADED) {
         throw std::runtime_error("Browser unexpectedly failed to start.");
     }
 }
 
 // TODO: SHould add more stuff here too, like the links stuff.
 Browser::~Browser() {
-
     for (auto& t : threads) {
         if (t.joinable()) {
             t.join();
@@ -333,54 +331,52 @@ Browser::~Browser() {
     }
 }
 
-
-Site* Browser::getCurrentSite() {
-    return currentSite;
-}
+Site* Browser::getCurrentSite() { return currentSite; }
 
 std::vector<std::pair<std::string, TextRender>> Browser::renderSite() {
-
     std::vector<std::pair<std::string, TextRender>> res{};
     res.reserve(lines.size());
 
-    for(auto* line: lines) {
+    for (auto* line : lines) {
         // TODO: Don't special case this; define an interface.
-        if(line->type() == PREFORMATTED) {
-            std::pair<std::string,TextRender> cp {line->textToDraw(), TextRender {line->getColor(), line->isBold(), false}};
+        if (line->type() == PREFORMATTED) {
+            std::pair<std::string, TextRender> cp{
+                line->textToDraw(),
+                TextRender{line->getColor(), line->isBold(), false}};
             res.push_back(cp);
         } else {
-            std::pair<std::string,TextRender> cp {line->textToDraw(), TextRender {line->getColor(), line->isBold()}};
+            std::pair<std::string, TextRender> cp{
+                line->textToDraw(),
+                TextRender{line->getColor(), line->isBold()}};
             res.push_back(cp);
         }
     }
     return res;
 }
 
-
 std::optional<uri> Browser::getPriorUri() {
-    if(previousIdx < (int)siteHistory.size() && previousIdx >= 0) {
+    if (previousIdx < (int)siteHistory.size() && previousIdx >= 0) {
         return siteHistory[previousIdx]->getLinkDestination();
     }
     return std::nullopt;
-
 }
 
 std::vector<Link>* Browser::getLinkLines() {
-    std::vector<Link>* res = new std::vector<Link> {};
-    for(auto& ln : links) {
+    std::vector<Link>* res = new std::vector<Link>{};
+    for (auto& ln : links) {
         res->push_back(*dynamic_cast<Link*>(lines[ln]));
     }
     return res;
 }
 
-
 SiteLoadPair Browser::followLinkNumber(int linkToFollow) {
-    if((int)links.size() > linkToFollow-1 && linkToFollow-1 >= 0) {
-        std::size_t pos = links[linkToFollow-1];
-        if(lines.size() > pos) {
+    if ((int)links.size() > linkToFollow - 1 && linkToFollow - 1 >= 0) {
+        std::size_t pos = links[linkToFollow - 1];
+        if (lines.size() > pos) {
             Line* ptr = lines[pos];
             Link* ptrLnk = dynamic_cast<Link*>(ptr);
-            SiteLoadPair res = goToSite(ptrLnk->getLinkDestination().to_string(), true);
+            SiteLoadPair res =
+                goToSite(ptrLnk->getLinkDestination().to_string(), true);
             return res;
         }
     }
@@ -388,36 +384,43 @@ SiteLoadPair Browser::followLinkNumber(int linkToFollow) {
 }
 
 void Browser::goBack() {
-
     int original = previousIdx;
 
     // we track this because sometimes sites do this:
-        // start site
-        // input something
-        // redirect back to start site
-    // and in such cases, I'd expect back and forward to treat the same site as one site, 
-    // but only in cases where they are right next to each other without any other 2X status code sites
-    // between them. 
+    // start site
+    // input something
+    // redirect back to start site
+    // and in such cases, I'd expect back and forward to treat the same site as
+    // one site, but only in cases where they are right next to each other
+    // without any other 2X status code sites between them.
 
     std::string starting = getCurrentLink()->getLinkDestination().to_string();
 
     previousIdx -= 1;
 
-    if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
-
-        int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-        std::string current = siteHistory[previousIdx]->getLinkDestination().to_string();
-        while(!(prSC >= 20 && prSC <= 29) || starting == current) {
+    if ((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
+        int prSC = previousStatusCodes
+            [siteHistory[previousIdx]->getLinkDestination().to_string()];
+        std::string current =
+            siteHistory[previousIdx]->getLinkDestination().to_string();
+        while (!(prSC >= 20 && prSC <= 29) || starting == current) {
             previousIdx -= 1;
-            if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
-                prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-                current = siteHistory[previousIdx]->getLinkDestination().to_string();
+            if ((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
+                prSC = previousStatusCodes[siteHistory[previousIdx]
+                                               ->getLinkDestination()
+                                               .to_string()];
+                current =
+                    siteHistory[previousIdx]->getLinkDestination().to_string();
             } else {
                 previousIdx = original;
-                return; // safely fail with rollback
+                return;  // safely fail with rollback
             }
         }
-        if(!(goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false).result == SITE_LOADED)) {
+        if (!(goToSite(this->siteHistory[previousIdx]
+                           ->getLinkDestination()
+                           .to_string(),
+                       false)
+                  .result == SITE_LOADED)) {
             previousIdx = original;
         }
 
@@ -427,30 +430,37 @@ void Browser::goBack() {
 }
 
 void Browser::goForward() {
-
     int original = previousIdx;
 
     std::string starting = getCurrentLink()->getLinkDestination().to_string();
 
     previousIdx += 1;
 
-    if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
+    if ((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
+        int prSC = previousStatusCodes
+            [siteHistory[previousIdx]->getLinkDestination().to_string()];
+        std::string current =
+            siteHistory[previousIdx]->getLinkDestination().to_string();
 
-        int prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-        std::string current = siteHistory[previousIdx]->getLinkDestination().to_string();
-
-        while(!(prSC >= 20 && prSC <= 29) || starting == current) {
+        while (!(prSC >= 20 && prSC <= 29) || starting == current) {
             previousIdx += 1;
-            if((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
-                prSC = previousStatusCodes[siteHistory[previousIdx]->getLinkDestination().to_string()];
-                current = siteHistory[previousIdx]->getLinkDestination().to_string();
+            if ((int)siteHistory.size() > previousIdx && previousIdx >= 0) {
+                prSC = previousStatusCodes[siteHistory[previousIdx]
+                                               ->getLinkDestination()
+                                               .to_string()];
+                current =
+                    siteHistory[previousIdx]->getLinkDestination().to_string();
             } else {
-                previousIdx = original; // fail safely
+                previousIdx = original;  // fail safely
                 return;
             }
         }
 
-        if(!(goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false).result == SITE_LOADED)) {
+        if (!(goToSite(this->siteHistory[previousIdx]
+                           ->getLinkDestination()
+                           .to_string(),
+                       false)
+                  .result == SITE_LOADED)) {
             previousIdx = original;
         }
     } else {
@@ -459,9 +469,8 @@ void Browser::goForward() {
 }
 
 Link* Browser::getCurrentLink() {
-    if(previousIdx >= 0 && previousIdx < (int)siteHistory.size()) {
+    if (previousIdx >= 0 && previousIdx < (int)siteHistory.size()) {
         return this->siteHistory[previousIdx];
     }
     return nullptr;
 }
-
