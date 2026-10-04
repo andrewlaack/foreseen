@@ -164,9 +164,15 @@ std::string getNewTab() {
         "\n"
         "This is a new tab. We have a few keybindings around here:\n"
         "\n"
+        "* (q|C-c) -> quit\n"
         "* b -> back a page\n"
         "* f -> forward a page\n"
         "* o -> show url entry / link selection\n"
+        "* C-d -> move half a page down\n"
+        "* C-u -> move half a page up\n"
+        "* g -> go to the top of the page\n"
+        "* G -> go to the bottom of the page\n"
+        "* d -> download current page\n"
         "* e -> open current page in your preferred text editor\n"
         "* (r | C-r) -> refresh page\n";
     return st;

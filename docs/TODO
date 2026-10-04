@@ -5,6 +5,7 @@
     - imports
     - tests
         - remove useless ones
+    - macros / comp flags
 
 ---
 
