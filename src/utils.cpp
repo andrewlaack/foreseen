@@ -377,7 +377,7 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
         try {
             std::size_t pos = 0;
             int dest = std::stoi(destination,&pos);
-            if(pos == destination.size()  && dest >= 0) { // overflow or not full conversion
+            if(pos == destination.size()  && dest >= 0) {
                 ret.linkNumber = dest;
                 ret.t = NUMBER_DESTINATION;
                 return ret;
@@ -385,13 +385,18 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
                 throw std::invalid_argument("Unable to convert fully");
             }
         } catch (...) {
-            if(destination.find(":") == std::string::npos || destination.find(' ') != std::string::npos) {
+
+            if (destination.find(' ') == std::string::npos && (destination.rfind("localhost:", 0) == 0 || destination.rfind("localhost/", 0) == 0 || destination == "localhost")) {
+                destination = "gemini://" + destination;
+            }
+            else if(destination.find("://") == std::string::npos || destination.find(' ') != std::string::npos) {
                 if(destination.find('.') != std::string::npos && destination.find(' ') == std::string::npos) {
                     destination = "gemini://" + destination;
                 } else {
                     destination = DEFAULT_SEARCH_ENGINE + urlEncode(destination);
                 }
             }
+
             ret.destination = destination;
             ret.t = STRING_DESTINATION;
             return ret;

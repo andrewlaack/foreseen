@@ -23,6 +23,7 @@ TEST_CASE("Test cli input handling") {
         expectations["gopher://github.com"] = "gopher://github.com";
         expectations["gemini://github.com"] = "gemini://github.com";
         expectations["file:///home/whatever"] = "file:///home/whatever";
+        expectations["localhost"] = "gemini://localhost";
         for(auto& expect : expectations) {
             REQUIRE(handleDestinationResolution(expect.first, true).destination == expect.second);
             REQUIRE(handleDestinationResolution(expect.first, true).t == STRING_DESTINATION);
@@ -105,6 +106,14 @@ TEST_CASE("Test user input handling for destinations") {
     SECTION("Convert {domain} without scheme -> gemini://{domain}") {
         REQUIRE(handleDestinationResolution("laack.co", false).t == STRING_DESTINATION);
         REQUIRE(handleDestinationResolution("laack.co", false).destination == "gemini://laack.co");
+    }
+
+    SECTION("Support localhost") {
+        REQUIRE(handleDestinationResolution("localhost", false).destination == "gemini://localhost");
+        REQUIRE(handleDestinationResolution("gemini://localhost", false).destination == "gemini://localhost");
+        REQUIRE(handleDestinationResolution("gemini://localhost:1965", false).destination == "gemini://localhost:1965");
+        REQUIRE(handleDestinationResolution("localhost:1965", false).destination == "gemini://localhost:1965");
+
     }
 
     SECTION("Transparently resolve file names") {
