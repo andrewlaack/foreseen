@@ -20,8 +20,6 @@ extern uint8_t COLOR_LIST_ITEM;             // color used for list items
 extern uint8_t COLOR_FORMAT_SWITCH;         // color used for format switch lines
 extern uint8_t COLOR_PLAINTEXT;             // color used for plaintext lines
 
-
-
  // We guarantee responses can be at least the size limit, and at most 4096 additional bytes
 extern int RESPONSE_SIZE_LIMIT_MB;
 

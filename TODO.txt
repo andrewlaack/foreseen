@@ -1,5 +1,3 @@
-- man pages
-- if I enter some large fucking number like 120349871023948712304987 it searches because stoi probably fails, or our check does. 
 - localhost access
     - localhost:1965 broken
 - cleanups
@@ -10,3 +8,4 @@
     - tests
         - remove useless ones
     - formatter
+- man pages

@@ -377,7 +377,7 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
         try {
             std::size_t pos = 0;
             int dest = std::stoi(destination,&pos);
-            if(pos == destination.size()) {
+            if(pos == destination.size()  && dest >= 0) { // overflow or not full conversion
                 ret.linkNumber = dest;
                 ret.t = NUMBER_DESTINATION;
                 return ret;
