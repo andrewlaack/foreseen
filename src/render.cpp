@@ -195,7 +195,7 @@ void draw(DrawState& ds) {
                 truncated += (char)toascii(ch);
             }
 
-            if(ds.issueText.size() > ds.columns) {
+            if((int)ds.issueText.size() > ds.columns) {
                 truncated = truncated.substr(0,ds.columns - 3) + "...";
             }
 

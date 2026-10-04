@@ -1,5 +1,6 @@
 #include "../include/list-item.hpp"
 #include "../include/utils.hpp"
+#include "../include/shared.hpp"
 #include <cstdint>
 
 ListItem::ListItem(std::string input) {
@@ -16,7 +17,7 @@ std::string ListItem::textToDraw() {
 }
 
 uint8_t ListItem::getColor() {
-    return 15;
+    return COLOR_LIST_ITEM;
 }
 
 LineType ListItem::type() {

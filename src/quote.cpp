@@ -1,4 +1,5 @@
 #include "../include/quote.hpp"
+#include "../include/shared.hpp"
 #include "../include/utils.hpp"
 #include <cstdint>
 #include <ncurses.h>
@@ -14,7 +15,7 @@ std::string Quote::textToDraw() {
 }
 
 uint8_t Quote::getColor() {
-    return COLOR_MAGENTA;
+    return COLOR_QUOTE;
 }
 
 LineType Quote::type() {

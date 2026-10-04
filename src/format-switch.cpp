@@ -1,4 +1,5 @@
 #include "../include/format-switch.hpp"
+#include "../include/shared.hpp"
 #include <cstdint>
 #include <ncurses.h>
 
@@ -9,7 +10,7 @@ std::string FormatSwitch::textToDraw() {
 }
 
 uint8_t FormatSwitch::getColor() {
-    return COLOR_WHITE;
+    return COLOR_FORMAT_SWITCH;
 }
 
 LineType FormatSwitch::type() {

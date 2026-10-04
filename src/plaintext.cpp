@@ -1,4 +1,5 @@
 #include "../include/plaintext.hpp"
+#include "../include/shared.hpp"
 #include <cstdint>
 
 Plaintext::Plaintext(std::string input) : text(input) {}
@@ -8,7 +9,7 @@ std::string Plaintext::textToDraw() {
 }
 
 uint8_t Plaintext::getColor() {
-    return 15;
+    return COLOR_PLAINTEXT;
 }
 
 LineType Plaintext::type() {

@@ -1,6 +1,6 @@
 #include "../include/heading.hpp"
-#include "../include/errors.hpp"
 #include "../include/utils.hpp"
+#include "../include/shared.hpp"
 #include <cstdint>
 #include <ncurses.h>
 #include <stdexcept>
@@ -39,11 +39,11 @@ std::string Heading::textToDraw() {
 uint8_t Heading::getColor() {
     switch (headingLevel) {
         case 3:
-            return COLOR_CYAN;
+            return COLOR_H3;
         case 2:
-            return COLOR_GREEN;
+            return COLOR_H2;
         case 1:
-            return COLOR_RED;
+            return COLOR_H1;
     }
     throw std::runtime_error("This is an invalid program state.");
 }

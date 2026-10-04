@@ -10,4 +10,3 @@
     - tests
         - remove useless ones
     - formatter
-- put all colors into shared.hpp
