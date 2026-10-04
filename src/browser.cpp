@@ -130,14 +130,14 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     Site* site = nullptr;
 
-    // Caching: when there's an identity we don't read from cache and we don't add sites to the cache
-    // additionally, when performing prefetch caching, we check if there's an identity for the site and if there is we 
-    // don't send a request to it. This means prefetch caching is only used for un-authenticated hosts.
-
     Identity id = identityManager.getIdentityForURI(destination->getLinkDestination());
 
     if(urlString.find("gemini://") != std::string::npos && !refresh) {
-        if(id.crtPath == "" && id.keyPath == "") {
+        if(id.crtPath != "" && id.keyPath != "") {
+            if(!addToHistory) {
+                site = findInCacheAndPromoteIfRelevant(urlString);
+            }
+        } else {
             site = findInCacheAndPromoteIfRelevant(urlString);
         }
     }
@@ -177,7 +177,7 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     if(urlString.find("gemini://") != std::string::npos) {
         int sc = site->getStatusCode();
-        if(sc >= 20 && sc <= 29 && id.keyPath == "" && id.crtPath == "") {
+        if(sc >= 20 && sc <= 29) {
             visitedCache->addSite(urlString, *site);
         }
     }
