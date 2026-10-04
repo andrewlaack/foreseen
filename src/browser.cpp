@@ -6,6 +6,7 @@
 #include <thread>
 #include <unistd.h>
 #include "../include/site.hpp"
+#include "../include/shared.hpp"
 #include "../include/errors.hpp"
 #include "../include/gemini-client.hpp"
 #include "../include/utils.hpp"
@@ -94,7 +95,7 @@ void Browser::refresh() {
     goToSite(getPriorUri().value().to_string(), false, true);
 }
 
-bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
+GoToSiteResult Browser::goToSite(std::string url, bool addToHistory, bool refresh, bool background) {
 
     Link* prior = nullptr;
 
@@ -124,7 +125,7 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
         openThread = std::thread(openUrl,  urlString);
 
         delete destination;
-        return true;
+        return SITE_LOADED;
     }
 
 
@@ -151,14 +152,14 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
             delete site;
         }
         delete destination;
-        return false;
+        return SITE_LOAD_FAILED;
     }
 
     int sc = site->getStatusCode();
     if (sc < 10 || sc >= 40) {
         delete site;
         delete destination;
-        return false;
+        return SITE_LOAD_FAILED; // TODO: better handling, addl enum opt
     }
 
     if(addToHistory) {
@@ -195,7 +196,7 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     }
 
     tryCacheTargets();
-    return true;
+    return SITE_LOADED;
 }
 
 Identity Browser::getIdentity(uri uriInput) {
@@ -272,8 +273,9 @@ Browser::Browser() : threads(THREAD_NUM), done(THREAD_NUM){
     }
 
     // this ensures some nice invariants about the browser, like always having at least one valid page.
-    bool start = goToSite("about://newtab");
-    if(!start) {
+    GoToSiteResult start = goToSite("about://newtab");
+
+    if(start != SITE_LOADED) {
         throw std::runtime_error("Browser unexpectedly failed to start.");
     }
 }
@@ -351,8 +353,13 @@ bool Browser::followLinkNumber(int linkToFollow) {
         if(lines.size() > pos) {
             Line* ptr = lines[pos];
             Link* ptrLnk = dynamic_cast<Link*>(ptr);
-            bool res = goToSite(ptrLnk->getLinkDestination().to_string(), true);
-            return res;
+            GoToSiteResult res = goToSite(ptrLnk->getLinkDestination().to_string(), true);
+
+            if(res == SITE_LOADED) {
+                return true;
+            }
+
+            return false;
         }
     }
     return false;
@@ -388,7 +395,7 @@ void Browser::goBack() {
                 return; // safely fail with rollback
             }
         }
-        if(!goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false)) {
+        if(goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false) != SITE_LOADED) {
             previousIdx = original;
         }
 
@@ -421,7 +428,7 @@ void Browser::goForward() {
             }
         }
 
-        if(!goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false)) {
+        if(goToSite(this->siteHistory[previousIdx]->getLinkDestination().to_string(), false) != SITE_LOADED) {
             previousIdx = original;
         }
     } else {

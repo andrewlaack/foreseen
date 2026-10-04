@@ -1,5 +1,6 @@
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
+#include "../include/shared.hpp"
 #include "../include/render.hpp"
 #include <algorithm>
 #include <cassert>
@@ -119,7 +120,7 @@ void draw(DrawState& ds) {
     }
 
     if(ds.reBreak) {
-        ds.broken  = breakLines(ds.prior, std::min(ds.columns, maxWidth), ds.columns);
+        ds.broken  = breakLines(ds.prior, std::min(ds.columns, MAX_WIDTH), ds.columns);
         ds.reBreak = false;
     }
     if(ds.toLowest) {
@@ -271,15 +272,15 @@ void handleUserInput(DrawState& ds, Browser& b, int sel) {
 }
 
 void tryVisitSite(DrawState& ds , Browser& b, std::string site) {
-    bool visitSuccess = b.goToSite(site);
-    if(visitSuccess) {
+    GoToSiteResult visitSuccess = b.goToSite(site);
+
+    if(visitSuccess == SITE_LOADED) {
         ds.mustReRender = true;
+        ds.y = 0; 
     }
-    if(!visitSuccess) {
+    else {
         ds.issueText = "Unable to access the requested site.";
         ds.timeToClearIssueText = getCurrentTime() + 1000;
-    } else {
-        ds.y = 0; 
     }
 }
 
