@@ -1,0 +1,148 @@
+.TH foreseen 1 foreseen\- v0.0.1
+.SH NAME
+foreseen
+.SH SYNOPSIS
+.B foreseen [--help] [--version] [--cache-pages VAR] [--prefetch-links VAR] [--search-engine VAR] destination
+.SH DESCRIPTION
+foreseen is a gemini protocol browser built for performance and simplicity.
+
+.SH CACHING
+All caching is done in memory with a configurable FIFO data structure to limit
+cached page count.
+There are two separate instances of the cache object at any given time:
+one for prefetching and one for history.
+.PP
+Pages fetched with an identity are never cached, and prefetching never sends
+requests to hosts you'd use an identity for.
+.SS Prefetch caching
+One of the main reasons this browser feels so much faster than other Gemini
+protocol browsers is its optional prefetch caching.
+This is enabled by default.
+When you visit a site without an identity, a thread will be created that
+fetches the first 10 links on the page, caching them if they return a 2X
+status code.
+This enables near-instantaneous visitation of those links.
+Prefetch caching is only enabled when you aren't using an identity for a
+domain.
+.PP
+Per the gemtext specification, "clients must not automatically make any
+network connections as part of displaying links", so this mode of operation
+may be construed as non-compliant with the gemtext specification.
+I don't believe a file format specification should be prescriptive about such
+things.
+Additionally, if this was a feature in an HTTP-based web browser, I would
+disable it.
+I perceive Gemini as being more trustworthy right now and thus am not
+concerned about having this defaulted on.
+.SS History caching
+When you visit a page, the page will be cached after it's loaded.
+If the page was in the prefetch cache before, it will be upgraded to the
+history cache, because visited pages are more important than prefetched ones.
+When using identities, history caching only applies for forward and backward
+navigation, not when visiting a previous site via a link or URL.
+.SH IDENTITIES
+Identities are specified in:
+.PP
+.RS
+.EX
+$HOME/.foreseen/{hostname}/client.crt
+$HOME/.foreseen/{hostname}/client.key
+.EE
+.RE
+.PP
+Or, for a non-standard port (port != 1965):
+.PP
+.RS
+.EX
+$HOME/.foreseen/{hostname}:{port}/client.crt
+$HOME/.foreseen/{hostname}:{port}/client.key
+.EE
+.RE
+.PP
+Example layout:
+.PP
+.RS
+.EX
+$ tree .foreseen
+\&.foreseen
+\(ba\-\- bbs.geminispace.org
+    |\-\- client.crt
+    \`\-\- client.key
+.EE
+.RE
+.PP
+Example command to generate keys:
+.PP
+.RS
+.EX
+openssl req \-x509 \-newkey rsa:2048 \-nodes \-days 3650 \-keyout client.key \e
+    \-out client.crt \-subj "/CN=localhost"
+.EE
+.RE
+
+
+.SH OPTIONS
+.TP
+.B -h, --help \n
+shows help message and exits 
+
+.TP
+.B  -v, --version
+prints version information and exits
+
+.TP
+.B  -c, --cache-pages
+max number of pages for each cache (history, prefetch) [nargs=0..1] [default: 500]
+
+.TP
+.B -p, --prefetch-links 
+max number of links to prefetch per page (0 disables prefetching) [nargs=0..1] [default: 10]
+
+.TP
+.B -e, --search-engine
+default search engine [nargs=0..1] [default: "gemini://tlgs.one/search"]
+
+.SH EXAMPLES
+
+Specify the default search engine:
+.PP
+.RS
+.EX
+foreseen \-e gemini://kennedy.gemi.dev/search
+.EE
+.RE
+.PP
+Disable prefetching:
+.PP
+.RS
+.EX
+foreseen \-p 0
+.EE
+.RE
+.PP
+Limit cache sizes:
+.PP
+.RS
+.EX
+foreseen \-c 10
+.EE
+.RE
+.PP
+Open a local file on startup:
+.PP
+.RS
+.EX
+foreseen sites/index.gmi
+.EE
+.RE
+Prefetch first 20 links:
+.PP
+.RS
+.EX
+foreseen \-c 20
+.EE
+.RE
+.SH BUGS
+Send all bug reports with an optional patch to
+.MT andrew@laack.co
+.ME .

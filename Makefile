@@ -12,6 +12,9 @@ build:
 
 install: build
 	cp foreseen.out ${PREFIX}/bin/foreseen
+	mkdir -p ${MANPREFIX}/man1
+	cp docs/foreseen.1 ${MANPREFIX}/man1/foreseen.1
+	chmod 644 ${MANPREFIX}/man1/foreseen.1
 
 clean:
 	rm -rf test*.out foreseen.out

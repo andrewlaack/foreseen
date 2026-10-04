@@ -4,7 +4,7 @@ std::string DEFAULT_SEARCH_ENGINE = "gemini://tlgs.one/search";
 int SITE_CACHE_LIMIT = 10;
 int THREAD_NUM = 4;
 int MAX_WIDTH = 80;
-int CACHE_SIZE = 500;
+int CACHE_SIZE = 50;
 
 uint8_t COLOR_LINK = 159;
 uint8_t COLOR_PREFORMATTED = 201;

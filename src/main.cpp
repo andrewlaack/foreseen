@@ -4,6 +4,7 @@
 #include "../include/shared.hpp"
 #include <cassert>
 #include <csignal>
+#include <iostream>
 #include <ncurses.h>
 #include <locale.h>
 #include <string>
@@ -53,6 +54,11 @@ int main(int argc, char** argv) {
     SITE_CACHE_LIMIT = program.get<int>("--prefetch-links");
     CACHE_SIZE = program.get<int>("--cache-pages");
     DEFAULT_SEARCH_ENGINE = program.get<std::string>("--search-engine");
+
+    if(DEFAULT_SEARCH_ENGINE.find("gemini://") != 0) {
+        std::cout << "Search engine must be prefixed with \"gemini://\": " + DEFAULT_SEARCH_ENGINE << std::endl;
+        return -1;
+    }
 
     if(DEFAULT_SEARCH_ENGINE.substr(DEFAULT_SEARCH_ENGINE.size()-1) != "?") {
         DEFAULT_SEARCH_ENGINE += "?";

@@ -42,7 +42,7 @@ Optional arguments:
 Caching
 =======
 All caching is done in memory with a configurable fifo data structure to limit
-cached page count. There are two seperate instances of the cache object at any
+cached page count. There are two separate instances of the cache object at any
 given time. One for prefetching and one for history.
 
 Pages fetched with an identity are never cached, and prefetching never sends
@@ -60,8 +60,8 @@ requests to hosts you'd use an identity for.
     automatically make any network connections as part of displaying links", 
     so this mode of operation may be construed as non-compliant with the 
     gemtext specification. I don't believe a file format specification should be
-    prescriptive about such things. Additionally, if this was a feature in a
-    http-based web browser, I would disable it. I perceive Gemini as being 
+    prescriptive about such things. Additionally, if this was a feature in an
+    HTTP-based web browser, I would disable it. I perceive Gemini as being 
     more trustworthy right now and thus am not concerned about having this 
     defaulted on. 
 
