@@ -34,4 +34,3 @@ struct DrawState {
 
 bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines);
 void tryVisitSite(DrawState& ds , Browser& b, std::string site);
-void initColors();

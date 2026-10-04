@@ -36,16 +36,6 @@ bool isValidUserInput(int uinput) {
     }
     return false;
 }
-void initColors() {
-    if(has_colors()) {
-        start_color();
-        use_default_colors();
-        for (int c = 0; c < COLORS && c+1 < COLOR_PAIRS; ++c) {
-            init_pair(c + 1, c, -1);
-        }
-    }
-}
-
 void drawInputBox(std::string text, std::string userInput, DrawState& ds) {
 
     move(ds.lines/2-1, ds.columns/4);

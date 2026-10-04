@@ -10,6 +10,16 @@
 #include <unctrl.h>
 #include "../vendor/argparse.hpp"
 
+void initColors() {
+    if(has_colors()) {
+        start_color();
+        use_default_colors();
+        for (int c = 0; c < COLORS && c+1 < COLOR_PAIRS; ++c) {
+            init_pair(c + 1, c, -1);
+        }
+    }
+}
+
 int main(int argc, char** argv) {
 
     argparse::ArgumentParser program("foreseen", "0.0.1");
