@@ -50,7 +50,7 @@ requests to hosts you'd use an identity for.
 
     Prefetch caching:
 
-    One of the main reasons this browser feels so much faster than other gemini
+    One of the main reasons this browser feels so much faster than other Gemini
     protocol browsers is because of its optional prefetch caching. This is
     enabled by default. When you visit a site without an identity, a thread will
     be created that fetches the first 10 links on the page, caching them  if
