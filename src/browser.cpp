@@ -137,9 +137,7 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
     Identity id = identityManager.getIdentityForURI(destination->getLinkDestination());
 
     if(urlString.find("gemini://") != std::string::npos && !refresh) {
-        if(id.crtPath == "" && id.keyPath == "") {
-            site = findInCacheAndPromoteIfRelevant(urlString);
-        }
+        site = findInCacheAndPromoteIfRelevant(urlString);
     }
     
     if(site == nullptr) {
@@ -177,7 +175,7 @@ bool Browser::goToSite(std::string url, bool addToHistory, bool refresh) {
 
     if(urlString.find("gemini://") != std::string::npos) {
         int sc = site->getStatusCode();
-        if(sc >= 20 && sc <= 29 && id.keyPath == "" && id.crtPath == "") {
+        if(sc >= 20 && sc <= 29) {
             visitedCache->addSite(urlString, *site);
         }
     }
