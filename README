@@ -70,7 +70,7 @@ requests to hosts you'd use an identity for.
     When you visit a page, the page will be cached after it's loaded. 
     If the page was in the prefetch cache before, it will be upgraded to the
     history cache. This is because visited pages are more important than
-    prefetched ones.
+    prefetched ones. History caching is disabled when using an identity.
 
 Identities
 ==========
