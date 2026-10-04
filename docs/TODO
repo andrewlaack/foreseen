@@ -8,4 +8,15 @@
 
 ---
 
-- bottom loading text / downloaded text -- not red like heading.
+- move all keybindings to shared.cpp
+    - move shared.hpp -> config.hpp
+        - refactor non-runtime configurable values to be set in hpp file
+        - inject these into about://newtab
+
+---
+
+- replace header with issue text when appropriate
+
+---
+
+- consider different sizing for screen to make bottom text look nicer

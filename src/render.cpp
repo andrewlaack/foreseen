@@ -95,7 +95,7 @@ void draw(DrawState& ds) {
         refresh();
         return;
     }
-    if (ds.lines < 3) {
+    if (ds.lines < 5) { //  This is the min size that still allows top and bottom padding along with one line of text.
         erase();
         addstr("Screen height too small.");
         refresh();
@@ -142,7 +142,7 @@ void draw(DrawState& ds) {
 
     addstr(std::string(ds.columns, ' ').c_str());
 
-    for (int i = ds.y; i - ds.y < ds.lines - 2 && i < (int)ds.broken.size();
+    for (int i = ds.y; i - ds.y < ds.lines - 4 && i < (int)ds.broken.size();
          ++i) {
         move(i - ds.y + 2, 0);
 
