@@ -6,7 +6,7 @@
 extern std::string DEFAULT_SEARCH_ENGINE;   // default search option when search is inferred
 extern int SITE_CACHE_LIMIT;                // number of links to prefetch per page
 extern int THREAD_NUM;                      // thread count in thread pool for pre-fetching
-extern int MAX_WIDTH;                       // max text width
+extern int maxWidth;                        // max text width
 extern int CACHE_SIZE;                      // max elements in history cache and max in prefetch cache
 extern uint8_t COLOR_LINK;                  // color used for links
 extern uint8_t COLOR_PREFORMATTED;          // color used for preformatted text regions

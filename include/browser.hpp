@@ -11,13 +11,7 @@
 #include "cache.hpp"
 #include "link.hpp"
 #include "utils.hpp"
-
-enum GoToSiteResult {
-    SITE_LOADED,
-    SITE_LOAD_FAILED,
-    FETCHING_SITE_ASYNC
-};
-
+#include "shared.hpp"
 
 class Browser {
     private:
@@ -39,9 +33,7 @@ class Browser {
         Browser();
         void setLinksOfCurrentLines();
         ~Browser();
-
-        // if background is set and the site is found in cache it will go there right away, returning successfully.
-        GoToSiteResult goToSite(std::string url, bool addToHistory = true, bool refresh = false, bool background = false);
+        bool goToSite(std::string url, bool addToHistory = true, bool refresh = false);
         void setDone(int threadIdx);
         void refresh();
         Site* getCurrentSite();

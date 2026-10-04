@@ -1,7 +1,6 @@
 #include "../include/browser.hpp"
 #include "../include/utils.hpp"
 #include "../include/render.hpp"
-#include "../include/shared.hpp"
 #include <cassert>
 #include <csignal>
 #include <ncurses.h>
