@@ -98,6 +98,11 @@ int main(int argc, char** argv) {
         assert(cliDestination.t ==
                STRING_DESTINATION);  // we don't allow numeric link following on
                                      // startup.
+
+        // this guarantees invariants we expect about ds
+        // we could set cols and lines here, but it's better to do this. 
+
+        mainLoop(ds, b, KEY_RESIZE , COLS, LINES);
         tryVisitSite(ds, b, cliDestination.destination);
     }
 

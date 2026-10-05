@@ -361,7 +361,6 @@ void handleResult(DrawState& ds, SiteLoadPair result) {
 }
 
 void tryVisitSite(DrawState& ds, Browser& b, std::string site) {
-
     ds.bottomText = "Loading: " + site;
     ds.timeToClearBottomText = getCurrentTime() + 5000;
     draw(ds);
