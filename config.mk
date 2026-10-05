@@ -8,7 +8,7 @@ TLIBS = -lCatch2Main -lCatch2 -lrapidcheck ${LIBS}
 
 CC = g++
 
-IFLAGS = -Ofast -std=c++23
+IFLAGS = -Ofast -std=c++23 -march=native
 BFLAGS = -Ofast -std=c++23 -g -march=native
 DFLAGS = -O0 -fsanitize=address,undefined -g -std=c++23 -Wpedantic -Wall -Wextra -Wno-deprecated-declarations -D DEBUG_MODE
 
