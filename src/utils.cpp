@@ -3,7 +3,6 @@
 #include <fcntl.h>
 #include <spawn.h>
 #include <sys/wait.h>
-#include <threads.h>
 
 #include <algorithm>
 #include <cassert>
@@ -18,7 +17,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 
@@ -416,7 +414,6 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
 
 void sanitizeCharactersToDraw(
     std::vector<std::pair<std::string, TextRender>>& strLs) {
-    std::vector<std::thread> threads{};
 
     for (std::size_t i = 0; i < strLs.size(); ++i) {
         std::string& s = strLs[i].first;
