@@ -95,7 +95,8 @@ void draw(DrawState& ds) {
         refresh();
         return;
     }
-    if (ds.lines < 5) { //  This is the min size that still allows top and bottom padding along with one line of text.
+    if (ds.lines < 5) {  //  This is the min size that still allows top and
+                         //  bottom padding along with one line of text.
         erase();
         addstr("Screen height too small.");
         refresh();
@@ -200,12 +201,13 @@ void draw(DrawState& ds) {
         }
     }
 
-    if(ds.bottomText != "") {
+    if (ds.bottomText != "") {
         uint64_t now = getCurrentTime();
         if (ds.timeToClearBottomText <= now) {
             ds.bottomText = "";
         } else {
-            move(ds.lines-1,(ds.columns / 2) - ((int)ds.bottomText.size() / 2));
+            move(ds.lines - 1,
+                 (ds.columns / 2) - ((int)ds.bottomText.size() / 2));
             attron(A_BOLD);
 
             std::string tr = ds.bottomText;
@@ -219,7 +221,6 @@ void draw(DrawState& ds) {
             addstr(truncated.c_str());
             attroff(A_BOLD);
         }
-
     }
 
     refresh();
@@ -387,9 +388,10 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines) {
                 SiteLoadPair res;
                 switch (destination.t) {
                     case NUMBER_DESTINATION:
-                            ds.bottomText = "Following link: " + std::to_string(destination.linkNumber);
-                            ds.timeToClearBottomText = getCurrentTime() + 5000;
-                            draw(ds);
+                        ds.bottomText = "Following link: " +
+                                        std::to_string(destination.linkNumber);
+                        ds.timeToClearBottomText = getCurrentTime() + 5000;
+                        draw(ds);
                         res = b.followLinkNumber(destination.linkNumber);
                         handleResult(ds, res);
                         ds.bottomText = "";
@@ -444,16 +446,17 @@ bool mainLoop(DrawState& ds, Browser& b, int input, int cols, int lines) {
     } else if (input == CTRL('u')) {
         ds.y -= ds.lines / 2;
     } else if (input == 'r' || input == CTRL('r')) {
-        ds.bottomText = "Refreshing " + b.getCurrentLink()->getLinkDestination().to_string();
+        ds.bottomText = "Refreshing " +
+                        b.getCurrentLink()->getLinkDestination().to_string();
         ds.timeToClearBottomText = getCurrentTime() + 5000;
         draw(ds);
         b.refresh();
         ds.mustReRender = true;
         ds.bottomText = "";
     } else if (input == 'f') {
-        b.goForward(); // TODO: it's possible this might not be in 
-                       // cache, but probably not worth bothering with rendering
-                       // loading text.
+        b.goForward();  // TODO: it's possible this might not be in
+                        // cache, but probably not worth bothering with
+                        // rendering loading text.
         ds.mustReRender = true;
         ds.y = 0;
     } else if (input == 'd') {

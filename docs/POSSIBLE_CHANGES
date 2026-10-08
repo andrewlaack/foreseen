@@ -10,3 +10,4 @@
 - url manipulation
     - sometimes it's nice to go from {example}.com/blog/whatever -> {example}.com/blog without having to find links.
 - issue text should perhaps replace the url for a bit?
+- replace header with issue text when appropriate?

@@ -414,7 +414,6 @@ Destination handleDestinationResolution(std::string destination, bool isCli) {
 
 void sanitizeCharactersToDraw(
     std::vector<std::pair<std::string, TextRender>>& strLs) {
-
     for (std::size_t i = 0; i < strLs.size(); ++i) {
         std::string& s = strLs[i].first;
         std::string out;
