@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "../include/errors.hpp"
 #include "../include/gemini-client.hpp"
 #include "../include/identity-manager.hpp"
 #include "../include/shared.hpp"

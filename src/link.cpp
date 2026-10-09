@@ -71,9 +71,13 @@ uri Link::parseDestination(std::string destination, std::optional<uri> prior) {
     if (destination.find(":") == std::string::npos || destination[0] == '?') {
         if (prior != std::nullopt) {
             // query parameter special casing
+            // strip old before new.
             if (destination.substr(0, 1) == "?") {
                 std::string encoded = urlEncode(destination.substr(1));
-                return uri{prior.value().to_string() + "?" + encoded};
+                std::string base = prior.value().to_string();
+                base = base.substr(0, base.find('#'));
+                base = base.substr(0, base.find('?'));
+                return uri{base + "?" + encoded};
             }
 
             std::string base = prior->get_scheme() + "://" + prior->get_host();
