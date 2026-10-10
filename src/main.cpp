@@ -1,6 +1,7 @@
 #include <locale.h>
 #include <ncurses.h>
 #include <unctrl.h>
+#include <unistd.h>
 
 #include <cassert>
 #include <csignal>
@@ -83,6 +84,10 @@ int main(int argc, char** argv) {
 
     setlocale(LC_CTYPE, "");  // emojis and such
 
+    if(!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO)) {
+        std::cout << "This program must be executed interactively" << std::endl;
+        return 1;
+    }
     initscr();
     set_escdelay(25);
     noecho();     // don't echo user inputs
