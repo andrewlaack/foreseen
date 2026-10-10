@@ -206,18 +206,22 @@ void draw(DrawState& ds) {
         if (ds.timeToClearBottomText <= now) {
             ds.bottomText = "";
         } else {
-            move(ds.lines - 1,
-                 (ds.columns / 2) - ((int)ds.bottomText.size() / 2));
-            attron(A_BOLD);
 
             std::string tr = ds.bottomText;
             std::string truncated;
+
             for (auto& ch : tr) {
                 truncated += (char)toascii(ch);
             }
-            if ((int)ds.bottomText.size() > ds.columns) {
+
+            if ((int)truncated.size() > ds.columns) {
                 truncated = truncated.substr(0, ds.columns - 3) + "...";
             }
+
+            move(ds.lines - 1,
+                 (ds.columns / 2) - ((int)truncated.size() / 2));
+            attron(A_BOLD);
+
             addstr(truncated.c_str());
             attroff(A_BOLD);
         }
@@ -362,6 +366,7 @@ void handleResult(DrawState& ds, SiteLoadPair result) {
 }
 
 void tryVisitSite(DrawState& ds, Browser& b, std::string site) {
+    // Should this be url encoded? Would that be better for users or like this?
     ds.bottomText = "Loading: " + site;
     ds.timeToClearBottomText = getCurrentTime() + 5000;
     draw(ds);

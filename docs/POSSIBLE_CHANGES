@@ -11,3 +11,5 @@
     - sometimes it's nice to go from {example}.com/blog/whatever -> {example}.com/blog without having to find links.
 - issue text should perhaps replace the url for a bit?
 - replace header with issue text when appropriate?
+- the input box can be cut off and that's sometimes annoying, esp. for longer meta lines under the 1x status codes
+- Should I url encode the loading: thing for relative links? Should I try to get the entire link?
