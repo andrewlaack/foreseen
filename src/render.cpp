@@ -206,7 +206,6 @@ void draw(DrawState& ds) {
         if (ds.timeToClearBottomText <= now) {
             ds.bottomText = "";
         } else {
-
             std::string tr = ds.bottomText;
             std::string truncated;
 
@@ -218,8 +217,7 @@ void draw(DrawState& ds) {
                 truncated = truncated.substr(0, ds.columns - 3) + "...";
             }
 
-            move(ds.lines - 1,
-                 (ds.columns / 2) - ((int)truncated.size() / 2));
+            move(ds.lines - 1, (ds.columns / 2) - ((int)truncated.size() / 2));
             attron(A_BOLD);
 
             addstr(truncated.c_str());

@@ -14,3 +14,7 @@
         - refactor non-runtime configurable values to be set in hpp file
         - inject these into about://newtab
 - make sure keybings screen is consistent
+
+---
+
+- fix todos in shared.cpp

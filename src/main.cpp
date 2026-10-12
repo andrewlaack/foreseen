@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 
     setlocale(LC_CTYPE, "");  // emojis and such
 
-    if(!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO)) {
+    if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO)) {
         std::cout << "This program must be executed interactively" << std::endl;
         return 1;
     }

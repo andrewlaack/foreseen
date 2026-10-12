@@ -26,10 +26,4 @@ extern uint8_t COLOR_PLAINTEXT;      // color used for plaintext lines
 // additional bytes
 extern int RESPONSE_SIZE_LIMIT_MB;
 
-// since the xdg-open stuff is in a seperate process nothing will go to stdout
-// even in the echo case.
-#ifdef DEBUG_MODE
-const char openUnknownScheme[] = "echo";
-#else
-const char openUnknownScheme[] = "xdg-open";
-#endif
+extern char openUnknownScheme[];
