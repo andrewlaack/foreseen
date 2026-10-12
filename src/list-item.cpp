@@ -3,7 +3,6 @@
 #include <cstdint>
 
 #include "../include/shared.hpp"
-#include "../include/utils.hpp"
 
 ListItem::ListItem(std::string input) {
     //	list-item        = "*" SP text-line

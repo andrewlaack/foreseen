@@ -2,11 +2,7 @@
 
 #include <unistd.h>
 
-#include <algorithm>
-#include <cstdlib>
 #include <filesystem>
-#include <iostream>
-#include <stdexcept>
 #include <string>
 
 #include "../include/utils.hpp"

@@ -1,7 +1,5 @@
 #include "../include/preformatted.hpp"
 
-#include <ncurses.h>
-
 #include <cstdint>
 
 #include "../include/shared.hpp"

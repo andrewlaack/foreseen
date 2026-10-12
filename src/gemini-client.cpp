@@ -3,9 +3,7 @@
 #include <openssl/ssl.h>
 #include <poll.h>
 #include <sys/socket.h>
-#include <sys/time.h>
 
-#include <cassert>
 #include <chrono>
 #include <cstddef>
 #include <stdexcept>

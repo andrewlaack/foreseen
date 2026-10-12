@@ -1,7 +1,5 @@
 #include "../include/link.hpp"
 
-#include <ncurses.h>
-
 #include <cstdint>
 #include <optional>
 #include <string>

@@ -1,7 +1,5 @@
 #include "../include/heading.hpp"
 
-#include <ncurses.h>
-
 #include <cstdint>
 #include <stdexcept>
 

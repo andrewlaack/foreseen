@@ -1,6 +1,5 @@
 #include <locale.h>
 #include <ncurses.h>
-#include <unctrl.h>
 #include <unistd.h>
 
 #include <cassert>

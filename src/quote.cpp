@@ -1,7 +1,5 @@
 #include "../include/quote.hpp"
 
-#include <ncurses.h>
-
 #include <cstdint>
 
 #include "../include/shared.hpp"
